@@ -14,8 +14,21 @@
       .second-line, .state-and-toggle, state-info {
         max-width: 100%;
       }
-      .nowrap .second-line, .nowrap .state-and-toggle {
+      .nowrap .state-and-toggle {
         overflow: hidden;
+	flex-grow: 0;
+      }
+      .nowrap .second-line {
+        overflow: hidden;
+	flex-basis: auto;
+      }
+
+      .second-line {
+        padding-top: 20px;
+        margin-top: -20px;
+      }
+      .stretch .second-line, .stretch ::content paper-slider, .stretch ha-themed-slider {
+        width: 100%;
       }
       .nowrap state-info {
         min-width: initial;
@@ -23,24 +36,26 @@
       ha-themed-slider, .top-wrapper {
         min-width: 100px;
         max-width: 100%;
-        overflow: hidden;
       }
       ::content paper-slider {
         max-width: 100%;
         min-width: 100px;
       }
+      .top-wrapper.stretch {
+	display: block;
+      }
 
     </style>
 
-    <div class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode)]]'>
-      <div class='horizontal layout justified flex state-and-toggle'>
+    <div class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong)]]'>
+      <div class='horizontal layout justified flex-auto state-and-toggle'>
         <state-info state-obj='[[stateObj]]' in-dialog='[[inDialog]]' class='flex-auto'></state-info>
         <template is='dom-if' if='[[breakSlider]]'>
           <ha-entity-toggle state-obj='[[stateObj]]' hass='[[hass]]'></ha-entity-toggle>
         </template>
       </div>
       <template is='dom-if' if='[[showSlider]]'>
-        <div class='horizontal layout flex-1 end-justified second-line'>
+        <div class='horizontal layout flex end-justified second-line'>
           <ha-themed-slider
             max='255'
             min='0'
@@ -100,11 +115,19 @@ Polymer({
     mode: {
       type: String,
     },
+    stretchSlider: {
+      type: Boolean,
+      value: false,
+    },
     breakSlider: {
       type: Boolean,
       value: false,
     },
     hideSlider: {
+      type: Boolean,
+      value: false,
+    },
+    lineTooLong: {
       type: Boolean,
       value: false,
     },
@@ -128,33 +151,40 @@ Polymer({
 
   _onIronResize: function () {
     if (!this.readyToCompute) return;
+    var prevBreakSlider = this.breakSlider;
+    this.lineTooLong = this.hideSlider = this.breakSlider = false;
     var containerWidth = Polymer.dom(this).node.firstElementChild.clientWidth;
-    var lineTooLong;
     if (containerWidth <= this.minLineBreak) {
-      lineTooLong = true;
+      this.lineTooLong = true;
     } else if (containerWidth >= this.maxLineBreak) {
-      lineTooLong = false;
+      this.lineTooLong = false;
     } else {
       var containerHeight = Polymer.dom(this).node.firstElementChild.clientHeight;
       var stateHeight = this.$$('state-info').clientHeight;
-      lineTooLong = containerHeight > stateHeight * 1.5;
-      if (lineTooLong) {
+      this.lineTooLong = containerHeight > stateHeight * 1.5;
+      if (this.lineTooLong) {
         this.minLineBreak = containerWidth;
-      } else if (!this.breakSlider) {
+      } else if (!prevBreakSlider) {
         this.maxLineBreak = containerWidth;
       }
     }
     this.hideSlider =
-        this.mode === 'hide-slider' && lineTooLong;
+        this.mode === 'hide-slider' && this.lineTooLong;
     this.breakSlider =
-        (this.mode === 'break-slider' || this.mode === 'hide-slider') && lineTooLong;
+        (this.mode === 'break-slider' || this.mode === 'hide-slider') && this.lineTooLong;
     if (!this.showSlider) {
       this.breakSlider = true;
     }
   },
 
-  _computeWrapClass: function (mode) {
-    return mode === 'single-line' ? 'nowrap' : 'wrap';
+  _computeWrapClass: function (mode, stretchSlider, lineTooLong) {
+    if (mode === 'single-line') {
+      return 'nowrap';
+    }
+    if (stretchSlider && lineTooLong) {
+      return 'stretch wrap';
+    }
+    return 'wrap';
   },
 
   _showSlider: function (inDialog, stateObj, hideSlider) {
@@ -192,6 +222,9 @@ Polymer({
         this.mode = stateObj.attributes.state_card_mode;
       } else {
         this.mode = DEFAULT_MODE;
+      }
+      if (stateObj.attributes.stretch_slider) {
+        this.stretchSlider = true;
       }
     }
   },
