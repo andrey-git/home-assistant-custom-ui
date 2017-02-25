@@ -1,5 +1,9 @@
 # Custom UI elements for https://home-assistant.io
 
+## Known issues
+Seems this element doesn't work on iOS / Mac Safari.
+See https://community.home-assistant.io/t/tutorial-for-new-custom-state-card-ui/11799
+
 ## Available elements:
   * state-card-custom_light
     * ha-themed-slider
