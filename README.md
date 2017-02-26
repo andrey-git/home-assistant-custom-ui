@@ -16,8 +16,8 @@ In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: <
 For example:
 ```yaml
 homeassistant:
-  customize:
-    - entity_id: light
+  customize_glob:
+    light.*
       custom_ui_state_card: custom_light
 ```
 
@@ -60,7 +60,7 @@ The slider behavior is controlled by `slider_theme` dictionary. In that dictiona
 ```yaml
 homeassistant:
   customize:
-    - entity_id: light.bedroom
+    light.bedroom:
       custom_ui_state_card: custom_light
       state_card_mode: break-slider
       stretch_slider: true
