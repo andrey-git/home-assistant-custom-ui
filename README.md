@@ -17,10 +17,15 @@ For example:
 ```yaml
 homeassistant:
   customize_glob:
-    "light.*"
+    light.*:
       custom_ui_state_card: custom_light
 ```
 
+Note that yaml keys can't start with an asterix. Use quotes in that case:
+```yaml
+customize_glob:
+  "*.bed":
+```
 ## Available customization
 
 Customization is set by using `customize:` in `configuration.yaml`
