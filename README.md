@@ -17,7 +17,7 @@ For example:
 ```yaml
 homeassistant:
   customize_glob:
-    light.*
+    "light.*"
       custom_ui_state_card: custom_light
 ```
 
