@@ -1,7 +1,7 @@
 # Custom UI elements for https://home-assistant.io
 
 ## Known issues
-Seems this element doesn't work on iOS / Mac Safari.
+Seems this element doesn't work on iOS 10 / Mac Safari 10. (iOS 9 works fine)
 See https://community.home-assistant.io/t/tutorial-for-new-custom-state-card-ui/11799
 
 ## Available elements:
