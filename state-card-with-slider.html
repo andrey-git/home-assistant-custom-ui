@@ -113,6 +113,7 @@ Polymer({
     serviceMin: { type: String },
     serviceMax: { type: String },
     valueName: { type: String },
+    onName: { type: String, value: 'on' },
 
     brightnessSliderValue: {
       type: Number,
@@ -236,7 +237,7 @@ Polymer({
   },
 
   isOn: function (stateObj) {
-    return stateObj && stateObj.state === 'on';
+    return stateObj && stateObj.state === this.onName;
   },
   stopPropagation: function (ev) {
     ev.stopPropagation();
