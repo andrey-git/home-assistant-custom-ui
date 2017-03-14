@@ -6,10 +6,16 @@ See https://community.home-assistant.io/t/tutorial-for-new-custom-state-card-ui/
 
 ## Available elements:
   * state-card-custom_light
+    * state-card-with-slider
     * ha-themed-slider
+    * dynamic-element
+  * state-card-custom_cover [Requires HA 0.40]
+    * state-card-with-slider
+    * ha-themed-slider
+    * dynamic-element
 
 ## Usage
-Copy the element and its dependencies to `www/custom_ui/` directory under you homeassistant config.
+Copy the element and all its dependencies to `www/custom_ui/` directory under you homeassistant config.
 
 In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: <element-name>``
 
@@ -19,6 +25,8 @@ homeassistant:
   customize_glob:
     light.*:
       custom_ui_state_card: custom_light
+    cover.*:
+      custom_ui_state_card: custom_cover
 ```
 
 Note that yaml keys can't start with an asterix. Use quotes in that case:
@@ -76,3 +84,8 @@ homeassistant:
         off_when_min: false
         report_when_not_changed: false
 ```
+
+### state-card-custom_light
+Custom cover looks just like custom light, except that it has up-stop-down buttons instead of toggle. The cistomization also works in exactly the same way.
+
+![cover](https://cloud.githubusercontent.com/assets/5478779/23921980/4eab7978-0909-11e7-8058-ad17a52d93c3.png)
