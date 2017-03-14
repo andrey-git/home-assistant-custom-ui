@@ -1,0 +1,245 @@
+<!-- This file assumes that the following are already imported by Homeassistant
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../components/entity/state-info.html">
+<link rel="import" href="../components/entity/ha-entity-toggle.html">
+-->
+<link rel="import" href="ha-themed-slider.html" async>
+<!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
+<link rel="import" href="dynamic-element.html">
+
+
+<dom-module id="state-card-with-slider">
+  <template>
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
+    <style>
+      .second-line, .state-and-toggle, state-info {
+        max-width: 100%;
+      }
+      .nowrap .state-and-toggle {
+        overflow: hidden;
+	flex-grow: 0;
+      }
+      .nowrap .second-line {
+        overflow: hidden;
+      }
+
+      .second-line {
+        padding-top: 20px;
+        margin-top: -20px;
+      }
+      .stretch .second-line, .stretch ::content paper-slider, .stretch ha-themed-slider {
+        width: 100%;
+      }
+      .nowrap state-info {
+        min-width: initial;
+      }
+      ha-themed-slider, .top-wrapper {
+        min-width: 100px;
+        max-width: 100%;
+      }
+      ::content paper-slider {
+        max-width: 100%;
+        min-width: 100px;
+      }
+      .top-wrapper.stretch {
+	display: block;
+      }
+
+    </style>
+
+    <div class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong)]]'>
+      <div class='horizontal layout justified flex-auto state-and-toggle'>
+        <state-info state-obj='[[stateObj]]' in-dialog='[[inDialog]]' class='flex-auto'></state-info>
+        <template is='dom-if' if='[[breakSlider]]'>
+          <dynamic-element hass='[[hass]]' state-obj='[[stateObj]]' element-name='[[controlElement]]'></dynamic-element>
+        </template>
+      </div>
+      <template is='dom-if' if='[[showSlider]]'>
+        <div class='horizontal layout flex-auto end-justified second-line'>
+          <ha-themed-slider
+            max='255'
+            min='0'
+            theme='[[stateObj.attributes.slider_theme]]'
+            is-on='[[isOn(stateObj)]]'
+            value='{{brightnessSliderValue}}'
+            disable-off-when-min='{{disableOffWhenMin}}'
+            on-change='brightnessSliderChanged'
+            on-tap='stopPropagation'>
+          </ha-themed-slider>
+          <template is='dom-if' if='[[!breakSlider]]'>
+	    <dynamic-element hass='[[hass]]' state-obj='[[stateObj]]' element-name='[[controlElement]]'></dynamic-element>
+          </template>
+        </div>
+      </template>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+var SUPPORTED_MODES = [
+  'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider'];
+var DEFAULT_MODE = 'break-slider-toggle';
+Polymer({
+  is: 'state-card-with-slider',
+
+  attached: function () {
+    this.async(function () {
+      this.readyToCompute = true;
+      this._onIronResize();
+    }.bind(this), 1);
+  },
+
+  behaviors: [
+    Polymer.IronResizableBehavior
+  ],
+
+  properties: {
+    hass: {
+      type: Object,
+    },
+    inDialog: {
+      type: Boolean,
+      value: false,
+    },
+    stateObj: {
+      type: Object,
+      observer: 'stateObjChanged',
+    },
+    controlElement: {
+      type: String,
+    },
+    domain: { type: String },
+    serviceMin: { type: String },
+    serviceMax: { type: String },
+    valueName: { type: String },
+
+    brightnessSliderValue: {
+      type: Number,
+      value: 0,
+    },
+    disableOffWhenMin: {
+      type: Boolean,
+    },
+    mode: {
+      type: String,
+    },
+    stretchSlider: {
+      type: Boolean,
+      value: false,
+    },
+    breakSlider: {
+      type: Boolean,
+      value: false,
+    },
+    hideSlider: {
+      type: Boolean,
+      value: false,
+    },
+    lineTooLong: {
+      type: Boolean,
+      value: false,
+    },
+    minLineBreak: {
+      type: Number,
+      value: 0,
+    },
+    maxLineBreak: {
+      type: Number,
+      value: 999,
+    },
+    showSlider: {
+      type: Number,
+      computed: '_showSlider(inDialog, stateObj, hideSlider)',
+    },
+  },
+
+  listeners: {
+    'iron-resize': '_onIronResize'
+  },
+
+  _onIronResize: function () {
+    if (!this.readyToCompute) return;
+    var prevBreakSlider = this.breakSlider;
+    this.lineTooLong = this.hideSlider = this.breakSlider = false;
+    var containerWidth = Polymer.dom(this).node.firstElementChild.clientWidth;
+    if (containerWidth <= this.minLineBreak) {
+      this.lineTooLong = true;
+    } else if (containerWidth >= this.maxLineBreak) {
+      this.lineTooLong = false;
+    } else {
+      var containerHeight = Polymer.dom(this).node.firstElementChild.clientHeight;
+      var stateHeight = this.$$('state-info').clientHeight;
+      this.lineTooLong = containerHeight > stateHeight * 1.5;
+      if (this.lineTooLong) {
+        this.minLineBreak = containerWidth;
+      } else if (!prevBreakSlider) {
+        this.maxLineBreak = containerWidth;
+      }
+    }
+    this.hideSlider =
+        this.mode === 'hide-slider' && this.lineTooLong;
+    this.breakSlider =
+        (this.mode === 'break-slider' || this.mode === 'hide-slider') && this.lineTooLong;
+    if (!this.showSlider) {
+      this.breakSlider = true;
+    }
+  },
+
+  _computeWrapClass: function (mode, stretchSlider, lineTooLong) {
+    if (mode === 'single-line') {
+      return 'nowrap';
+    }
+    if (stretchSlider && lineTooLong) {
+      return 'stretch wrap';
+    }
+    return 'wrap';
+  },
+
+  _showSlider: function (inDialog, stateObj, hideSlider) {
+    var BRIGHTNESS_SUPPORTED = 1;
+    if (inDialog || hideSlider) {
+      return false;
+    }
+    return stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED;
+  },
+
+  brightnessSliderChanged: function (ev) {
+    var bri = parseInt(ev.target.value, 10);
+    var param = { entity_id: this.stateObj.entity_id };
+    if (isNaN(bri)) return;
+
+    if (bri === 0 || (bri <= ev.target.min && !this.disableOffWhenMin)) {
+      this.hass.callService(this.domain, this.serviceMin, param);
+    } else {
+      param[this.valueName] = bri;
+      this.hass.callService(this.domain, this.serviceMax, param);
+    }
+  },
+
+  stateObjChanged: function (stateObj) {
+    if (this.isOn(stateObj)) {
+      this.brightnessSliderValue = stateObj.attributes.brightness;
+    } else {
+      this.brightnessSliderValue = 0;
+    }
+    if (stateObj) {
+      if (SUPPORTED_MODES.indexOf(stateObj.attributes.state_card_mode) !== -1) {
+        this.mode = stateObj.attributes.state_card_mode;
+      } else {
+        this.mode = DEFAULT_MODE;
+      }
+      if (stateObj.attributes.stretch_slider) {
+        this.stretchSlider = true;
+      }
+    }
+  },
+
+  isOn: function (stateObj) {
+    return stateObj && stateObj.state === 'on';
+  },
+  stopPropagation: function (ev) {
+    ev.stopPropagation();
+  },
+});
+</script>

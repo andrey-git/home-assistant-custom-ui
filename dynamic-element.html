@@ -1,0 +1,29 @@
+<script>
+Polymer({
+  is: 'dynamic-element',
+
+  properties: {
+    hass: {
+      type: Object,
+    },
+
+    stateObj: {
+      type: Object,
+    },
+
+    elementName: {
+      type: String,
+    },
+  },
+
+  observers: [
+    'observerFunc(hass, stateObj, elementName)',
+  ],
+
+  observerFunc: function (hass, stateObj, elementName) {
+    window.hassUtil.dynamicContentUpdater(
+        this, elementName,
+        { hass: hass, stateObj: stateObj });
+  },
+});
+</script>
