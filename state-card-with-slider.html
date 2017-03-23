@@ -28,8 +28,9 @@
         padding-top: 20px;
         margin-top: -20px;
       }
-      .stretch .second-line, .stretch ::content paper-slider, .stretch ha-themed-slider {
+      .stretch .second-line, .stretch ha-themed-slider {
         width: 100%;
+        --ha-paper-slider-width: 100%;
       }
       .nowrap state-info {
         min-width: initial;
@@ -38,17 +39,13 @@
         min-width: 100px;
         max-width: 100%;
       }
-      ::content paper-slider {
-        max-width: 100%;
-        min-width: 100px;
-      }
       .top-wrapper.stretch {
 	display: block;
       }
 
     </style>
 
-    <div class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong)]]'>
+    <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
         <state-info state-obj='[[stateObj]]' in-dialog='[[inDialog]]' class='flex-auto'></state-info>
         <template is='dom-if' if='[[breakSlider]]'>
@@ -163,13 +160,14 @@ Polymer({
     if (!this.readyToCompute) return;
     var prevBreakSlider = this.breakSlider;
     this.lineTooLong = this.hideSlider = this.breakSlider = false;
-    var containerWidth = Polymer.dom(this).node.firstElementChild.clientWidth;
+    var container = this.$.container;
+    var containerWidth = container.clientWidth;
     if (containerWidth <= this.minLineBreak) {
       this.lineTooLong = true;
     } else if (containerWidth >= this.maxLineBreak) {
       this.lineTooLong = false;
     } else {
-      var containerHeight = Polymer.dom(this).node.firstElementChild.clientHeight;
+      var containerHeight = container.clientHeight;
       var stateHeight = this.$$('state-info').clientHeight;
       this.lineTooLong = containerHeight > stateHeight * 1.5;
       if (this.lineTooLong) {
@@ -210,7 +208,7 @@ Polymer({
     var param = { entity_id: this.stateObj.entity_id };
     if (isNaN(bri)) return;
 
-    if (bri === 0 || (bri <= ev.target.min && !this.disableOffWhenMin)) {
+    if (bri === 0 || (bri <= ev.path[0].min && !this.disableOffWhenMin)) {
       this.hass.callService(this.domain, this.serviceMin, param);
     } else {
       param[this.valueName] = bri;

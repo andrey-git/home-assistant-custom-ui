@@ -6,24 +6,27 @@
 <dom-module id='ha-themed-slider'>
   <template>
     <style>
-      .disable-off-when-min ::content .pin.ring.paper-slider > .slider-knob.paper-slider > .slider-knob-inner.paper-slider::before {
-        background-color: var(--paper-slider-pin-color);
+      .disable-off-when-min {
+        --paper-slider-pin-start-color:  var(--paper-slider-pin-color);
       }
-      .disable-off-when-min.is-on ::content .ring.paper-slider > .slider-knob.paper-slider > .slider-knob-inner.paper-slider,
-      .disable-off-when-min ::content .ring.expand.paper-slider > .slider-knob.paper-slider > .slider-knob-inner.paper-slider {
-        background-color: var(--paper-slider-knob-color);
-        border-color: var(--paper-slider-knob-color);
+
+      .disable-off-when-min.is-on {
+        --paper-slider-knob-start-color: var(--paper-slider-knob-color);
+        --paper-slider-knob-start-border-color: var(--paper-slider-knob-color);
       }
       paper-slider {
         margin: 4px 0;
+        max-width: 100%;
+        min-width: 100px;
+        width: var(--ha-paper-slider-width, 200px);
       }
     </style>
 
     <paper-slider
-         min='[[_computeAttribute(theme, "min", min)]]'
+         min='[[_themedMin]]'
          max='[[_computeAttribute(theme, "max", max)]]'
          pin='[[_computeAttribute(theme, "pin", pin)]]'
-         class$='[[computeClass(theme, isOn)]]' value='[[value]]'
+         class$='[[computeClass(theme, isOn, _themedMin)]]' value='[[value]]'
          on-change='valueChanged'>
     </paper-slider>
   </template>
@@ -75,6 +78,10 @@ Polymer({
       type: Number,
       notify: true,
     },
+    _themedMin: {
+      type: Number,
+      computed: '_computeAttribute(theme, "min", min)',
+    },
   },
 
   observers: ['computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged)'],
@@ -93,12 +100,12 @@ Polymer({
     return def;
   },
 
-  computeClass: function (theme, isOn) {
+  computeClass: function (theme, isOn, themedMin) {
     var result = '';
     if (isOn) {
       result += 'is-on ';
     }
-    if (this._computeAttribute(theme, 'off_when_min', !this.disableOffWhenMin)) {
+    if (this._computeAttribute(theme, 'off_when_min', !this.disableOffWhenMin) || themedMin === 0) {
       // If offWhenMin is enabled don't customize.
       return '';
     }
