@@ -44,7 +44,7 @@ If there is enough space the card will have icon+name on the left, slider in the
 
 ![wide](https://cloud.githubusercontent.com/assets/5478779/23335593/e344048e-fbc0-11e6-81fd-85466a6b98b2.png)
 
-If there is not enough horizontal space the mode is set by `state_card_mode` parameter
+#### If there is not enough horizontal space the mode is set by `state_card_mode` parameter
 
 | `state_card_mode` value | description |
 | --- | --- |
@@ -55,11 +55,18 @@ If there is not enough horizontal space the mode is set by `state_card_mode` par
 
 ![medium](https://cloud.githubusercontent.com/assets/5478779/23335594/e909eee2-fbc0-11e6-8429-8648b89d6d13.png) ![narrow](https://cloud.githubusercontent.com/assets/5478779/23335595/eceaa92a-fbc0-11e6-9dff-018585f60ff0.png)
 
-If the slider got moved to a new line it will be 200 px wide.
+#### If the slider got moved to a new line it will be 200 px wide.
 Use `stretch_slider` attribute to make it strech to all available space.
 
+#### You can add extra data above the toggle
+Use `extra_data_template` to add extra data above the toggle. The format is a string where `{attribute_name}`will be replaced by the attribut evalue.
+For example `{power_consumption}W` will parse as `27W` if the value of `power_consumption` is 27.
 
-The slider behavior is controlled by `slider_theme` dictionary. In that dictionary the following optional fields are available:
+You can add an attribute value conditionally if it doesn't equal some constant. For example `{power_consumption!=0}W` to only add power consumption if it is not zero.
+
+![extra_data](https://cloud.githubusercontent.com/assets/5478779/24260417/76d66bca-0ffc-11e7-840d-215adc187cd7.png)
+
+#### The slider behavior is controlled by `slider_theme` dictionary. In that dictionary the following optional fields are available:
 
 | field | default | description |
 | --- | --- | --- |
@@ -77,6 +84,7 @@ homeassistant:
       custom_ui_state_card: custom_light
       state_card_mode: break-slider
       stretch_slider: true
+      extra_data_template: "{power_consumption!=10}W"
       slider_theme:
         min: 10
         max: 200
