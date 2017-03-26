@@ -50,27 +50,39 @@ Polymer({
     },
   },
 
+  _getObject: function (hass, stateObj) {
+    if (!stateObj.attributes.extra_badge) return null;
+    var extraBadge = stateObj.attributes.extra_badge;
+    if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
+      return Object.assign({}, hass.states[extraBadge.entity_id]);
+    }
+    if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
+      return {
+        state: stateObj.attributes[extraBadge.attribute],
+        _domain: 'none',
+        attributes: { unit_of_measurement: extraBadge.unit },
+      };
+    }
+    return null;
+  },
+
   computeExtra: function (hass, stateObj) {
-    if (!stateObj.attributes.extra_badge ||
-        !stateObj.attributes.extra_badge.entity_id ||
-        !hass.states[stateObj.attributes.extra_badge.entity_id]) return null;
-    var result = Object.assign({}, hass.states[stateObj.attributes.extra_badge.entity_id]);
+    var result = this._getObject(hass, stateObj);
+    if (!result) return null;
     result._entityDisplay = '';
     return result;
   },
 
   computeExtraVisible: function (hass, stateObj, inDialog) {
     if (inDialog) return false;
-    if (!stateObj.attributes.extra_badge ||
-        !stateObj.attributes.extra_badge.entity_id ||
-        !hass.states[stateObj.attributes.extra_badge.entity_id]) return false;
-    var result = Object.assign({}, hass.states[stateObj.attributes.extra_badge.entity_id]);
+    var result = this._getObject(hass, stateObj);
+    if (!result) return false;
     var blacklist = stateObj.attributes.extra_badge.blacklist_states;
     if (blacklist) {
       if (!Array.isArray(blacklist)) {
         blacklist = [blacklist];
       }
-      if (blacklist.some(function (v) { return result.state === v.toString(); })) {
+      if (blacklist.some(function (v) { return result.state.toString() === v.toString(); })) {
         return false;
       }
     }
