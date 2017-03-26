@@ -14,16 +14,21 @@ Polymer({
     elementName: {
       type: String,
     },
+
+    inDialog: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [
-    'observerFunc(hass, stateObj, elementName)',
+    'observerFunc(hass, stateObj, elementName, inDialog)',
   ],
 
-  observerFunc: function (hass, stateObj, elementName) {
+  observerFunc: function (hass, stateObj, elementName, inDialog) {
     window.hassUtil.dynamicContentUpdater(
-        this, elementName,
-        { hass: hass, stateObj: stateObj });
+        this, elementName.toUpperCase(),
+        { hass: hass, stateObj: stateObj, inDialog: inDialog });
   },
 });
 </script>

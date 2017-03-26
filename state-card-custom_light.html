@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 -->
 <link rel="import" href="state-card-with-slider.html" async>
+<link rel="import" href="toggle-with-extra.html" async>
 
 
 <dom-module id="state-card-custom_light">
@@ -25,7 +26,7 @@
           hass='[[hass]]'
           in-dialog='[[inDialog]]'
        	  state-obj='[[stateObj]]'
-       	  control-element='ha-entity-toggle'
+       	  control-element='toggle-with-extra'
 	  domain='light'
 	  service-min='turn_off'
 	  service-max='turn_on'

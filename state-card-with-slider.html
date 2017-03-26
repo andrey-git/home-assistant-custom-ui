@@ -26,7 +26,9 @@
 
       .second-line {
         padding-top: 20px;
+        padding-bottom: 16px;
         margin-top: -20px;
+        margin-bottom: -16px;
       }
       .stretch .second-line, .stretch ha-themed-slider {
         width: 100%;
@@ -49,7 +51,7 @@
       <div class='horizontal layout justified flex-auto state-and-toggle'>
         <state-info state-obj='[[stateObj]]' in-dialog='[[inDialog]]' class='flex-auto'></state-info>
         <template is='dom-if' if='[[breakSlider]]'>
-          <dynamic-element hass='[[hass]]' state-obj='[[stateObj]]' element-name='[[controlElement]]'></dynamic-element>
+          <dynamic-element hass='[[hass]]' state-obj='[[stateObj]]' element-name='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-element>
         </template>
       </div>
       <template is='dom-if' if='[[showSlider]]'>
@@ -65,7 +67,7 @@
             on-tap='stopPropagation'>
           </ha-themed-slider>
           <template is='dom-if' if='[[!breakSlider]]'>
-	    <dynamic-element hass='[[hass]]' state-obj='[[stateObj]]' element-name='[[controlElement]]'></dynamic-element>
+	    <dynamic-element hass='[[hass]]' state-obj='[[stateObj]]' element-name='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-element>
           </template>
         </div>
       </template>

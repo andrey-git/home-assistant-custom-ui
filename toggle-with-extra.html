@@ -1,0 +1,84 @@
+<dom-module id="toggle-with-extra">
+  <template>
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
+    <style>
+      :host {
+        display: inline-block;
+      }
+      ha-entity-toggle {
+        margin-left: 16px;
+      }
+      ha-state-label-badge {
+        margin-left: 8px;
+      }
+      .extra {
+        margin-bottom: -16px;
+        --ha-label-badge-size: 36px;
+        --ha-label-badge-font-size: 1.2em;
+      }
+    </style>
+    <div class$='[[extraClass(extraObj)]] horizontal layout'>
+      <template is='dom-if' if='[[extraObjVisible]]'>
+        <ha-state-label-badge hass='[[hass]]' state='[[extraObj]]'></ha-state-label-badge>
+      </template>
+      <ha-entity-toggle state-obj="[[stateObj]]" hass='[[hass]]'></ha-entity-toggle>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+Polymer({
+  is: 'toggle-with-extra',
+  properties: {
+    hass: {
+      type: Object,
+    },
+    inDialog: {
+      type: Boolean,
+      value: false,
+    },
+    stateObj: {
+      type: Object,
+    },
+    extraObj: {
+      type: Object,
+      computed: 'computeExtra(hass, stateObj, inDialog)',
+    },
+    extraObjVisible: {
+      type: Boolean,
+      computed: 'computeExtraVisible(hass, stateObj, inDialog)',
+    },
+  },
+
+  computeExtra: function (hass, stateObj) {
+    if (!stateObj.attributes.extra_badge ||
+        !stateObj.attributes.extra_badge.entity_id ||
+        !hass.states[stateObj.attributes.extra_badge.entity_id]) return null;
+    var result = Object.assign({}, hass.states[stateObj.attributes.extra_badge.entity_id]);
+    result._entityDisplay = '';
+    return result;
+  },
+
+  computeExtraVisible: function (hass, stateObj, inDialog) {
+    if (inDialog) return false;
+    if (!stateObj.attributes.extra_badge ||
+        !stateObj.attributes.extra_badge.entity_id ||
+        !hass.states[stateObj.attributes.extra_badge.entity_id]) return false;
+    var result = Object.assign({}, hass.states[stateObj.attributes.extra_badge.entity_id]);
+    var blacklist = stateObj.attributes.extra_badge.blacklist_states;
+    if (blacklist) {
+      if (!Array.isArray(blacklist)) {
+        blacklist = [blacklist];
+      }
+      if (blacklist.some(function (v) { return result.state === v.toString(); })) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  extraClass: function (extraObj) {
+    return extraObj ? 'extra' : '';
+  },
+});
+</script>
