@@ -1,11 +1,14 @@
-<dom-module id="toggle-with-extra">
+<!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
+<link rel="import" href="dynamic-element.html">
+
+<dom-module id="dynamic-with-extra">
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
     <style>
       :host {
         display: inline-block;
       }
-      ha-entity-toggle {
+      dynamic-element {
         margin-left: 16px;
       }
       ha-state-label-badge {
@@ -21,14 +24,16 @@
       <template is='dom-if' if='[[extraObjVisible]]'>
         <ha-state-label-badge hass='[[hass]]' state='[[extraObj]]'></ha-state-label-badge>
       </template>
-      <ha-entity-toggle state-obj="[[stateObj]]" hass='[[hass]]'></ha-entity-toggle>
+      <template is='dom-if' if='[[_showControl(inDialog, stateObj)]]'>
+        <dynamic-element class='flex' state-obj="[[stateObj]]" hass='[[hass]]' element-name='[[controlElement]]'></dynamic-element>
+      </template>
     </div>
   </template>
 </dom-module>
 
 <script>
 Polymer({
-  is: 'toggle-with-extra',
+  is: 'dynamic-with-extra',
   properties: {
     hass: {
       type: Object,
@@ -39,6 +44,9 @@ Polymer({
     },
     stateObj: {
       type: Object,
+    },
+    controlElement: {
+      type: String,
     },
     extraObj: {
       type: Object,
@@ -82,7 +90,11 @@ Polymer({
       if (!Array.isArray(blacklist)) {
         blacklist = [blacklist];
       }
-      if (blacklist.some(function (v) { return result.state.toString() === v.toString(); })) {
+      if (blacklist.some(
+            function (v) {
+              const r = RegExp(v);
+              return r.test(result.state.toString());
+            })) {
         return false;
       }
     }
@@ -91,6 +103,11 @@ Polymer({
 
   extraClass: function (extraObj) {
     return extraObj ? 'extra' : '';
+  },
+
+  _showControl: function (inDialog, stateObj) {
+    if (inDialog) return true;
+    return !stateObj.attributes.hide_control;
   },
 });
 </script>

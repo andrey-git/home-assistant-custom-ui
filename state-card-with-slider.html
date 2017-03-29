@@ -6,7 +6,7 @@
 -->
 <link rel="import" href="ha-themed-slider.html" async>
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
-<link rel="import" href="dynamic-element.html">
+<link rel="import" href="dynamic-with-extra.html">
 
 
 <dom-module id="state-card-with-slider">
@@ -47,11 +47,11 @@
 
     </style>
 
-    <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong)]]'>
+    <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
         <state-info state-obj='[[stateObj]]' in-dialog='[[inDialog]]' class='flex-auto'></state-info>
         <template is='dom-if' if='[[breakSlider]]'>
-          <dynamic-element hass='[[hass]]' state-obj='[[stateObj]]' element-name='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-element>
+          <dynamic-with-extra hass='[[hass]]' state-obj='[[stateObj]]' control-element='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-with-extra>
         </template>
       </div>
       <template is='dom-if' if='[[showSlider]]'>
@@ -68,7 +68,7 @@
             on-tap='stopPropagation'>
           </ha-themed-slider>
           <template is='dom-if' if='[[!breakSlider]]'>
-	    <dynamic-element hass='[[hass]]' state-obj='[[stateObj]]' element-name='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-element>
+            <dynamic-with-extra hass='[[hass]]' state-obj='[[stateObj]]' control-element='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-with-extra>
           </template>
         </div>
       </template>
@@ -188,7 +188,10 @@ Polymer({
     }
   },
 
-  _computeWrapClass: function (mode, stretchSlider, lineTooLong) {
+  _computeWrapClass: function (mode, stretchSlider, lineTooLong, inDialog) {
+    if (inDialog) {
+      return '';
+    }
     if (mode === 'single-line') {
       return 'nowrap';
     }
