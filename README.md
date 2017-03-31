@@ -9,10 +9,12 @@ See https://community.home-assistant.io/t/tutorial-for-new-custom-state-card-ui/
     * state-card-with-slider
     * ha-themed-slider
     * dynamic-element
+    * dynamic-with-extra
   * state-card-custom_cover [Requires HA 0.40]
     * state-card-with-slider
     * ha-themed-slider
     * dynamic-element
+    * dynamic-with-extra
 
 ## Usage
 Copy the element and all its dependencies to `www/custom_ui/` directory under you homeassistant config.
@@ -58,13 +60,18 @@ If there is enough space the card will have icon+name on the left, slider in the
 #### If the slider got moved to a new line it will be 200 px wide.
 Use `stretch_slider` attribute to make it strech to all available space.
 
-#### You can add extra data above the toggle
+#### (Experimental Feature) You can add extra data above the toggle
 Use `extra_data_template` to add extra data above the toggle. The format is a string where `{attribute_name}`will be replaced by the attribut evalue.
 For example `{power_consumption}W` will parse as `27W` if the value of `power_consumption` is 27.
 
 You can add an attribute value conditionally if it doesn't equal some constant. For example `{power_consumption!=0}W` to only add power consumption if it is not zero.
 
 ![extra_data](https://cloud.githubusercontent.com/assets/5478779/24260417/76d66bca-0ffc-11e7-840d-215adc187cd7.png)
+
+#### You can hide the control altogether
+Use `hide_control: true` to hide the control (toggle) altogether.
+
+![hide_control](https://cloud.githubusercontent.com/assets/5478779/24469753/446df0fe-14c5-11e7-93d3-518db5741682.png)
 
 #### The slider behavior is controlled by `slider_theme` dictionary. In that dictionary the following optional fields are available:
 
