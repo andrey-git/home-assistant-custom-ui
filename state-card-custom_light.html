@@ -10,17 +10,8 @@
       .container {
         position: relative;
       }
-      .extra {
-        position: absolute;
-	right: 0;
-	top: -8px;
-	pointer-events: none;
-      }
     </style>
     <div class='container'>
-      <template is='dom-if' if='[[extra]]'>
-        <div class='extra'>[[extra]]</div>
-      </template>
       <state-card-with-slider
           hass='[[hass]]'
           in-dialog='[[inDialog]]'
@@ -49,28 +40,6 @@ Polymer({
     stateObj: {
       type: Object,
     },
-    extra: {
-      type: String,
-      computed: 'computeExtra(stateObj, inDialog)',
-    },
-  },
-
-  computeExtra: function (stateObj, inDialog) {
-    if (!inDialog && stateObj.attributes.extra_data_template) {
-      var errorsFound = false;
-      var result = stateObj.attributes.extra_data_template.replace(
-          /{([^}!]+)(!=)?([^}]+)?}/g,
-          function (match, p1, p2, p3) {
-            if (!stateObj.attributes[p1] || (p2 && stateObj.attributes[p1] === p3)) {
-              errorsFound = true;
-              return '';
-            }
-            return stateObj.attributes[p1];
-          });
-      if (errorsFound) return null;
-      return result;
-    }
-    return null;
   },
 });
 </script>

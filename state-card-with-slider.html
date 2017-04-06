@@ -1,10 +1,6 @@
-<!-- This file assumes that the following are already imported by Homeassistant
-<link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="../components/entity/state-info.html">
-<link rel="import" href="../components/entity/ha-entity-toggle.html">
--->
 <link rel="import" href="ha-themed-slider.html" async>
+<link rel="import" href="custom-state-info.html" async>
+
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
 <link rel="import" href="dynamic-with-extra.html">
 
@@ -13,7 +9,7 @@
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
     <style>
-      .second-line, .state-and-toggle, state-info {
+      .second-line, .state-and-toggle, custom-state-info {
         max-width: 100%;
       }
       .nowrap .state-and-toggle {
@@ -34,7 +30,7 @@
         width: 100%;
         --ha-paper-slider-width: 100%;
       }
-      .nowrap state-info {
+      .nowrap custom-state-info {
         min-width: initial;
       }
       ha-themed-slider, .top-wrapper {
@@ -44,12 +40,15 @@
       .top-wrapper.stretch {
 	display: block;
       }
-
     </style>
 
     <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
-        <state-info state-obj='[[stateObj]]' in-dialog='[[inDialog]]' class='flex-auto'></state-info>
+        <custom-state-info state-obj='[[stateObj]]' in-dialog='[[inDialog]]' secondary-line$='[[extra]]' class='flex-auto'>
+          <template is='dom-if' if='[[extra]]'>
+            <span>[[extra]]</span>
+          </template>
+        </custom-state-info>
         <template is='dom-if' if='[[breakSlider]]'>
           <dynamic-with-extra hass='[[hass]]' state-obj='[[stateObj]]' control-element='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-with-extra>
         </template>
@@ -153,6 +152,10 @@ Polymer({
       type: Number,
       computed: '_showSlider(inDialog, stateObj, hideSlider)',
     },
+    extra: {
+      type: String,
+      computed: 'computeExtra(stateObj)',
+    },
   },
 
   listeners: {
@@ -171,7 +174,7 @@ Polymer({
       this.lineTooLong = false;
     } else {
       var containerHeight = container.clientHeight;
-      var stateHeight = this.$$('state-info').clientHeight;
+      var stateHeight = this.$$('custom-state-info').clientHeight;
       this.lineTooLong = containerHeight > stateHeight * 1.5;
       if (this.lineTooLong) {
         this.minLineBreak = containerWidth;
@@ -253,6 +256,24 @@ Polymer({
   },
   stopPropagation: function (ev) {
     ev.stopPropagation();
+  },
+
+  computeExtra: function (stateObj) {
+    if (stateObj.attributes.extra_data_template) {
+      var errorsFound = false;
+      var result = stateObj.attributes.extra_data_template.replace(
+          /{([^}!]+)(!=)?([^}]+)?}/g,
+          function (match, p1, p2, p3) {
+            if (!stateObj.attributes[p1] || (p2 && new RegExp(p3).test(stateObj.attributes[p1]))) {
+              errorsFound = true;
+              return '';
+            }
+            return stateObj.attributes[p1];
+          });
+      if (errorsFound) return null;
+      return result;
+    }
+    return null;
   },
 });
 </script>
