@@ -1,8 +1,7 @@
 # Custom UI elements for https://home-assistant.io
 
 ## Known issues
-Seems this element doesn't work on iOS 10 / Mac Safari 10. (iOS 9 works fine)
-See https://community.home-assistant.io/t/tutorial-for-new-custom-state-card-ui/11799
+Custom UI on iOS 10 / Mac Safari 10 requires HA 0.41
 
 ## Available elements:
   * state-card-custom_light
@@ -10,11 +9,13 @@ See https://community.home-assistant.io/t/tutorial-for-new-custom-state-card-ui/
     * ha-themed-slider
     * dynamic-element
     * dynamic-with-extra
+    * custom-state-info.html
   * state-card-custom_cover [Requires HA 0.40]
     * state-card-with-slider
     * ha-themed-slider
     * dynamic-element
     * dynamic-with-extra
+    * custom-state-info.html
 
 ## Usage
 Copy the element and all its dependencies to `www/custom_ui/` directory under you homeassistant config.
@@ -60,18 +61,41 @@ If there is enough space the card will have icon+name on the left, slider in the
 #### If the slider got moved to a new line it will be 200 px wide.
 Use `stretch_slider` attribute to make it strech to all available space.
 
-#### (Experimental Feature) You can add extra data above the toggle
-Use `extra_data_template` to add extra data above the toggle. The format is a string where `{attribute_name}`will be replaced by the attribut evalue.
+#### You can add extra data below the entity name
+Use `extra_data_template` to add extra data below the entity name. The format is a string where `{attribute_name}`will be replaced by the attribut evalue.
 For example `{power_consumption}W` will parse as `27W` if the value of `power_consumption` is 27.
 
 You can add an attribute value conditionally if it doesn't equal some constant. For example `{power_consumption!=0}W` to only add power consumption if it is not zero.
 
-![extra_data](https://cloud.githubusercontent.com/assets/5478779/24260417/76d66bca-0ffc-11e7-840d-215adc187cd7.png)
+![extra_data](https://cloud.githubusercontent.com/assets/5478779/24772032/8a7e90e0-1b18-11e7-9b3e-e36b56ef2417.png)
 
 #### You can hide the control altogether
 Use `hide_control: true` to hide the control (toggle) altogether.
 
-![hide_control](https://cloud.githubusercontent.com/assets/5478779/24469753/446df0fe-14c5-11e7-93d3-518db5741682.png)
+![hide_control](https://cloud.githubusercontent.com/assets/5478779/24772031/8a7d546e-1b18-11e7-935a-4360eeb9ebc8.png)
+
+### Add badge to the state card [Requires HA 0.42+]
+Instead of using a grey text below the enity name you can add a sensor-like. There are two ways to do that:
+1) Specify a real sensor by ID:
+```yaml
+extra_badge:
+  entity_id: sensor.my_sensor
+```
+2) Make a fake sensor from entity's attribute:
+```yaml
+extra_badge:
+  attribute: power_consumption
+  unit: W
+```
+
+In both cases you can specify a blacklist of badge "states", when you don't want to see the badge.
+```yaml
+extra_badge:
+  entity_id: sensor.my_sensor
+  blacklist_states: 0
+```
+
+![extra_badge](https://cloud.githubusercontent.com/assets/5478779/24772030/8a7cc4ea-1b18-11e7-9313-f7654ffb0c71.png)
 
 #### The slider behavior is controlled by `slider_theme` dictionary. In that dictionary the following optional fields are available:
 
@@ -92,12 +116,19 @@ homeassistant:
       state_card_mode: break-slider
       stretch_slider: true
       extra_data_template: "{power_consumption!=10}W"
+      hide_control: false
       slider_theme:
         min: 10
         max: 200
         pin: true
         off_when_min: false
         report_when_not_changed: false
+      extra_badge:
+        entity_id: sensor.my_sensor  # Will take precedence over attribute and unit below.
+        attribute: power_consumption
+        unit: W
+        blacklist_states: 0
+        
 ```
 
 ### state-card-custom_light
