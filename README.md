@@ -74,7 +74,7 @@ Use `hide_control: true` to hide the control (toggle) altogether.
 
 ![hide_control](https://cloud.githubusercontent.com/assets/5478779/24772031/8a7d546e-1b18-11e7-935a-4360eeb9ebc8.png)
 
-### Add badge to the state card [Requires HA 0.42+]
+#### Add badge to the state card [Requires HA 0.42+]
 Instead of using a grey text below the enity name you can add a sensor-like. There are two ways to do that:
 1) Specify a real sensor by ID:
 ```yaml
