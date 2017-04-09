@@ -9,7 +9,7 @@
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
     <style>
-      .second-line, .state-and-toggle, custom-state-info {
+      .second-line, .state-and-toggle, .state-info {
         max-width: 100%;
       }
       .nowrap .state-and-toggle {
@@ -30,7 +30,7 @@
         width: 100%;
         --ha-paper-slider-width: 100%;
       }
-      .nowrap custom-state-info {
+      .nowrap .state-info {
         min-width: initial;
       }
       ha-themed-slider, .top-wrapper {
@@ -44,7 +44,7 @@
 
     <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
-        <custom-state-info state-obj='[[stateObj]]' in-dialog='[[inDialog]]' secondary-line$='[[extra]]' class='flex-auto'>
+        <custom-state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog)]]' secondary-line$='[[extra]]' class='flex-auto'>
           <template is='dom-if' if='[[extra]]'>
             <span>[[extra]]</span>
           </template>
@@ -174,7 +174,7 @@ Polymer({
       this.lineTooLong = false;
     } else {
       var containerHeight = container.clientHeight;
-      var stateHeight = this.$$('custom-state-info').clientHeight;
+      var stateHeight = this.$$('.state-info').clientHeight;
       this.lineTooLong = containerHeight > stateHeight * 1.5;
       if (this.lineTooLong) {
         this.minLineBreak = containerWidth;
@@ -274,6 +274,11 @@ Polymer({
       return result;
     }
     return null;
+  },
+
+  showLastChanged: function (stateObj, inDialog) {
+    if (inDialog) return true;
+    return !!stateObj.attributes.show_last_changed;
   },
 });
 </script>
