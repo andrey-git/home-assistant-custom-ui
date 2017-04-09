@@ -61,6 +61,18 @@ If there is enough space the card will have icon+name on the left, slider in the
 #### If the slider got moved to a new line it will be 200 px wide.
 Use `stretch_slider` attribute to make it strech to all available space.
 
+#### You can hide the control altogether
+Use `hide_control: true` to hide the control (toggle) altogether.
+
+![hide_control](https://cloud.githubusercontent.com/assets/5478779/24772031/8a7d546e-1b18-11e7-935a-4360eeb9ebc8.png)
+
+#### You can always show the last-chnaged text
+Use `show_last_changed: true`
+
+Note that if you use the [extra_data_template](#you-can-add-extra-data-below-the-entity-name) below it will take precedence over `show_last_changed`
+
+![show_last_changed](https://cloud.githubusercontent.com/assets/5478779/24838935/37b90bf8-1d5a-11e7-9e28-970740ba2fa8.png)
+
 #### You can add extra data below the entity name
 Use `extra_data_template` to add extra data below the entity name. The format is a string where `{attribute_name}`will be replaced by the attribut evalue.
 For example `{power_consumption}W` will parse as `27W` if the value of `power_consumption` is 27.
@@ -68,11 +80,6 @@ For example `{power_consumption}W` will parse as `27W` if the value of `power_co
 You can add an attribute value conditionally if it doesn't equal some constant. For example `{power_consumption!=0}W` to only add power consumption if it is not zero.
 
 ![extra_data](https://cloud.githubusercontent.com/assets/5478779/24772032/8a7e90e0-1b18-11e7-9b3e-e36b56ef2417.png)
-
-#### You can hide the control altogether
-Use `hide_control: true` to hide the control (toggle) altogether.
-
-![hide_control](https://cloud.githubusercontent.com/assets/5478779/24772031/8a7d546e-1b18-11e7-935a-4360eeb9ebc8.png)
 
 #### Add badge to the state card [Requires HA 0.42+]
 Instead of using a grey text below the enity name you can add a sensor-like. There are two ways to do that:
@@ -117,6 +124,7 @@ homeassistant:
       stretch_slider: true
       extra_data_template: "{power_consumption!=10}W"
       hide_control: false
+      show_last_changed: false
       slider_theme:
         min: 10
         max: 200
