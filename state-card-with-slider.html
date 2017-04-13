@@ -61,9 +61,9 @@
             min='0'
             theme='[[stateObj.attributes.slider_theme]]'
             is-on='[[isOn(stateObj)]]'
-            value='{{brightnessSliderValue}}'
+            value='{{sliderValue}}'
             disable-off-when-min='{{disableOffWhenMin}}'
-            on-change='brightnessSliderChanged'
+            on-change='sliderChanged'
             on-tap='stopPropagation'>
           </ha-themed-slider>
           <template is='dom-if' if='[[!breakSlider]]'>
@@ -112,9 +112,10 @@ Polymer({
     serviceMin: { type: String },
     serviceMax: { type: String },
     valueName: { type: String },
-    onName: { type: String, value: 'on' },
+    setValueName: { type: String },
+    nameOn: { type: String, value: 'on' },
 
-    brightnessSliderValue: {
+    sliderValue: {
       type: Number,
       value: 0,
     },
@@ -165,7 +166,9 @@ Polymer({
   _onIronResize: function () {
     if (!this.readyToCompute) return;
     var prevBreakSlider = this.breakSlider;
-    this.lineTooLong = this.hideSlider = this.breakSlider = false;
+    this.lineTooLong = false;
+    this.hideSlider = false;
+    this.breakSlider = false;
     var container = this.$.container;
     var containerWidth = container.clientWidth;
     if (containerWidth <= this.minLineBreak) {
@@ -212,10 +215,10 @@ Polymer({
     return stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED;
   },
 
-  brightnessSliderChanged: function (ev) {
-    var bri = parseInt(ev.target.value, 10);
+  sliderChanged: function (ev) {
+    var value = parseInt(ev.target.value, 10);
     var param = { entity_id: this.stateObj.entity_id };
-    if (isNaN(bri)) return;
+    if (isNaN(value)) return;
     var target = this.$$('#slider');
     if (ev.target !== target) {
       // No Shadow DOM - we have access to original target.
@@ -225,19 +228,19 @@ Polymer({
     } else if (ev.composedPath) {
       target = ev.composedPath()[0];
     }
-    if (bri === 0 || (bri <= target.min && !this.disableOffWhenMin)) {
+    if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
       this.hass.callService(this.domain, this.serviceMin, param);
     } else {
-      param[this.valueName] = bri;
+      param[this.setValueName] = value;
       this.hass.callService(this.domain, this.serviceMax, param);
     }
   },
 
   stateObjChanged: function (stateObj) {
     if (this.isOn(stateObj)) {
-      this.brightnessSliderValue = stateObj.attributes.brightness;
+      this.sliderValue = stateObj.attributes[this.valueName];
     } else {
-      this.brightnessSliderValue = 0;
+      this.sliderValue = 0;
     }
     if (stateObj) {
       if (SUPPORTED_MODES.indexOf(stateObj.attributes.state_card_mode) !== -1) {
@@ -252,8 +255,9 @@ Polymer({
   },
 
   isOn: function (stateObj) {
-    return stateObj && stateObj.state === this.onName;
+    return stateObj && stateObj.state === this.nameOn;
   },
+
   stopPropagation: function (ev) {
     ev.stopPropagation();
   },
