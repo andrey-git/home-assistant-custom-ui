@@ -231,7 +231,7 @@ Polymer({
     if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
       this.hass.callService(this.domain, this.serviceMin, param);
     } else {
-      param[this.setValueName] = value;
+      param[this.setValueName || this.valueName] = value;
       this.hass.callService(this.domain, this.serviceMax, param);
     }
   },
