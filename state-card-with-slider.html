@@ -57,8 +57,8 @@
         <div class='horizontal layout flex-auto end-justified second-line'>
           <ha-themed-slider
             id='slider'
-            max='255'
-            min='0'
+            max=[[max]]
+            min=[[min]]
             theme='[[stateObj.attributes.slider_theme]]'
             is-on='[[isOn(stateObj)]]'
             value='{{sliderValue}}'
@@ -114,6 +114,8 @@ Polymer({
     valueName: { type: String },
     setValueName: { type: String },
     nameOn: { type: String, value: 'on' },
+    min: { type: Number, value: 0 },
+    max: { type: Number, value: 255 },
 
     sliderValue: {
       type: Number,
