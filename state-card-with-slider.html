@@ -1,5 +1,4 @@
 <link rel="import" href="ha-themed-slider.html" async>
-<link rel="import" href="custom-state-info.html" async>
 
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
 <link rel="import" href="dynamic-with-extra.html">
@@ -44,11 +43,11 @@
 
     <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
-        <custom-state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog)]]' secondary-line$='[[extra]]' class='flex-auto'>
+        <state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog)]]' secondary-line$='[[extra]]' class='flex-auto'>
           <template is='dom-if' if='[[extra]]'>
             <span>[[extra]]</span>
           </template>
-        </custom-state-info>
+        </state-info>
         <template is='dom-if' if='[[breakSlider]]'>
           <dynamic-with-extra hass='[[hass]]' state-obj='[[stateObj]]' control-element='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-with-extra>
         </template>
