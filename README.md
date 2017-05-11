@@ -136,10 +136,10 @@ homeassistant:
         
 ```
 
-### state-card-custom_light
+### state-card-custom_cover
 ![cover](https://cloud.githubusercontent.com/assets/5478779/23921980/4eab7978-0909-11e7-8058-ad17a52d93c3.png)
 
-Custom cover looks just like custom light, except that it has up-stop-down buttons instead of toggle. The cistomization also works in exactly the same way.
+Custom cover looks just like custom light, except that it has up-stop-down buttons instead of toggle. The customization also works in exactly the same way.
 
 
 ## Known issues
