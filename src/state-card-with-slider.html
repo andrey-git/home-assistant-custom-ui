@@ -76,7 +76,7 @@
 
 <script>
 var SUPPORTED_MODES = [
-  'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider'];
+  'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'];
 var DEFAULT_MODE = 'break-slider-toggle';
 Polymer({
   is: 'state-card-with-slider',
@@ -166,6 +166,11 @@ Polymer({
 
   _onIronResize: function () {
     if (!this.readyToCompute) return;
+    if (this.mode === 'no-slider') {
+      this.hideSlider = true;
+      this.breakSlider = true;
+      return;
+    }
     var prevBreakSlider = this.breakSlider;
     this.lineTooLong = false;
     this.hideSlider = false;
