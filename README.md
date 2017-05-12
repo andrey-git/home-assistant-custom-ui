@@ -28,7 +28,7 @@ customize_glob:
 ## Features available for all domains
 
 ### Context-aware names
-Show entities in groups with group-specific names. For example if you have a *Yard Light* and a *Yard Sensor* a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using `friendly_names` attribute.
+Show entities in groups with group-specific names. For example if you have a *Yard Light* and a *Yard Sensor* in a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using `friendly_names` attribute.
 
 Example:
 ```yaml
