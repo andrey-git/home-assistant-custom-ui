@@ -1,47 +1,62 @@
 # Custom UI elements for https://home-assistant.io
 
 ## Changelog
-[Changelog](https://github.com/andrey-git/home-assistant-custom-ui/blob/master/CHANGELOG.md)
-
-## Available elements:
-  * state-card-custom_light
-    * state-card-with-slider
-    * ha-themed-slider
-    * dynamic-element
-    * dynamic-with-extra
-  * state-card-custom_cover [Requires HA 0.40]
-    * state-card-with-slider
-    * ha-themed-slider
-    * dynamic-element
-    * dynamic-with-extra
+[Changelog](CHANGELOG.md)
 
 ## Usage
-Copy the element and all its dependencies to `www/custom_ui/` directory under you homeassistant config.
+Place [state-card-custom-ui.html](state-card-custom-ui.html) in `~/.homeassistant/www/custom_ui/` dir.
 
-In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: <element-name>``
+In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: custom-ui` for the relevant entities / domains.
 
 For example:
 ```yaml
 homeassistant:
   customize_glob:
     light.*:
-      custom_ui_state_card: custom_light
+      custom_ui_state_card: custom-ui
     cover.*:
-      custom_ui_state_card: custom_cover
+      custom_ui_state_card: custom-ui
 ```
 
 Note that yaml keys can't start with an asterix. Use quotes in that case:
 ```yaml
 customize_glob:
-  "*.bed":
+  "*.*":
+    custom_ui_state_card: custom-ui
 ```
-## Available customization
 
-Customization is set by using `customize:` in `configuration.yaml`
+## Features available for all domains
 
-### state-card-custom_light
+### Context-aware names
+Show entities in groups with group-specific names. For example if you have a *Yard Light* and a *Yard Sensor* a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using `friendly_names` attribute.
 
-If there is enough space the card will have icon+name on the left, slider in the middle and toggle on the right:
+Example:
+```yaml
+homeassistant:
+  customize_glob:
+    "*.*":
+      custom_ui_state_card: custom-ui  
+    light.yard_light:
+      friendly_name: Yard Light
+      friendly_names:
+        group.yard: Light
+    sensor.yard_sensor:
+      friendly_name: Yard Sensor
+      friendly_names:
+        group.yard: Sensor
+
+group:
+  yard:
+    entities:
+      - light.yard_light
+      - sensor.yard_sensor
+```
+
+## Features available for light and cover domains only
+
+If there is enough space the card will have icon+name on the left, optional slider in the middle and toggle on the right:
+
+![cover](https://cloud.githubusercontent.com/assets/5478779/23921980/4eab7978-0909-11e7-8058-ad17a52d93c3.png)
 
 ![wide](https://cloud.githubusercontent.com/assets/5478779/23335593/e344048e-fbc0-11e6-81fd-85466a6b98b2.png)
 
@@ -54,6 +69,7 @@ If there is enough space the card will have icon+name on the left, slider in the
 | single-line | Never use more than one line. Shrink the name and the slider. |
 | break-slider | Move slider to second line. Leave toggle on the first line.|
 | hide-slider | Hide the slider.|
+| no-slider | Never show the slider even if there is enough space. |
 
 #### If the slider got moved to a new line it will be 200 px wide.
 Use `stretch_slider` attribute to make it strech to all available space.
@@ -61,7 +77,7 @@ Use `stretch_slider` attribute to make it strech to all available space.
 #### You can hide the control altogether
 ![hide_control](https://cloud.githubusercontent.com/assets/5478779/24772031/8a7d546e-1b18-11e7-935a-4360eeb9ebc8.png)
 
-Use `hide_control: true` to hide the control (toggle) altogether.
+Use `hide_control: true` to hide the control (toggle / cover buttons) altogether.
 
 #### You can always show the last-chnaged text
 ![show_last_changed](https://cloud.githubusercontent.com/assets/5478779/24838935/37b90bf8-1d5a-11e7-9e28-970740ba2fa8.png)
@@ -73,16 +89,16 @@ Note that if you use the [extra_data_template](#you-can-add-extra-data-below-the
 #### You can add extra data below the entity name [Requires HA 0.43+]
 ![extra_data](https://cloud.githubusercontent.com/assets/5478779/24772032/8a7e90e0-1b18-11e7-9b3e-e36b56ef2417.png)
 
-Use `extra_data_template` to add extra data below the entity name. The format is a string where `{attribute_name}`will be replaced by the attribut evalue.
+Use `extra_data_template` to add extra data below the entity name. The format is a string where `{attribute_name}`will be replaced by the attribute value.
 For example `{power_consumption}W` will parse as `27W` if the value of `power_consumption` is 27.
 
-You can add an attribute value conditionally if it doesn't equal some constant. For example `{power_consumption!=0}W` to only add power consumption if it is not zero.
+You can add an attribute value conditionally if it isn't equal to some constant. For example `{power_consumption!=0}W` to only add power consumption if it is not zero.
 
 #### Add badge to the state card [Requires HA 0.42+]
 ![extra_badge](https://cloud.githubusercontent.com/assets/5478779/24772030/8a7cc4ea-1b18-11e7-9313-f7654ffb0c71.png)
 
-Instead of using a grey text below the enity name you can add a sensor-like. There are two ways to do that:
-1) Specify a real sensor by ID:
+Instead of using a grey text below the enity name you can add a sensor-like badge. There are two ways to do that:
+1) Specify a real sensor by entity ID:
 ```yaml
 extra_badge:
   entity_id: sensor.my_sensor
@@ -105,8 +121,8 @@ extra_badge:
 
 | field | default | description |
 | --- | --- | --- |
-| min | 0 | Minimum brightness value |
-| max | 255 | Maximum brightness value |
+| min | 0 | Minimum slider value |
+| max | 255 for light, 100 for cover | Maximum slider value |
 | pin | False | Display numeric value when moving the slider |
 | off_when_min | True | Whether to turn the light *off* when moving the slider to the mininmum value if that value is not 0 |
 | report_when_not_changed | True | Whether to send the light-controlling command if the slider was returned to the initial position. I.e. you movied the slider and then changed your mind |
@@ -116,7 +132,7 @@ extra_badge:
 homeassistant:
   customize:
     light.bedroom:
-      custom_ui_state_card: custom_light
+      custom_ui_state_card: custom-ui
       state_card_mode: break-slider
       stretch_slider: true
       extra_data_template: "{power_consumption!=10}W"
@@ -135,11 +151,6 @@ homeassistant:
         blacklist_states: 0
         
 ```
-
-### state-card-custom_cover
-![cover](https://cloud.githubusercontent.com/assets/5478779/23921980/4eab7978-0909-11e7-8058-ad17a52d93c3.png)
-
-Custom cover looks just like custom light, except that it has up-stop-down buttons instead of toggle. The customization also works in exactly the same way.
 
 
 ## Known issues
