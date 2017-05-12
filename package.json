@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "eslint": "^3.15.0",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-plugin-html": "^2.0.0",
-    "eslint-plugin-import": "^2.2.0"
+    "eslint-plugin-import": "^2.2.0",
+    "html-minifier": "^3.4.4",
+    "vulcanize": "^1.15.4"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "eslint src/",
+    "build": "vulcanize src/state-card-custom-ui.html | sed -e 's#</script></div></body></html>#</script>#' | sed -e 's#<html>.*##' | html-minifier -o state-card-custom-ui.html --minify-js true --minify-css true --remove-tag-whitespace --collapse-whitespace"
   },
   "repository": {
     "type": "git",
