@@ -43,7 +43,7 @@
 
     <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
-        <state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog)]]' secondary-line$='[[extra]]' class='flex-auto'>
+        <state-info class='state-info' state-obj='[[_maybeChangeName(stateObj)]]' in-dialog='[[showLastChanged(stateObj, inDialog)]]' secondary-line$='[[extra]]' class='flex-auto'>
           <template is='dom-if' if='[[extra]]'>
             <span>[[extra]]</span>
           </template>
@@ -284,6 +284,38 @@ Polymer({
   showLastChanged: function (stateObj, inDialog) {
     if (inDialog) return true;
     return !!stateObj.attributes.show_last_changed;
+  },
+
+  _getContext: function () {
+    var element = this;
+    if (this._context === undefined) {
+      while (element && element.tagName !== 'HA-ENTITIES-CARD') {
+        element = element.domHost;
+      }
+      if (element && element.groupEntity) {
+        this._context = element.groupEntity.entity_id;
+      } else {
+        this._context = null;
+      }
+    }
+    return this._context;
+  },
+
+  _maybeChangeName: function (stateObj, inDialog) {
+    if (inDialog) return stateObj;
+    var context = this._getContext();
+    if (!context) return stateObj;
+    if (!stateObj.attributes.friendly_names ||
+        !stateObj.attributes.friendly_names[context]) {
+      return stateObj;
+    }
+    return {
+      entity_id: stateObj.entity_id,
+      _entityDisplay: stateObj.attributes.friendly_names[context],
+      state: stateObj.state,
+      attributes: stateObj.attributes,
+      last_changed: stateObj.last_changed,
+    };
   },
 });
 </script>
