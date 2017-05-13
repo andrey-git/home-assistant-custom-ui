@@ -4,7 +4,8 @@
 [Changelog](CHANGELOG.md)
 
 ## Usage
-Place [state-card-custom-ui.html](state-card-custom-ui.html) in `~/.homeassistant/www/custom_ui/` dir.
+Place [state-card-custom-ui.html](state-card-custom-ui.html) in `~/.homeassistant/www/custom_ui/` dir.  
+Optional: Place [state-card-custom-ui.html.gz](state-card-custom-ui.html.gz) in `~/.homeassistant/www/custom_ui/` dir.  
 
 In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: custom-ui` for the relevant entities / domains.
 
