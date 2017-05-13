@@ -14,7 +14,12 @@
   },
   "scripts": {
     "test": "eslint src/",
-    "build": "vulcanize src/state-card-custom-ui.html | sed -e 's#</script></div></body></html>#</script>#' | sed -e 's#<html>.*##' | html-minifier -o state-card-custom-ui.html --minify-js true --minify-css true --remove-tag-whitespace --collapse-whitespace"
+    "clean": "rm -f build/*",
+    "vulcanize": "vulcanize src/state-card-custom-ui.html --out-html build/state-card-custom-ui.vulcanize.html",
+    "strip": "cat build/state-card-custom-ui.vulcanize.html | sed -e 's#</script></div></body></html>#</script>#' | sed -e 's#<html>.*##' > build/state-card-custom-ui.strip.html",
+    "minify": "html-minifier -o state-card-custom-ui.html --minify-js true --minify-css true --remove-tag-whitespace --collapse-whitespace build/state-card-custom-ui.strip.html",
+    "gzip": "gzip state-card-custom-ui.html -k",
+    "build": "npm run clean && npm run vulcanize && npm run strip && npm run minify && npm run gzip"
   },
   "repository": {
     "type": "git",
