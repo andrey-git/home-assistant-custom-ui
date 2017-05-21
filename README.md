@@ -4,8 +4,7 @@
 [Changelog](CHANGELOG.md)
 
 ## Usage
-Place [state-card-custom-ui.html](state-card-custom-ui.html) in `~/.homeassistant/www/custom_ui/` dir.  
-Optional: Place [state-card-custom-ui.html.gz](state-card-custom-ui.html.gz) in `~/.homeassistant/www/custom_ui/` dir.  
+Place [state-card-custom-ui.html](state-card-custom-ui.html) and [state-card-custom-ui.html.gz](state-card-custom-ui.html.gz) in `~/.homeassistant/www/custom_ui/` dir.  
 
 In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: custom-ui` for the relevant entities / domains.
 
@@ -29,6 +28,7 @@ customize_glob:
 ## Features available for all domains
 
 ### Context-aware names
+![context_aware](https://cloud.githubusercontent.com/assets/5478779/26284053/45fbc000-3e3b-11e7-8d4a-56ef0d5e6c60.png)
 Show entities in groups with group-specific names. For example if you have a *Yard Light* and a *Yard Sensor* in a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using `friendly_names` attribute.
 
 Example:
@@ -51,6 +51,105 @@ group:
     entities:
       - light.yard_light
       - sensor.yard_sensor
+```
+
+### Context-aware hide
+In case you want a device to be a member of a group but not *show* in the group - this feature is for you.  
+Unlike `hidden: true` which hides the device in all views, `hidden_in` will hide the devices in specified groups only.
+```yaml
+homeassistant:
+  customize:
+  ...
+    light.yard_light:
+      hidden_in:
+        - group.yard
+
+group:
+  yard:
+    entities:
+      - light.yard_light
+      ...
+```
+
+### Badges in state cards
+![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)
+
+If you like badges, you can now put them in the state cards. This also works for domains that are usually not used as a badge. Lights for example.
+There are 2 ways to put badges in a state card.
+
+1) Create a dedicated group of devices you want to display as badges and apply `state_card_mode: badges` to it. Note that this group must be in another group. The example below will show 2 sensors as badges in outer_group's card.
+```yaml
+homeassistant:
+  customize_glob:
+    "*.*":
+      custom_ui_state_card: custom-ui  
+    group.inner_group:
+      state_card_mode: badges
+
+group:
+  inner_group:
+    entities:
+      - sensor.door_sensor
+      - sensor.yard_sensor
+  outer_group:
+    entities:
+      - group.inner_group
+      *all other devices of outer_group*
+```
+
+2) If you already have a group, *part* of which you want to display as badges - use `badges_list` to filter badge wannabe entities.In the previous example, if you wanted to show only `sensor.door_sensor` as a badge in outer_group:
+```yaml
+...
+    group.inner_group:
+      state_card_mode: badges
+      badges_list:
+        - sensor.door_sensor
+...
+```
+
+3) Creating a dedicated group has a downside that the group will also show in the UI as whole in the default_view. To prevent that, you can makje the group include itself. In the following example `inner_group` and `outer_group` are the same group:
+```yaml
+homeassistant:
+  customize_glob:
+    "*.*":
+      custom_ui_state_card: custom-ui  
+    group.my_group:
+      state_card_mode: badges
+
+group:
+  my_group:
+    entities:
+      - sensor.door_sensor
+      - sensor.yard_sensor
+      - group.my_group
+      *all other devices of outer_group*
+```
+If you use this example as-is you will notice that all of your devices in the group appear both as regular state cards and as badges. To limit badges to the door/yard sensors only use `badges_list` from Example 2. To hide door/yard sensor cards (but leave them as badges) use the [Context-aware hide](#context-aware-hide) feature.  
+Full example:
+```yaml
+homeassistant:
+  customize_glob:
+    "*.*":
+      custom_ui_state_card: custom-ui  
+    group.my_group:
+      state_card_mode: badges
+      badges_list:
+        - sensor.door_sensor
+        - sensor.yard_sensor
+    sensor.door_sensor:
+      hidden_in:
+        - group.my_group
+    sensor.yard_sensor:
+      hidden_in:
+        - group.my_group
+
+group:
+  my_group:
+    entities:
+      - sensor.door_sensor
+      - sensor.yard_sensor
+      - light.mylight
+      - group.my_group
 ```
 
 ## Features available for light and cover domains only
