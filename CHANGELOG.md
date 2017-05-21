@@ -1,4 +1,7 @@
 ## Changelog
+#### 2017-05-21
+* Add support for context-aware hide.
+* Add support for badges in state cards.
 
 #### 2017-05-12
 * Now to use the feature download a single minified `state-card-custom-ui.html` file. Unminified sources for development are under `src/`
