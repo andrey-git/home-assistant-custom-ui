@@ -4,6 +4,13 @@
 Polymer({
   is: 'state-card-custom-ui',
 
+  attached: function () {
+    if (this.hass && this.stateObj) {
+      this._context = undefined;
+      this.inputChanged(this.hass, this.inDialog, this.stateObj);
+    }
+  },
+
   properties: {
     hass: {
       type: Object,
@@ -26,13 +33,17 @@ Polymer({
   _getContext: function () {
     var element = this;
     if (this._context === undefined) {
-      while (element && element.tagName !== 'HA-ENTITIES-CARD') {
+      while (element && element.tagName !== 'HA-ENTITIES-CARD' && element.tagName !== 'MORE-INFO-GROUP') {
         element = element.domHost;
       }
-      if (element && element.groupEntity !== undefined) {
+      if (element && (
+            element.groupEntity !== undefined ||
+            element.stateObj !== undefined)) {
         if (element.groupEntity) {
           this._context = element.groupEntity.entity_id;
-        } else if (element.states && element.states.length) {
+        } else if (element.stateObj) {
+          this._context = element.stateObj.entity_id;
+        } else if (element.groupEntity === false && element.states && element.states.length) {
           this._context = 'group.' + window.hassUtil.computeDomain(element.states[0]);
         }
       } else {
@@ -42,10 +53,14 @@ Polymer({
     return this._context;
   },
 
-  _maybeChangeName: function (stateObj, inDialog) {
+  _maybeChangeName: function (stateObj, inDialog, allowHidden) {
     if (inDialog) return stateObj;
     var context = this._getContext();
     if (!context) return stateObj;
+    if (allowHidden && stateObj.attributes.hidden_in &&
+        stateObj.attributes.hidden_in.indexOf(context) >= 0) {
+      return null;
+    }
     if (!stateObj.attributes.friendly_names ||
         !stateObj.attributes.friendly_names[context]) {
       return stateObj;
@@ -59,14 +74,46 @@ Polymer({
     };
   },
 
+  badgeMode: function (hass, stateObj) {
+    var states = [];
+    stateObj.attributes.entity_id.forEach(function (id) {
+      var state = hass.states[id];
+      if (!stateObj.attributes.badges_list ||
+          stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
+        states.push(this._maybeChangeName(state, false /* inDialog */, false /* allowHidden */));
+      }
+    }.bind(this));
+    window.hassUtil.dynamicContentUpdater(
+      this,
+      'HA-BADGES-CARD',
+      { hass: hass, states: states });
+    Polymer.dom(this).lastChild.style.setProperty('--ha-label-margin-bottom', '0');
+  },
+
   inputChanged: function (hass, inDialog, stateObj) {
     var stateCardType;
     var domain;
     if (!stateObj || !hass) return;
-
+    domain = window.hassUtil.computeDomain(stateObj);
+    if (!inDialog && domain === 'group' && stateObj.attributes.state_card_mode === 'badges') {
+      this.badgeMode(hass, stateObj);
+      return;
+    }
+    var modifiedObj = this._maybeChangeName(stateObj, inDialog, true /* allowHidden */);
+    if (!modifiedObj) {
+      var rootEl = Polymer.dom(this);
+      if (rootEl.lastChild) {
+        rootEl.removeChild(rootEl.lastChild);
+      }
+      if (rootEl.parentNode && rootEl.parentNode.parentElement) {
+        rootEl.parentNode.parentElement.style.margin = '0';
+        rootEl.parentNode.parentElement.style.padding = '0';
+      }
+      return;
+    }
     var params = {
       hass: hass,
-      stateObj: this._maybeChangeName(stateObj, inDialog),
+      stateObj: modifiedObj,
       inDialog: inDialog,
     };
     domain = window.hassUtil.computeDomain(stateObj);
