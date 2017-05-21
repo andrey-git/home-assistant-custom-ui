@@ -1,5 +1,22 @@
 # Custom UI elements for https://home-assistant.io
 
+  * [Changelog](#changelog)
+  * [Usage](#usage)
+  * [Features available for all domains](#features-available-for-all-domains)
+    + [Context-aware names](#context-aware-names)
+    + [Context-aware hide](#context-aware-hide)
+    + [Badges in state cards](#badges-in-state-cards)
+  * [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
+      - [If there is not enough horizontal space the mode is set by `state_card_mode` parameter](#if-there-is-not-enough-horizontal-space-the-mode-is-set-by-state_card_mode-parameter)
+      - [If the slider got moved to a new line it will be 200 px wide.](#if-the-slider-got-moved-to-a-new-line-it-will-be-200-px-wide)
+      - [You can hide the control altogether](#you-can-hide-the-control-altogether)
+      - [You can always show the last-chnaged text](#you-can-always-show-the-last-chnaged-text)
+      - [You can add extra data below the entity name [Requires HA 0.43+]](#you-can-add-extra-data-below-the-entity-name-requires-ha-043)
+      - [Add badge to the state card [Requires HA 0.42+]](#add-badge-to-the-state-card-requires-ha-042)
+      - [The slider behavior is controlled by `slider_theme` dictionary.](#the-slider-behavior-is-controlled-by-slider_theme-dictionary)
+      - [Complete example](#complete-example)
+  * [Known issues](#known-issues)
+
 ## Changelog
 [Changelog](CHANGELOG.md)
 
@@ -24,7 +41,6 @@ customize_glob:
   "*.*":
     custom_ui_state_card: custom-ui
 ```
-
 ## Features available for all domains
 
 ### Context-aware names
@@ -75,7 +91,7 @@ group:
 ![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)
 
 If you like badges, you can now put them in the state cards. This also works for domains that are usually not used as a badge. Lights for example.
-There are 2 ways to put badges in a state card.
+There are 3 ways to put badges in a state card.
 
 1) Create a dedicated group of devices you want to display as badges and apply `state_card_mode: badges` to it. Note that this group must be in another group. The example below will show 2 sensors as badges in outer_group's card.
 ```yaml
@@ -217,7 +233,8 @@ extra_badge:
   blacklist_states: 0
 ```
 
-#### The slider behavior is controlled by `slider_theme` dictionary. In that dictionary the following optional fields are available:
+#### The slider behavior is controlled by `slider_theme` dictionary.
+In that dictionary the following optional fields are available:
 
 | field | default | description |
 | --- | --- | --- |
