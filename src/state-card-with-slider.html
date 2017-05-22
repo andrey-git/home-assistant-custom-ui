@@ -59,7 +59,7 @@
             max=[[max]]
             min=[[min]]
             theme='[[stateObj.attributes.slider_theme]]'
-            is-on='[[isOn(stateObj)]]'
+            is-on='[[isOn(stateObj, nameOn)]]'
             value='{{sliderValue}}'
             disable-off-when-min='{{disableOffWhenMin}}'
             on-change='sliderChanged'
@@ -102,7 +102,6 @@ Polymer({
     },
     stateObj: {
       type: Object,
-      observer: 'stateObjChanged',
     },
     controlElement: {
       type: String,
@@ -159,6 +158,10 @@ Polymer({
       computed: 'computeExtra(stateObj)',
     },
   },
+
+  observers: [
+    'stateObjChanged(stateObj, nameOn, valueName)',
+  ],
 
   listeners: {
     'iron-resize': '_onIronResize'
@@ -242,9 +245,9 @@ Polymer({
     }
   },
 
-  stateObjChanged: function (stateObj) {
-    if (this.isOn(stateObj)) {
-      this.sliderValue = stateObj.attributes[this.valueName];
+  stateObjChanged: function (stateObj, nameOn, valueName) {
+    if (this.isOn(stateObj, nameOn)) {
+      this.sliderValue = stateObj.attributes[valueName];
     } else {
       this.sliderValue = 0;
     }
@@ -260,8 +263,8 @@ Polymer({
     }
   },
 
-  isOn: function (stateObj) {
-    return stateObj && stateObj.state === this.nameOn;
+  isOn: function (stateObj, nameOn) {
+    return stateObj && stateObj.state === nameOn;
   },
 
   stopPropagation: function (ev) {

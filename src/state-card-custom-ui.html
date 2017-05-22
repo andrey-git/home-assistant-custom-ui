@@ -5,7 +5,7 @@ Polymer({
   is: 'state-card-custom-ui',
 
   attached: function () {
-    if (this.hass && this.stateObj) {
+    if (this.hass && this.stateObj && this._context !== undefined) {
       this._context = undefined;
       this.inputChanged(this.hass, this.inDialog, this.stateObj);
     }
@@ -31,23 +31,27 @@ Polymer({
   ],
 
   _getContext: function () {
-    var element = this;
     if (this._context === undefined) {
-      while (element && element.tagName !== 'HA-ENTITIES-CARD' && element.tagName !== 'MORE-INFO-GROUP') {
-        element = element.domHost;
-      }
-      if (element && (
-            element.groupEntity !== undefined ||
-            element.stateObj !== undefined)) {
-        if (element.groupEntity) {
-          this._context = element.groupEntity.entity_id;
-        } else if (element.stateObj) {
-          this._context = element.stateObj.entity_id;
-        } else if (element.groupEntity === false && element.states && element.states.length) {
-          this._context = 'group.' + window.hassUtil.computeDomain(element.states[0]);
+      this._context = [];
+      for (var element = this; element; element = element.domHost) {
+        switch (element.tagName) {
+          case 'HA-ENTITIES-CARD':
+            if (element.groupEntity) {
+              this._context.push(element.groupEntity.entity_id);
+            } else if (element.groupEntity === false && element.states && element.states.length) {
+              this._context.push('group.' + window.hassUtil.computeDomain(element.states[0]));
+            }
+            break;
+          case 'MORE-INFO-GROUP':
+            if (element.stateObj) {
+              this._context.push(element.stateObj.entity_id);
+            }
+            break;
+          case 'PARTIAL-CARDS':
+            this._context.push(element.currentView ? element.currentView : 'default_view');
+            break;
+          // no default
         }
-      } else {
-        this._context = null;
       }
     }
     return this._context;
@@ -57,17 +61,29 @@ Polymer({
     if (inDialog) return stateObj;
     var context = this._getContext();
     if (!context) return stateObj;
+
     if (allowHidden && stateObj.attributes.hidden_in &&
-        stateObj.attributes.hidden_in.indexOf(context) >= 0) {
+        stateObj.attributes.hidden_in.filter(function (n) {
+          return context.indexOf(n) !== -1;
+        })) {
       return null;
     }
-    if (!stateObj.attributes.friendly_names ||
-        !stateObj.attributes.friendly_names[context]) {
+
+    if (!stateObj.attributes.friendly_names) {
       return stateObj;
     }
+    var name;
+    context.forEach(function (c) {
+      if (name) return;
+      if (stateObj.attributes.friendly_names[c]) {
+        name = stateObj.attributes.friendly_names[c];
+      }
+    });
+    if (!name) return stateObj;
+
     return {
       entity_id: stateObj.entity_id,
-      _entityDisplay: stateObj.attributes.friendly_names[context],
+      _entityDisplay: name,
       state: stateObj.state,
       attributes: stateObj.attributes,
       last_changed: stateObj.last_changed,
