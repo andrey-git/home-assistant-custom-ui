@@ -18,7 +18,12 @@
   * [Known issues](#known-issues)
 
 ## Changelog
-[Changelog](CHANGELOG.md)
+
+#### Last Change: 2017-05-22
+* Extend support for context-aware names to views (in addition to groups)
+* Fix bug where the slider would sometimes show as 0 upon start.
+
+[Full Changelog](CHANGELOG.md)
 
 ## Usage
 Place [state-card-custom-ui.html](state-card-custom-ui.html) and [state-card-custom-ui.html.gz](state-card-custom-ui.html.gz) in `~/.homeassistant/www/custom_ui/` dir.  
@@ -45,7 +50,7 @@ customize_glob:
 
 ### Context-aware names
 ![context_aware](https://cloud.githubusercontent.com/assets/5478779/26284053/45fbc000-3e3b-11e7-8d4a-56ef0d5e6c60.png)
-Show entities in groups with group-specific names. For example if you have a *Yard Light* and a *Yard Sensor* in a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using `friendly_names` attribute.
+Show entities in groups with group-specific names. For example if you have a *Yard Light* and a *Yard Sensor* in a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using `friendly_names` attribute. This will also work in views (`view: yes` groups). In order to rename an entity in the default view, use `deafult_view` view name (even if you didn't define such a view).
 
 Example:
 ```yaml
