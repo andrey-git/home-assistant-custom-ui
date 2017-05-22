@@ -1,4 +1,8 @@
 ## Changelog
+#### 2017-05-22
+* Extend support for context-aware names to views (in addition to groups)
+* Fix bug where the slider would sometimes show as 0 upon start.
+
 #### 2017-05-21
 * Add support for context-aware hide.
 * Add support for badges in state cards.
