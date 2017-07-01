@@ -246,11 +246,11 @@ If there is enough space the card will have icon+name on the left, optional slid
 
 | `state_card_mode` value | description |
 | --- | --- |
-| break-slider-toggle (default) | Move the slider and the toggle together to a second line. | 
+| break-slider-toggle | Move the slider and the toggle together to a second line. | 
 | single-line | Never use more than one line. Shrink the name and the slider. |
 | break-slider | Move slider to second line. Leave toggle on the first line.|
 | hide-slider | Hide the slider.|
-| no-slider | Never show the slider even if there is enough space. |
+| no-slider (default) | Never show the slider even if there is enough space. |
 
 #### If the slider got moved to a new line it will be 200 px wide.
 Use `stretch_slider` attribute to make it strech to all available space.
