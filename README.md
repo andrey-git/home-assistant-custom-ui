@@ -21,7 +21,7 @@
 
 #### 2017-07-01
 * Now features are also supported on all "plain" and "toggle" cards in addition to light and cover cards.
-* [Breaking Change] Now all atributes can be context-aware, not just `friendly_name` and `hidden`.
+* [Breaking Change] Now all attributes can be context-aware, not just `friendly_name` and `hidden`.
 
 [Full Changelog](CHANGELOG.md)
 
