@@ -5,7 +5,7 @@
   * [Features available for all domains](#features-available-for-all-domains)
     + [Context-aware attributes](#context-aware-attributes)
     + [Badges in state cards](#badges-in-state-cards)
-  * [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
+  * [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
       - [You can hide the control altogether](#you-can-hide-the-control-altogether)
       - [You can always show the last-chnaged text](#you-can-always-show-the-last-chnaged-text)
       - [You can add extra data below the entity name [Requires HA 0.43+]](#you-can-add-extra-data-below-the-entity-name-requires-ha-043)
