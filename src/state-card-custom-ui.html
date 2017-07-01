@@ -53,39 +53,36 @@ Polymer({
           // no default
         }
       }
+      this._context.reverse();
     }
     return this._context;
   },
 
-  _maybeChangeName: function (stateObj, inDialog, allowHidden) {
+  _maybeChangeObject: function (stateObj, inDialog, allowHidden) {
     if (inDialog) return stateObj;
     var context = this._getContext();
     if (!context) return stateObj;
 
-    if (allowHidden && stateObj.attributes.hidden_in &&
-        stateObj.attributes.hidden_in.filter(function (n) {
-          return context.indexOf(n) !== -1;
-        })) {
+    if (!stateObj.attributes.group) {
+      return stateObj;
+    }
+    var attributes = {};
+    context.forEach(function (c) {
+      if (stateObj.attributes.group[c]) {
+        Object.assign(attributes, stateObj.attributes.group[c]);
+      }
+    });
+
+    if (!Object.keys(attributes).length) return stateObj;
+
+    if (attributes.hidden && allowHidden) {
       return null;
     }
 
-    if (!stateObj.attributes.friendly_names) {
-      return stateObj;
-    }
-    var name;
-    context.forEach(function (c) {
-      if (name) return;
-      if (stateObj.attributes.friendly_names[c]) {
-        name = stateObj.attributes.friendly_names[c];
-      }
-    });
-    if (!name) return stateObj;
-
     return {
       entity_id: stateObj.entity_id,
-      _entityDisplay: name,
       state: stateObj.state,
-      attributes: stateObj.attributes,
+      attributes: Object.assign({}, stateObj.attributes, attributes),
       last_changed: stateObj.last_changed,
     };
   },
@@ -94,9 +91,15 @@ Polymer({
     var states = [];
     stateObj.attributes.entity_id.forEach(function (id) {
       var state = hass.states[id];
+      if (!state) {
+        /* eslint-disable no-console */
+        console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
+        /* eslint-enable no-console */
+        return;
+      }
       if (!stateObj.attributes.badges_list ||
           stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
-        states.push(this._maybeChangeName(state, false /* inDialog */, false /* allowHidden */));
+        states.push(this._maybeChangeObject(state, false /* inDialog */, false /* allowHidden */));
       }
     }.bind(this));
     window.hassUtil.dynamicContentUpdater(
@@ -115,7 +118,7 @@ Polymer({
       this.badgeMode(hass, stateObj);
       return;
     }
-    var modifiedObj = this._maybeChangeName(stateObj, inDialog, true /* allowHidden */);
+    var modifiedObj = this._maybeChangeObject(stateObj, inDialog, true /* allowHidden */);
     if (!modifiedObj) {
       var rootEl = Polymer.dom(this);
       if (rootEl.lastChild) {
@@ -134,22 +137,22 @@ Polymer({
     };
     domain = window.hassUtil.computeDomain(stateObj);
     stateCardType = window.hassUtil.stateCardType(hass, stateObj);
-    if (domain === 'light' || domain === 'cover') {
-      stateCardType = 'with-slider';
+    if (stateCardType === 'toggle') {
       Object.assign(params, {
-        domain: domain,
-
+        controlElement: 'ha-entity-toggle',
       });
-    }
-    if (domain === 'light') {
+    } else if (stateCardType === 'display') {
+      Object.assign(params, {
+        controlElement: '',
+      });
+    } else if (domain === 'light') {
       Object.assign(params, {
         controlElement: 'ha-entity-toggle',
         serviceMin: 'turn_off',
         serviceMax: 'turn_on',
         valueName: 'brightness',
       });
-    }
-    if (domain === 'cover') {
+    } else if (domain === 'cover') {
       Object.assign(params, {
         controlElement: 'ha-cover-controls',
         max: 100,
@@ -160,6 +163,13 @@ Polymer({
         nameOn: 'open',
       });
     }
+    if (domain === 'light' || domain === 'cover' || stateCardType === 'toggle' || stateCardType === 'display') {
+      stateCardType = 'with-slider';
+      Object.assign(params, {
+        domain: domain,
+      });
+    }
+
     window.hassUtil.dynamicContentUpdater(
       this,
       'STATE-CARD-' + stateCardType.toUpperCase(),

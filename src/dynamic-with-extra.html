@@ -19,13 +19,25 @@
         --ha-label-badge-size: 36px;
         --ha-label-badge-font-size: 1.2em;
       }
+      .state {
+        @apply(--paper-font-body1);
+        color: var(--primary-text-color);
+        margin-left: 16px;
+        text-align: right;
+        line-height: 40px;
+      }
     </style>
     <div class$='[[extraClass(extraObj)]] horizontal layout'>
       <template is='dom-if' if='[[extraObjVisible]]'>
         <ha-state-label-badge hass='[[hass]]' state='[[extraObj]]'></ha-state-label-badge>
       </template>
       <template is='dom-if' if='[[_showControl(inDialog, stateObj)]]'>
-        <dynamic-element class='flex' state-obj="[[stateObj]]" hass='[[hass]]' element-name='[[controlElement]]'></dynamic-element>
+        <template is='dom-if' if='[[controlElement]]'>
+          <dynamic-element class='flex' state-obj="[[stateObj]]" hass='[[hass]]' element-name='[[controlElement]]'></dynamic-element>
+        </template>
+        <template is='dom-if' if='[[!controlElement]]'>
+          <div class='state'>[[computeStateDisplay(stateObj)]]</div>
+        </template>
       </template>
     </div>
   </template>
@@ -109,6 +121,10 @@ Polymer({
   _showControl: function (inDialog, stateObj) {
     if (inDialog) return true;
     return !stateObj.attributes.hide_control;
+  },
+
+  computeStateDisplay: function (stateObj) {
+    return window.hassUtil.computeStateState(stateObj);
   },
 });
 </script>
