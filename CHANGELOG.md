@@ -1,4 +1,8 @@
 ## Changelog
+#### 2017-07-01
+* Now features are also supported on all "plain" and "toggle" cards in addition to light and cover cards.
+* [Breaking Change] Now all atributes can be context-aware, not just `friendly_name` and `hidden`.
+
 #### 2017-05-22
 * Extend support for context-aware names to views (in addition to groups)
 * Fix bug where the slider would sometimes show as 0 upon start.

@@ -3,25 +3,25 @@
   * [Changelog](#changelog)
   * [Usage](#usage)
   * [Features available for all domains](#features-available-for-all-domains)
-    + [Context-aware names](#context-aware-names)
-    + [Context-aware hide](#context-aware-hide)
+    + [Context-aware attributes](#context-aware-attributes)
     + [Badges in state cards](#badges-in-state-cards)
-  * [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
-      - [If there is not enough horizontal space the mode is set by `state_card_mode` parameter](#if-there-is-not-enough-horizontal-space-the-mode-is-set-by-state_card_mode-parameter)
-      - [If the slider got moved to a new line it will be 200 px wide.](#if-the-slider-got-moved-to-a-new-line-it-will-be-200-px-wide)
+  * [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
       - [You can hide the control altogether](#you-can-hide-the-control-altogether)
       - [You can always show the last-chnaged text](#you-can-always-show-the-last-chnaged-text)
       - [You can add extra data below the entity name [Requires HA 0.43+]](#you-can-add-extra-data-below-the-entity-name-requires-ha-043)
       - [Add badge to the state card [Requires HA 0.42+]](#add-badge-to-the-state-card-requires-ha-042)
+  * [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
+      - [If there is not enough horizontal space the mode is set by `state_card_mode` parameter](#if-there-is-not-enough-horizontal-space-the-mode-is-set-by-state_card_mode-parameter)
+      - [If the slider got moved to a new line it will be 200 px wide.](#if-the-slider-got-moved-to-a-new-line-it-will-be-200-px-wide)
       - [The slider behavior is controlled by `slider_theme` dictionary.](#the-slider-behavior-is-controlled-by-slider_theme-dictionary)
-      - [Complete example](#complete-example)
+  * [Complete example](#complete-example)
   * [Known issues](#known-issues)
 
 ## Changelog
 
-#### Last Change: 2017-05-22
-* Extend support for context-aware names to views (in addition to groups)
-* Fix bug where the slider would sometimes show as 0 upon start.
+#### 2017-07-01
+* Now features are also supported on all "plain" and "toggle" cards in addition to light and cover cards.
+* [Breaking Change] Now all attributes can be context-aware, not just `friendly_name` and `hidden`.
 
 [Full Changelog](CHANGELOG.md)
 
@@ -48,9 +48,10 @@ customize_glob:
 ```
 ## Features available for all domains
 
-### Context-aware names
+### Context-aware attributes
 ![context_aware](https://cloud.githubusercontent.com/assets/5478779/26284053/45fbc000-3e3b-11e7-8d4a-56ef0d5e6c60.png)
-Show entities in groups with group-specific names. For example if you have a *Yard Light* and a *Yard Sensor* in a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using `friendly_names` attribute. This will also work in views (`view: yes` groups). In order to rename an entity in the default view, use `deafult_view` view name (even if you didn't define such a view).
+You can use context-aware attributes to give different names for the same entity in different groups or views.
+For example if you have a *Yard Light* and a *Yard Sensor* in a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using context-aware `friendly_name` attribute. This will also work in views (`view: yes` groups). In order to rename an entity in the default view, use `deafult_view` view name (even if you didn't define such a view).
 
 Example:
 ```yaml
@@ -60,12 +61,14 @@ homeassistant:
       custom_ui_state_card: custom-ui  
     light.yard_light:
       friendly_name: Yard Light
-      friendly_names:
-        group.yard: Light
+      group:
+        group.yard:
+          friendly_name: Light
     sensor.yard_sensor:
       friendly_name: Yard Sensor
-      friendly_names:
-        group.yard: Sensor
+      group:
+        group.yard:
+          friendly_name: Sensor
 
 group:
   yard:
@@ -74,16 +77,17 @@ group:
       - sensor.yard_sensor
 ```
 
-### Context-aware hide
-In case you want a device to be a member of a group but not *show* in the group - this feature is for you.  
-Unlike `hidden: true` which hides the device in all views, `hidden_in` will hide the devices in specified groups only.
+#### Context-aware hide
+In case you want a device to be a member of a group but not *show* in the group - use context-aware `hidden` attribute.
+Unlike regular `hidden: true` which hides the device in all views, context-aware `hidden: true` will hide the devices in specified groups only.
 ```yaml
 homeassistant:
   customize:
   ...
     light.yard_light:
-      hidden_in:
-        - group.yard
+      group:
+        group.yard:
+          hidden: true
 
 group:
   yard:
@@ -91,6 +95,9 @@ group:
       - light.yard_light
       ...
 ```
+
+#### Other uses
+Context-aware attributes also work for custom attributes, like `hide_control`, `show_last_changed`, and others.
 
 ### Badges in state cards
 ![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)
@@ -118,17 +125,22 @@ group:
       *all other devices of outer_group*
 ```
 
-2) If you already have a group, *part* of which you want to display as badges - use `badges_list` to filter badge wannabe entities.In the previous example, if you wanted to show only `sensor.door_sensor` as a badge in outer_group:
+2) If you already have a group, *part* of which you want to display as badges *inside another group* - use `badges_list` to filter badge wannabe entities. In the previous example, if you wanted to show only `sensor.door_sensor` as a badge in outer_group:
 ```yaml
 ...
     group.inner_group:
       state_card_mode: badges
       badges_list:
         - sensor.door_sensor
+group:
+  inner_group:
+     ...
+  outer_group:
+    ...
 ...
 ```
 
-3) Creating a dedicated group has a downside that the group will also show in the UI as whole in the default_view. To prevent that, you can makje the group include itself. In the following example `inner_group` and `outer_group` are the same group:
+3) Creating a dedicated group has a downside that the group will also show in the UI as whole in the default_view. To prevent that, you can make the group include itself. In the following example `inner_group` and `outer_group` are the same group:
 ```yaml
 homeassistant:
   customize_glob:
@@ -145,7 +157,7 @@ group:
       - group.my_group
       *all other devices of outer_group*
 ```
-If you use this example as-is you will notice that all of your devices in the group appear both as regular state cards and as badges. To limit badges to the door/yard sensors only use `badges_list` from Example 2. To hide door/yard sensor cards (but leave them as badges) use the [Context-aware hide](#context-aware-hide) feature.  
+If you use this example as-is you will notice that all of your devices in the group appear both as regular state cards and as badges. To limit badges to the door/yard sensors only use `badges_list` from Example 2. To hide door/yard sensor cards (but leave them as badges) use the [Context-aware hide attribute](#context-aware-attributes) feature.  
 Full example:
 ```yaml
 homeassistant:
@@ -158,11 +170,13 @@ homeassistant:
         - sensor.door_sensor
         - sensor.yard_sensor
     sensor.door_sensor:
-      hidden_in:
-        - group.my_group
+      group:
+        group.my_group:
+          hidden: true
     sensor.yard_sensor:
-      hidden_in:
-        - group.my_group
+      group:
+        group.my_group:
+          hidden: true
 
 group:
   my_group:
@@ -173,27 +187,13 @@ group:
       - group.my_group
 ```
 
-## Features available for light and cover domains only
+## Features available for light, cover, "plain", and "toggle" cards.
 
-If there is enough space the card will have icon+name on the left, optional slider in the middle and toggle on the right:
-
-![cover](https://cloud.githubusercontent.com/assets/5478779/23921980/4eab7978-0909-11e7-8058-ad17a52d93c3.png)
-
-![wide](https://cloud.githubusercontent.com/assets/5478779/23335593/e344048e-fbc0-11e6-81fd-85466a6b98b2.png)
-
-#### If there is not enough horizontal space the mode is set by `state_card_mode` parameter
-![medium](https://cloud.githubusercontent.com/assets/5478779/23335594/e909eee2-fbc0-11e6-8429-8648b89d6d13.png) ![narrow](https://cloud.githubusercontent.com/assets/5478779/23335595/eceaa92a-fbc0-11e6-9dff-018585f60ff0.png)
-
-| `state_card_mode` value | description |
-| --- | --- |
-| break-slider-toggle (default) | Move the slider and the toggle together to a second line. | 
-| single-line | Never use more than one line. Shrink the name and the slider. |
-| break-slider | Move slider to second line. Leave toggle on the first line.|
-| hide-slider | Hide the slider.|
-| no-slider | Never show the slider even if there is enough space. |
-
-#### If the slider got moved to a new line it will be 200 px wide.
-Use `stretch_slider` attribute to make it strech to all available space.
+The next features are available for 4 types of cards:
+* Light
+* Cover,
+* "Plain" i.e. card with icon, name, and state (not including binary_sensor)
+* "Toggle" i.e. card with icon, name, and toggle.
 
 #### You can hide the control altogether
 ![hide_control](https://cloud.githubusercontent.com/assets/5478779/24772031/8a7d546e-1b18-11e7-935a-4360eeb9ebc8.png)
@@ -238,6 +238,28 @@ extra_badge:
   blacklist_states: 0
 ```
 
+## Features available for light and cover domains only
+
+If there is enough space the card will have icon+name on the left, optional slider in the middle and toggle on the right:
+
+![cover](https://cloud.githubusercontent.com/assets/5478779/23921980/4eab7978-0909-11e7-8058-ad17a52d93c3.png)
+
+![wide](https://cloud.githubusercontent.com/assets/5478779/23335593/e344048e-fbc0-11e6-81fd-85466a6b98b2.png)
+
+#### If there is not enough horizontal space the mode is set by `state_card_mode` parameter
+![medium](https://cloud.githubusercontent.com/assets/5478779/23335594/e909eee2-fbc0-11e6-8429-8648b89d6d13.png) ![narrow](https://cloud.githubusercontent.com/assets/5478779/23335595/eceaa92a-fbc0-11e6-9dff-018585f60ff0.png)
+
+| `state_card_mode` value | description |
+| --- | --- |
+| break-slider-toggle | Move the slider and the toggle together to a second line. | 
+| single-line | Never use more than one line. Shrink the name and the slider. |
+| break-slider | Move slider to second line. Leave toggle on the first line.|
+| hide-slider | Hide the slider.|
+| no-slider (default) | Never show the slider even if there is enough space. |
+
+#### If the slider got moved to a new line it will be 200 px wide.
+Use `stretch_slider` attribute to make it strech to all available space.
+
 #### The slider behavior is controlled by `slider_theme` dictionary.
 In that dictionary the following optional fields are available:
 
@@ -249,7 +271,7 @@ In that dictionary the following optional fields are available:
 | off_when_min | True | Whether to turn the light *off* when moving the slider to the mininmum value if that value is not 0 |
 | report_when_not_changed | True | Whether to send the light-controlling command if the slider was returned to the initial position. I.e. you movied the slider and then changed your mind |
 
-#### Complete example
+## Complete example
 ```yaml
 homeassistant:
   customize:
