@@ -160,7 +160,7 @@ Polymer({
   },
 
   observers: [
-    'stateObjChanged(stateObj, nameOn, valueName, domain)',
+    'stateObjChanged(stateObj, nameOn, valueName)',
   ],
 
   listeners: {
@@ -245,7 +245,7 @@ Polymer({
     }
   },
 
-  stateObjChanged: function (stateObj, nameOn, valueName, domain) {
+  stateObjChanged: function (stateObj, nameOn, valueName) {
     if (this.isOn(stateObj, nameOn)) {
       this.sliderValue = stateObj.attributes[valueName];
     } else {

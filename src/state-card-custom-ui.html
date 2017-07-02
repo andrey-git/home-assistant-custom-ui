@@ -1,6 +1,8 @@
 <link rel="import" href="state-card-with-slider.html" async>
 
 <script>
+var SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
+
 Polymer({
   is: 'state-card-custom-ui',
 
@@ -130,6 +132,7 @@ Polymer({
       }
       return;
     }
+
     var params = {
       hass: hass,
       stateObj: modifiedObj,
@@ -137,6 +140,7 @@ Polymer({
     };
     domain = window.hassUtil.computeDomain(stateObj);
     stateCardType = window.hassUtil.stateCardType(hass, stateObj);
+
     if (stateCardType === 'toggle') {
       Object.assign(params, {
         controlElement: 'ha-entity-toggle',
@@ -168,6 +172,9 @@ Polymer({
       Object.assign(params, {
         domain: domain,
       });
+    } else if (modifiedObj.attributes.show_last_changed &&
+               SHOW_LAST_CHANGED_BLACKLISTED_CARDS.indexOf(stateCardType) === -1) {
+      params.inDialog = true;
     }
 
     window.hassUtil.dynamicContentUpdater(
