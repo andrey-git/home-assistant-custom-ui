@@ -125,13 +125,18 @@ group:
       *all other devices of outer_group*
 ```
 
-2) If you already have a group, *part* of which you want to display as badges - use `badges_list` to filter badge wannabe entities. In the previous example, if you wanted to show only `sensor.door_sensor` as a badge in outer_group:
+2) If you already have a group, *part* of which you want to display as badges *inside another group* - use `badges_list` to filter badge wannabe entities. In the previous example, if you wanted to show only `sensor.door_sensor` as a badge in outer_group:
 ```yaml
 ...
     group.inner_group:
       state_card_mode: badges
       badges_list:
         - sensor.door_sensor
+group:
+  inner_group:
+     ...
+  outer_group:
+    ...
 ...
 ```
 
