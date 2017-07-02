@@ -5,9 +5,10 @@
   * [Features available for all domains](#features-available-for-all-domains)
     + [Context-aware attributes](#context-aware-attributes)
     + [Badges in state cards](#badges-in-state-cards)
+  * [Features available for almost all domains](#features-available-for-almost-all-domains)
+      - [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
   * [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
       - [You can hide the control altogether](#you-can-hide-the-control-altogether)
-      - [You can always show the last-chnaged text](#you-can-always-show-the-last-chnaged-text)
       - [You can add extra data below the entity name [Requires HA 0.43+]](#you-can-add-extra-data-below-the-entity-name-requires-ha-043)
       - [Add badge to the state card [Requires HA 0.42+]](#add-badge-to-the-state-card-requires-ha-042)
   * [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
@@ -19,8 +20,9 @@
 
 ## Changelog
 
-#### 2017-07-01
-* Now features are also supported on all "plain" and "toggle" cards in addition to light and cover cards.
+#### 2017-07-02
+* `show_last_changed` is now supported on almost all state cards.
+* Some other features are also supported on all "plain" and "toggle" cards in addition to light and cover cards.
 * [Breaking Change] Now all attributes can be context-aware, not just `friendly_name` and `hidden`.
 
 [Full Changelog](CHANGELOG.md)
@@ -187,6 +189,17 @@ group:
       - group.my_group
 ```
 
+## Features available for almost all domains.
+
+The following is supported for all state cards except `configurator`
+
+#### You can always show the last-changed text
+![show_last_changed](https://cloud.githubusercontent.com/assets/5478779/24838935/37b90bf8-1d5a-11e7-9e28-970740ba2fa8.png)
+
+Use `show_last_changed: true`
+
+Note that if you use the [extra_data_template](#you-can-add-extra-data-below-the-entity-name-requires-ha-043) below it will take precedence over `show_last_changed`
+
 ## Features available for light, cover, "plain", and "toggle" cards.
 
 The next features are available for 4 types of cards:
@@ -199,13 +212,6 @@ The next features are available for 4 types of cards:
 ![hide_control](https://cloud.githubusercontent.com/assets/5478779/24772031/8a7d546e-1b18-11e7-935a-4360eeb9ebc8.png)
 
 Use `hide_control: true` to hide the control (toggle / cover buttons) altogether.
-
-#### You can always show the last-chnaged text
-![show_last_changed](https://cloud.githubusercontent.com/assets/5478779/24838935/37b90bf8-1d5a-11e7-9e28-970740ba2fa8.png)
-
-Use `show_last_changed: true`
-
-Note that if you use the [extra_data_template](#you-can-add-extra-data-below-the-entity-name) below it will take precedence over `show_last_changed`
 
 #### You can add extra data below the entity name [Requires HA 0.43+]
 ![extra_data](https://cloud.githubusercontent.com/assets/5478779/24772032/8a7e90e0-1b18-11e7-9b3e-e36b56ef2417.png)
