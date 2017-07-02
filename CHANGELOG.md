@@ -1,4 +1,8 @@
 ## Changelog
+
+#### 2017-07-02
+* `show_last_changed` is now supported on almost all state cards.
+
 #### 2017-07-01
 * Now features are also supported on all "plain" and "toggle" cards in addition to light and cover cards.
 * [Breaking Change] Now all atributes can be context-aware, not just `friendly_name` and `hidden`.
