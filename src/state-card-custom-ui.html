@@ -145,15 +145,7 @@ Polymer({
     domain = window.hassUtil.computeDomain(stateObj);
     stateCardType = window.hassUtil.stateCardType(hass, stateObj);
 
-    if (stateCardType === 'toggle') {
-      Object.assign(params, {
-        controlElement: 'ha-entity-toggle',
-      });
-    } else if (stateCardType === 'display') {
-      Object.assign(params, {
-        controlElement: '',
-      });
-    } else if (domain === 'light') {
+    if (domain === 'light') {
       Object.assign(params, {
         controlElement: 'ha-entity-toggle',
         serviceMin: 'turn_off',
@@ -169,6 +161,14 @@ Polymer({
         setValueName: 'position',
         valueName: 'current_position',
         nameOn: 'open',
+      });
+    } else if (stateCardType === 'toggle') {
+      Object.assign(params, {
+        controlElement: 'ha-entity-toggle',
+      });
+    } else if (stateCardType === 'display') {
+      Object.assign(params, {
+        controlElement: '',
       });
     }
     if (domain === 'light' || domain === 'cover' || stateCardType === 'toggle' || stateCardType === 'display') {
