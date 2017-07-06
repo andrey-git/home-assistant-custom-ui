@@ -20,10 +20,8 @@
 
 ## Changelog
 
-#### 2017-07-02
-* `show_last_changed` is now supported on almost all state cards.
-* Some other features are also supported on all "plain" and "toggle" cards in addition to light and cover cards.
-* [Breaking Change] Now all attributes can be context-aware, not just `friendly_name` and `hidden`.
+#### 2017-07-06
+* Fix bug introduced on 20170701 which caused slider to do nothing.
 
 [Full Changelog](CHANGELOG.md)
 
