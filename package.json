@@ -5,25 +5,25 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^3.15.0",
+    "eslint": "^3.19.0",
     "eslint-config-airbnb-base": "^11.0.1",
     "eslint-plugin-html": "^2.0.0",
     "eslint-plugin-import": "^2.2.0",
-    "html-minifier": "^3.4.4",
-    "vulcanize": "^1.15.4"
+    "html-minifier": "^3.5.2",
+    "vulcanize": "^1.16.0"
   },
   "scripts": {
     "test": "eslint src/*",
     "clean": "rm -f build/*",
-    "vulcanize": "vulcanize src/state-card-custom-ui.html --out-html build/state-card-custom-ui.vulcanize.html",
-    "strip": "cat build/state-card-custom-ui.vulcanize.html | sed -e 's#</script></div></body></html>#</script>#' | sed -e 's#<html>.*##' > build/state-card-custom-ui.strip.html",
-    "minify": "html-minifier -o state-card-custom-ui.html --minify-js true --minify-css true --remove-tag-whitespace --collapse-whitespace build/state-card-custom-ui.strip.html",
+    "vulcanize": "vulcanize src/state-card-custom-ui.html --inline-scripts --out-html build/state-card-custom-ui.vulcanize.html",
+    "strip": "cat build/state-card-custom-ui.vulcanize.html |  sed -e 's#</div></body></html>##' | sed -e 's#<html><head><meta [^>]*>##' | sed -e 's#</head><body><div [^>]*>##' > build/state-card-custom-ui.strip.html",
+    "minify": "html-minifier -o state-card-custom-ui.html --remove-comments --minify-js true --minify-css true --remove-tag-whitespace --collapse-whitespace build/state-card-custom-ui.strip.html",
     "gzip": "gzip state-card-custom-ui.html -9fk",
     "build": "npm run clean && npm run vulcanize && npm run strip && npm run minify && npm run gzip",
     "deploy": "npm run build && cp state-card-custom-ui.html* ~/.homeassistant/www/custom_ui/",
     "deploy_dev": "npm run test && rm -f ~/.homeassistant/www/custom_ui/*.gz && cp src/* ~/.homeassistant/www/custom_ui/",
     "fix_date": "script/fix_date.sh",
-    "release": "npm run test && npm run fix_date && npm run deploy" 
+    "release": "npm run test && npm run fix_date && npm run deploy"
   },
   "repository": {
     "type": "git",
