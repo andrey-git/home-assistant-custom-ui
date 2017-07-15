@@ -13,7 +13,7 @@
       }
       .nowrap .state-and-toggle {
         overflow: hidden;
-	flex-grow: 0;
+        flex-grow: 0;
       }
       .nowrap .second-line {
         overflow: hidden;
@@ -37,13 +37,13 @@
         max-width: 100%;
       }
       .top-wrapper.stretch {
-	display: block;
+        display: block;
       }
     </style>
 
     <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
-        <state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog)]]' secondary-line$='[[extra]]' class='flex-auto'>
+        <state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog, extra)]]' secondary-line$='[[extra]]' class='flex-auto'>
           <template is='dom-if' if='[[extra]]'>
             <span>[[extra]]</span>
           </template>
@@ -155,7 +155,7 @@ Polymer({
     },
     extra: {
       type: String,
-      computed: 'computeExtra(stateObj)',
+      computed: 'computeExtra(hass, stateObj)',
     },
   },
 
@@ -271,17 +271,23 @@ Polymer({
     ev.stopPropagation();
   },
 
-  computeExtra: function (stateObj) {
+  computeExtra: function (hass, stateObj) {
     if (stateObj.attributes.extra_data_template) {
       var errorsFound = false;
       var result = stateObj.attributes.extra_data_template.replace(
           /{([^}!]+)(!=)?([^}]+)?}/g,
           function (match, p1, p2, p3) {
-            if (!stateObj.attributes[p1] || (p2 && new RegExp(p3).test(stateObj.attributes[p1]))) {
+            var data;
+            if (p1.startsWith('state.') && hass.states[p1.substr(6)]) {
+              data = hass.states[p1.substr(6)].state;
+            } else {
+              data = stateObj.attributes[p1];
+            }
+            if (!data || (p2 && new RegExp(p3).test(data))) {
               errorsFound = true;
               return '';
             }
-            return stateObj.attributes[p1];
+            return data;
           });
       if (errorsFound) return null;
       return result;
@@ -289,8 +295,9 @@ Polymer({
     return null;
   },
 
-  showLastChanged: function (stateObj, inDialog) {
+  showLastChanged: function (stateObj, inDialog, extra) {
     if (inDialog) return true;
+    if (extra) return false;
     return !!stateObj.attributes.show_last_changed;
   },
 });
