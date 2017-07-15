@@ -13,7 +13,7 @@
     "vulcanize": "^1.15.4"
   },
   "scripts": {
-    "test": "eslint src/*.html",
+    "test": "eslint src/*",
     "clean": "rm -f build/*",
     "vulcanize": "vulcanize src/state-card-custom-ui.html --out-html build/state-card-custom-ui.vulcanize.html",
     "strip": "cat build/state-card-custom-ui.vulcanize.html | sed -e 's#</script></div></body></html>#</script>#' | sed -e 's#<html>.*##' > build/state-card-custom-ui.strip.html",
@@ -21,7 +21,7 @@
     "gzip": "gzip state-card-custom-ui.html -9fk",
     "build": "npm run clean && npm run vulcanize && npm run strip && npm run minify && npm run gzip",
     "deploy": "npm run build && cp state-card-custom-ui.html* ~/.homeassistant/www/custom_ui/",
-    "deploy_dev": "npm run test && rm -f ~/.homeassistant/www/custom_ui/*.gz && cp src/*.html ~/.homeassistant/www/custom_ui/",
+    "deploy_dev": "npm run test && rm -f ~/.homeassistant/www/custom_ui/*.gz && cp src/* ~/.homeassistant/www/custom_ui/",
     "fix_date": "script/fix_date.sh",
     "release": "npm run test && npm run fix_date && npm run deploy" 
   },

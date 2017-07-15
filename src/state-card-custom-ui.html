@@ -1,8 +1,9 @@
+<script src="hooks.js"></script>
 <link rel="import" href="state-card-with-slider.html" async>
 
 <script>
 /* eslint-disable no-console */
-console.info('Using CustomUI 20170706');
+console.info('Using CustomUI 20170707');
 /* eslint-enable no-console */
 
 var SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
@@ -36,63 +37,6 @@ Polymer({
     'inputChanged(hass, inDialog, stateObj)',
   ],
 
-  _getContext: function () {
-    if (this._context === undefined) {
-      this._context = [];
-      for (var element = this; element; element = element.domHost) {
-        switch (element.tagName) {
-          case 'HA-ENTITIES-CARD':
-            if (element.groupEntity) {
-              this._context.push(element.groupEntity.entity_id);
-            } else if (element.groupEntity === false && element.states && element.states.length) {
-              this._context.push('group.' + window.hassUtil.computeDomain(element.states[0]));
-            }
-            break;
-          case 'MORE-INFO-GROUP':
-            if (element.stateObj) {
-              this._context.push(element.stateObj.entity_id);
-            }
-            break;
-          case 'PARTIAL-CARDS':
-            this._context.push(element.currentView ? element.currentView : 'default_view');
-            break;
-          // no default
-        }
-      }
-      this._context.reverse();
-    }
-    return this._context;
-  },
-
-  _maybeChangeObject: function (stateObj, inDialog, allowHidden) {
-    if (inDialog) return stateObj;
-    var context = this._getContext();
-    if (!context) return stateObj;
-
-    if (!stateObj.attributes.group) {
-      return stateObj;
-    }
-    var attributes = {};
-    context.forEach(function (c) {
-      if (stateObj.attributes.group[c]) {
-        Object.assign(attributes, stateObj.attributes.group[c]);
-      }
-    });
-
-    if (!Object.keys(attributes).length) return stateObj;
-
-    if (attributes.hidden && allowHidden) {
-      return null;
-    }
-
-    return {
-      entity_id: stateObj.entity_id,
-      state: stateObj.state,
-      attributes: Object.assign({}, stateObj.attributes, attributes),
-      last_changed: stateObj.last_changed,
-    };
-  },
-
   badgeMode: function (hass, stateObj) {
     var states = [];
     stateObj.attributes.entity_id.forEach(function (id) {
@@ -105,7 +49,8 @@ Polymer({
       }
       if (!stateObj.attributes.badges_list ||
           stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
-        states.push(this._maybeChangeObject(state, false /* inDialog */, false /* allowHidden */));
+        states.push(window.customUI.maybeChangeObject(
+            this, state, false /* inDialog */, false /* allowHidden */));
       }
     }.bind(this));
     window.hassUtil.dynamicContentUpdater(
@@ -124,7 +69,8 @@ Polymer({
       this.badgeMode(hass, stateObj);
       return;
     }
-    var modifiedObj = this._maybeChangeObject(stateObj, inDialog, true /* allowHidden */);
+    var modifiedObj = window.customUI.maybeChangeObject(
+        this, stateObj, inDialog, true /* allowHidden */);
     if (!modifiedObj) {
       var rootEl = Polymer.dom(this);
       if (rootEl.lastChild) {
