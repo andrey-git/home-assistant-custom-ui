@@ -1,5 +1,5 @@
 echo "Downloading new update.sh"
-wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/state-card-custom-ui.html?raw=true -q -O update.sh.tmp
+wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh?raw=true -q -O update.sh.tmp
 rv=$?
 if [ $rv != 0 ]; then
   rm update.sh.tmp
@@ -11,6 +11,7 @@ diff $0 update.sh.tmp &>/dev/null
 if [ $? != 0 ]; then
   echo "Files different."
   mv update.sh.tmp $0
+  chmod u+x $0
   echo "Restarting"
   $0
   exit $?
