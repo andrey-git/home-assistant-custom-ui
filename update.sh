@@ -1,71 +1,72 @@
-echo "Downloading new update.sh"
-wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh?raw=true -q -O update.sh.tmp
-rv=$?
-if [ $rv != 0 ]; then
-  rm update.sh.tmp
-  echo "Download failed with error $rv"
-  exit
-fi
+#!/bin/bash 
 
-diff $0 update.sh.tmp &>/dev/null
-if [ $? != 0 ]; then
-  echo "Files different."
-  mv update.sh.tmp $0
-  chmod u+x $0
-  echo "Restarting"
-  $0
-  exit $?
-else
-  echo "update.sh is up to date."
-  rm update.sh.tmp
-fi
+function get_file {
+  DOWNLOAD_PATH=${2}?raw=true
+  SAVE_PATH=${3}
+  TMP_NAME=${1}.tmp
+  echo "Getting $1"
+  wget $DOWNLOAD_PATH -q -O $TMP_NAME
+  rv=$?
+  if [ $rv != 0 ]; then
+    rm $TMP_NAME
+    echo "Download failed with error $rv"
+    exit
+  fi
+  diff ${SAVE_PATH}$1 $TMP_NAME &>/dev/null
+  if [ $? == 0 ]; then
+    echo "File up to date."
+    rm $TMP_NAME
+    return 0
+  else
+    mv $TMP_NAME ${SAVE_PATH}$1
+    if [ $1 == $0 ]; then
+      chmod u+x $0
+      echo "Restarting"
+      $0
+      exit $?
+    else
+      return 1
+    fi
+  fi
+}
+
+function get_file_and_gz {
+  get_file $1 $2 $3
+  r1=$?
+  get_file ${1}.gz ${2}.gz $3
+  r2=$?
+  if (( $r1 != 0 || $r2 != 0 )); then
+    return 1
+  fi
+  return 0
+}
+
+get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
+
+
 
 if [ ! -d "www/custom_ui" ]; then
   echo "www/custom_ui dir not found."
   exit
 fi
 
-wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/state-card-custom-ui.html?raw=true -q -O www/custom_ui/state-card-custom-ui.html.tmp
+get_file_and_gz state-card-custom-ui.html https://github.com/andrey-git/home-assistant-custom-ui/blob/master/state-card-custom-ui.html www/custom_ui/
+
 if [ $? != 0 ]; then
-  echo "Couldn't download state-card-custom-ui.html"
-  rm www/custom_ui/state-card-custom-ui.html.tmp
-  exit
-else
-  mv www/custom_ui/state-card-custom-ui.html.tmp www/custom_ui/state-card-custom-ui.html
+  echo "Updated to Custom UI `grep -o -e "'[0-9][0-9]*'" www/custom_ui/state-card-custom-ui.html`"
 fi
 
-wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/state-card-custom-ui.html.gz?raw=true -q -O www/custom_ui/state-card-custom-ui.html.gz.tmp
-if [ $? != 0 ]; then
-  echo "Couldn't download state-card-custom-ui.html.gz"
-  rm www/custom_ui/state-card-custom-ui.html.gz.tmp
-  exit
-else
-  mv www/custom_ui/state-card-custom-ui.html.gz.tmp www/custom_ui/state-card-custom-ui.html.gz
-fi
 
-echo "Updated to Custom UI `grep -o -e "'[0-9][0-9]*'" www/custom_ui/state-card-custom-ui.html`"
+
 
 if [ ! -d "panels" ]; then
   echo "panels dir not found."
   exit
 fi
 
-wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/ha-panel-custom-ui.html?raw=true -q -O panels/ha-panel-custom-ui.html.tmp
+get_file_and_gz panels/ha-panel-custom-ui.html https://github.com/andrey-git/home-assistant-custom-ui/blob/master/ha-panel-custom-ui.html panels/
+
 if [ $? != 0 ]; then
-  echo "Couldn't download ha-panel-custom-ui.html"
-  rm panels/ha-panel-custom-ui.html.tmp
-  exit
-else
-  mv panels/ha-panel-custom-ui.html.tmp panels/ha-panel-custom-ui.html
+  echo "Updated Panel to `grep -o -e "'[0-9][0-9]*'" panels/ha-panel-custom-ui.html`"
 fi
 
-wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/ha-panel-custom-ui.html.gz?raw=true -q -O panels/ha-panel-custom-ui.html.gz.tmp
-if [ $? != 0 ]; then
-  echo "Couldn't download ha-panel-custom-ui.html.gz"
-  rm panels/ha-panel-custom-ui.html.gz.tmp
-  exit
-else
-  mv panels/ha-panel-custom-ui.html.gz.tmp panels/ha-panel-custom-ui.html.gz
-fi
-
-echo "Updated Panel to `grep -o -e "'[0-9][0-9]*'" panels/ha-panel-custom-ui.html`"
