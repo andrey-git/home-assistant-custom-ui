@@ -43,4 +43,29 @@ else
   mv www/custom_ui/state-card-custom-ui.html.gz.tmp www/custom_ui/state-card-custom-ui.html.gz
 fi
 
-echo "Updated to `grep -o -e "CustomUI [0-9]*" www/custom_ui/state-card-custom-ui.html`"
+echo "Updated to Custom UI `grep -o -e "'[0-9][0-9]*'" www/custom_ui/state-card-custom-ui.html`"
+
+if [ ! -d "panels" ]; then
+  echo "panels dir not found."
+  exit
+fi
+
+wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/ha-panel-custom-ui.html?raw=true -q -O panels/ha-panel-custom-ui.html.tmp
+if [ $? != 0 ]; then
+  echo "Couldn't download ha-panel-custom-ui.html"
+  rm panels/ha-panel-custom-ui.html.tmp
+  exit
+else
+  mv panels/ha-panel-custom-ui.html.tmp panels/ha-panel-custom-ui.html
+fi
+
+wget https://github.com/andrey-git/home-assistant-custom-ui/blob/master/ha-panel-custom-ui.html.gz?raw=true -q -O panels/ha-panel-custom-ui.html.gz.tmp
+if [ $? != 0 ]; then
+  echo "Couldn't download ha-panel-custom-ui.html.gz"
+  rm panels/ha-panel-custom-ui.html.gz.tmp
+  exit
+else
+  mv panels/ha-panel-custom-ui.html.gz.tmp panels/ha-panel-custom-ui.html.gz
+fi
+
+echo "Updated Panel to `grep -o -e "'[0-9][0-9]*'" panels/ha-panel-custom-ui.html`"

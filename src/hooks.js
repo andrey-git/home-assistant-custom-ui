@@ -1,4 +1,6 @@
-window.customUI = {
+window.customUI = window.customUI || {
+  VERSION: '20170724',
+
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
         elem.shadowRoot.querySelector(selector) :
@@ -6,6 +8,7 @@ window.customUI = {
   },
 
   getElementHierarchy: function (root, hierarchy) {
+    if (root === null) return null;
     const elem = hierarchy.shift();
     if (elem) {
       return window.customUI.getElementHierarchy(
@@ -77,6 +80,7 @@ window.customUI = {
       'home-assistant-main',
       'partial-cards',
       'ha-cards']);
+    if (haCards === null) return;
     const main = window.customUI.lightOrShadow(haCards, '.main');
     const cards = main.querySelectorAll('ha-entities-card');
     cards.forEach(function (card) {
@@ -93,7 +97,42 @@ window.customUI = {
       }
     });
   },
+
+  showVersion: function () {
+    if (window.location.pathname !== '/dev-info') return;
+    const devInfo = window.customUI.getElementHierarchy(document, [
+      'home-assistant',
+      'home-assistant-main',
+      'partial-panel-resolver',
+      'ha-panel-dev-info']);
+    if (devInfo === null) return;
+    const about = window.customUI.lightOrShadow(devInfo, '.about');
+    const secondP = about.querySelectorAll('p')[1];
+    const version = document.createElement('p');
+    version.textContent = 'Custom UI ' + window.customUI.VERSION;
+    about.insertBefore(version, secondP);
+  },
+
+  runHooks: function () {
+    window.customUI.fixGroupTitles();
+    window.customUI.showVersion();
+  },
+
+  getName: function () {
+    return window.localStorage.getItem('ha-device-name') || '';
+  },
+
+  setName: function (name) {
+    window.localStorage.setItem('ha-device-name', name || '');
+  },
 };
 
-window.customUI.fixGroupTitles();
-window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.fixGroupTitles, 100));
+window.customUI.runHooks();
+
+if (!window.customUI.runHooksListenerAttached) {
+  window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
+  window.customUI.runHooksListenerAttached = true;
+  /* eslint-disable no-console */
+  console.log('Loaded CustomUI ' + window.customUI.VERSION);
+  /* eslint-enable no-console */
+}
