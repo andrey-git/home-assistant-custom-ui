@@ -113,6 +113,45 @@ window.customUI = window.customUI || {
     about.insertBefore(version, secondP);
   },
 
+  useCustomizer: function () {
+    const main = window.customUI.getElementHierarchy(document, [
+      'home-assistant',
+      'home-assistant-main']);
+    const customizer = main.hass.states['customizer.customizer'];
+    if (!customizer) return;
+    window.hassUtil.LOGIC_STATE_ATTRIBUTES = window.hassUtil.LOGIC_STATE_ATTRIBUTES || [];
+    if (customizer.attributes.hide_attributes) {
+      Array.prototype.push.apply(
+          window.hassUtil.LOGIC_STATE_ATTRIBUTES, customizer.attributes.hide_attributes);
+    }
+    if (customizer.attributes.hide_customui_attributes) {
+      window.hassUtil.LOGIC_STATE_ATTRIBUTES.push(
+        'custom_ui_state_card',
+        'group',
+        'state_card_mode',
+        'badges_list',
+        'show_last_changed',
+        'hide_control',
+        'extra_data_template',
+        'extra_badge',
+        'stretch_slider',
+        'slider_theme'
+      );
+    }
+  },
+
+  init: function () {
+    window.customUI.runHooks();
+    window.customUI.useCustomizer();
+    if (!window.customUI.initDone) {
+      window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
+      window.customUI.initDone = true;
+      /* eslint-disable no-console */
+      console.log('Loaded CustomUI ' + window.customUI.VERSION);
+      /* eslint-enable no-console */
+    }
+  },
+
   runHooks: function () {
     window.customUI.fixGroupTitles();
     window.customUI.showVersion();
@@ -127,12 +166,4 @@ window.customUI = window.customUI || {
   },
 };
 
-window.customUI.runHooks();
-
-if (!window.customUI.runHooksListenerAttached) {
-  window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
-  window.customUI.runHooksListenerAttached = true;
-  /* eslint-disable no-console */
-  console.log('Loaded CustomUI ' + window.customUI.VERSION);
-  /* eslint-enable no-console */
-}
+window.customUI.init();
