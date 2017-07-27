@@ -8,11 +8,27 @@
       :host {
         display: inline-block;
       }
-      dynamic-element {
+      .control-wrapper {
         margin-left: 16px;
+        position: relative;
       }
       ha-state-label-badge {
         margin-left: 8px;
+      }
+      dynamic-element {
+        display: block;
+      }
+      #overlay {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        text-align: center;;
+      }
+      #lock {
+        margin-top: 8px;
+        opacity: 0.3;
       }
       .extra {
         margin-bottom: -16px;
@@ -27,13 +43,22 @@
         line-height: 40px;
       }
     </style>
-    <div class$='[[extraClass(extraObj)]] horizontal layout'>
+    <div class$='[[extraClass(extraObjVisible)]] horizontal layout'>
       <template is='dom-if' if='[[extraObjVisible]]'>
         <ha-state-label-badge hass='[[hass]]' state='[[extraObj]]'></ha-state-label-badge>
       </template>
       <template is='dom-if' if='[[_showControl(inDialog, stateObj)]]'>
         <template is='dom-if' if='[[controlElement]]'>
-          <dynamic-element class='flex' state-obj="[[stateObj]]" hass='[[hass]]' element-name='[[controlElement]]'></dynamic-element>
+          <div class="control-wrapper">
+            <dynamic-element class='flex' state-obj="[[stateObj]]" hass='[[hass]]' element-name='[[controlElement]]'></dynamic-element>
+            <template is='dom-if' if='[[isConfirmControls(stateObj)]]'>
+              <div id="overlay" on-tap='tapHandler'>
+                <template is='dom-if' if='[[stateObj.attributes.confirm_controls_show_lock]]'>
+                  <iron-icon id="lock" icon="mdi:lock-outline"></iron-icon>
+                </template>
+              </div>
+            </template>
+          </div>
         </template>
         <template is='dom-if' if='[[!controlElement]]'>
           <div class='state'>[[computeStateDisplay(stateObj)]]</div>
@@ -89,7 +114,13 @@ Polymer({
 
   computeExtra: function (hass, stateObj) {
     var result = this._getObject(hass, stateObj);
-    if (!result) return null;
+    if (!result) {
+      return {
+        _entityDisplay: '',
+        _domain: 'none',
+        attributes: {},
+      };
+    }
     result._entityDisplay = '';
     return result;
   },
@@ -114,8 +145,8 @@ Polymer({
     return true;
   },
 
-  extraClass: function (extraObj) {
-    return extraObj ? 'extra' : '';
+  extraClass: function (extraObjVisible) {
+    return extraObjVisible ? 'extra' : '';
   },
 
   _showControl: function (inDialog, stateObj) {
@@ -126,5 +157,27 @@ Polymer({
   computeStateDisplay: function (stateObj) {
     return window.hassUtil.computeStateState(stateObj);
   },
+
+  isConfirmControls: function (stateObj) {
+    return stateObj.attributes.confirm_controls ||
+        stateObj.attributes.confirm_controls_show_lock;
+  },
+
+  tapHandler: function (e) {
+    this.$$('#overlay').style.pointerEvents = 'none';
+    const lock = this.$$('#lock');
+    if (lock) {
+      lock.icon = 'mdi:lock-open-outline';
+      lock.style.opacity = '0.1';
+    }
+    window.setTimeout(() => {
+      this.$$('#overlay').style.pointerEvents = '';
+      if (lock) {
+        lock.icon = 'mdi:lock-outline';
+        lock.style.opacity = '';
+      }
+    }, 5000);
+    e.stopPropagation();
+  }
 });
 </script>

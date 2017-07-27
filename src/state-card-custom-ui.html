@@ -79,6 +79,11 @@ Polymer({
       return;
     }
 
+    if (modifiedObj.attributes.theme) {
+      window.hassUtil.applyThemesOnElement(
+          this, hass.themes, modifiedObj.attributes.theme);
+    }
+
     var params = {
       hass: hass,
       stateObj: modifiedObj,

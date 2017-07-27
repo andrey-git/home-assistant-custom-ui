@@ -1,5 +1,5 @@
 window.customUI = window.customUI || {
-  VERSION: '20170724',
+  VERSION: '20170727',
 
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
@@ -45,8 +45,20 @@ window.customUI = window.customUI || {
     return elem._context;
   },
 
-  maybeChangeObject: function (elem, stateObj, inDialog, allowHidden) {
-    if (inDialog) return stateObj;
+  maybeChangeObjectByDevice: function (stateObj) {
+    const name = window.customUI.getName();
+    if (!name) return stateObj;
+
+    if (!stateObj.attributes.device || !stateObj.attributes.device[name]) {
+      return stateObj;
+    }
+    const attributes = Object.assign({}, stateObj.attributes.device[name]);
+
+    if (!Object.keys(attributes).length) return stateObj;
+    return window.customUI.applyAttributes(stateObj, attributes);
+  },
+
+  maybeChangeObjectByGroup: function (elem, stateObj) {
     const context = window.customUI.getContext(elem);
     if (!context) return stateObj;
 
@@ -62,16 +74,27 @@ window.customUI = window.customUI || {
 
     if (!Object.keys(attributes).length) return stateObj;
 
-    if (attributes.hidden && allowHidden) {
-      return null;
-    }
+    return window.customUI.applyAttributes(stateObj, attributes);
+  },
 
+  applyAttributes: function (stateObj, attributes) {
     return {
       entity_id: stateObj.entity_id,
       state: stateObj.state,
       attributes: Object.assign({}, stateObj.attributes, attributes),
       last_changed: stateObj.last_changed,
     };
+  },
+
+  maybeChangeObject: function (elem, stateObj, inDialog, allowHidden) {
+    if (inDialog) return stateObj;
+    let obj = window.customUI.maybeChangeObjectByDevice(stateObj);
+    obj = window.customUI.maybeChangeObjectByGroup(elem, obj);
+
+    if (obj !== stateObj && obj.attributes.hidden && allowHidden) {
+      return null;
+    }
+    return obj;
   },
 
   fixGroupTitles: function () {
@@ -135,7 +158,10 @@ window.customUI = window.customUI || {
         'extra_data_template',
         'extra_badge',
         'stretch_slider',
-        'slider_theme'
+        'slider_theme',
+        'theme',
+        'confirm_controls',
+        'confirm_controls_show_lock'
       );
     }
   },
