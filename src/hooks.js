@@ -1,5 +1,5 @@
 window.customUI = window.customUI || {
-  VERSION: '20170727',
+  VERSION: '20170724',
 
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
@@ -66,7 +66,7 @@ window.customUI = window.customUI || {
       return stateObj;
     }
     const attributes = {};
-    context.forEach(function (c) {
+    context.forEach((c) => {
       if (stateObj.attributes.group[c]) {
         Object.assign(attributes, stateObj.attributes.group[c]);
       }
@@ -106,7 +106,7 @@ window.customUI = window.customUI || {
     if (haCards === null) return;
     const main = window.customUI.lightOrShadow(haCards, '.main');
     const cards = main.querySelectorAll('ha-entities-card');
-    cards.forEach(function (card) {
+    cards.forEach((card) => {
       if (card.groupEntity) {
         const obj = window.customUI.maybeChangeObject(
           card,

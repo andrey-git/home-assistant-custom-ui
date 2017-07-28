@@ -5,11 +5,12 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^3.19.0",
-    "eslint-config-airbnb-base": "^11.0.1",
-    "eslint-plugin-html": "^2.0.0",
-    "eslint-plugin-import": "^2.2.0",
-    "html-minifier": "^3.5.2",
+    "eslint": "^4.3.0",
+    "eslint-config-airbnb-base": "^11.3.1",
+    "eslint-plugin-html": "^3.1.1",
+    "eslint-plugin-import": "^2.7.0",
+    "google-closure-compiler-js": "^20170626.0.0",
+    "html-minifier": "^3.5.3",
     "hydrolysis": "^1.25.0",
     "vulcanize": "^1.16.0"
   },

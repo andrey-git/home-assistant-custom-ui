@@ -35,7 +35,7 @@ Polymer({
 
   badgeMode: function (hass, stateObj) {
     var states = [];
-    stateObj.attributes.entity_id.forEach(function (id) {
+    stateObj.attributes.entity_id.forEach((id) => {
       var state = hass.states[id];
       if (!state) {
         /* eslint-disable no-console */
@@ -48,7 +48,7 @@ Polymer({
         states.push(window.customUI.maybeChangeObject(
             this, state, false /* inDialog */, false /* allowHidden */));
       }
-    }.bind(this));
+    });
     window.hassUtil.dynamicContentUpdater(
       this,
       'HA-BADGES-CARD',

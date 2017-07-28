@@ -134,11 +134,7 @@ Polymer({
       if (!Array.isArray(blacklist)) {
         blacklist = [blacklist];
       }
-      if (blacklist.some(
-            function (v) {
-              const r = RegExp(v);
-              return r.test(result.state.toString());
-            })) {
+      if (blacklist.some(v => RegExp(v).test(result.state.toString()))) {
         return false;
       }
     }

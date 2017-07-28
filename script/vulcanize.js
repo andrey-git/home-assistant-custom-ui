@@ -4,8 +4,14 @@ var Vulcanize = require('vulcanize');
 var minify = require('html-minifier');
 var hyd = require('hydrolysis');
 var fs = require('fs');
+var path = require('path');
+const compile = require('google-closure-compiler-js').compile;
 
 const homeAssistantPolymerPath = '../home-assistant/homeassistant/components/frontend/www_static/home-assistant-polymer/';
+
+if (!fs.existsSync('build')) {
+  fs.mkdirSync('build');
+}
 
 function minifyHTML(html) {
   return minify.minify(html, {
@@ -18,6 +24,36 @@ function minifyHTML(html) {
     removeStyleLinkTypeAttributes: true,
     minifyJS: true,
     minifyCSS: true,
+  });
+}
+
+function compileJs(file) {
+  console.log('Reading ' + file);
+  const content = fs.readFileSync(file, 'utf8');
+  console.log('Compiling ' + file);
+  const flags = {
+    jsCode: [{src: content}],
+  };
+  const out = compile(flags);
+  const newName = path.join('build', path.basename(file));
+  console.log('Writing ' + newName);
+  fs.writeFileSync(newName, out.compiledCode);
+  console.log('Done writing');
+}
+
+function copyFile(source, target) {
+  console.log('Copying ' + source);
+  if (fs.existsSync(target)) {
+    fs.unlinkSync(target);
+  }
+  fs.linkSync(source, target);
+}
+
+function copyHtmlSources(dir) {
+  fs.readdirSync(dir).forEach(file => {
+    if (path.extname(file) === '.html') {
+      copyFile(path.join(dir, file), path.join('build/', file));
+    }
   });
 }
 
@@ -40,7 +76,7 @@ const panelVulcan = new Vulcanize({
   stripComments: true,
   stripExcludes: baseExcludes,
   redirects: [
-    '/local/custom_ui/|src/',
+    '/local/custom_ui/|build/',
     '/static/home-assistant-polymer/|' + homeAssistantPolymerPath,
   ]
 });
@@ -53,7 +89,7 @@ const toProcess = [
     vulcan: panelVulcan,
   },
   {
-    source: './src/state-card-custom-ui.html',
+    source: './build/state-card-custom-ui.html',
     output: './state-card-custom-ui.html',
     vulcan: panelVulcan,
   },
@@ -75,6 +111,10 @@ function vulcanizeEntry(entry) {
 }
 
 const haMain = homeAssistantPolymerPath + 'src/home-assistant.html';
+
+copyHtmlSources('src/');
+copyFile('src/hooks.js', 'build/hooks.js');
+//compileJs('src/hooks.js');
 
 // Fetch all dependencies of main app and exclude them from panels
 hyd.Analyzer.analyze(haMain)

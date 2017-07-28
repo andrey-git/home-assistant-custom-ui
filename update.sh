@@ -41,14 +41,17 @@ function get_file_and_gz {
   return 0
 }
 
+function check_dir {
+  if [ ! -d $1 ]; then
+    echo "$1 dir not found."
+    exit
+  fi
+}
+
 get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
 
 
-
-if [ ! -d "www/custom_ui" ]; then
-  echo "www/custom_ui dir not found."
-  exit
-fi
+check_dir "www/custom_ui"
 
 get_file_and_gz state-card-custom-ui.html https://github.com/andrey-git/home-assistant-custom-ui/blob/master/state-card-custom-ui.html www/custom_ui/
 
@@ -58,15 +61,17 @@ fi
 
 
 
-
-if [ ! -d "panels" ]; then
-  echo "panels dir not found."
-  exit
-fi
+check_dir "panels"
 
 get_file_and_gz panels/ha-panel-custom-ui.html https://github.com/andrey-git/home-assistant-custom-ui/blob/master/ha-panel-custom-ui.html panels/
 
 if [ $? != 0 ]; then
   echo "Updated Panel to `grep -o -e "'[0-9][0-9]*'" panels/ha-panel-custom-ui.html`"
 fi
+
+
+check_dir "custom_components/customizer"
+
+get_file __init__.py https://github.com/andrey-git/home-assistant-customizer/blob/master/customizer/__init__.py custom_components/customizer/
+get_file services.yaml https://github.com/andrey-git/home-assistant-customizer/blob/master/customizer/services.yaml custom_components/customizer/
 

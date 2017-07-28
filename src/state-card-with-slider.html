@@ -82,10 +82,10 @@ Polymer({
   is: 'state-card-with-slider',
 
   attached: function () {
-    this.async(function () {
+    this.async(() => {
       this.readyToCompute = true;
       this._onIronResize();
-    }.bind(this), 1);
+    }, 1);
   },
 
   behaviors: [
@@ -276,7 +276,7 @@ Polymer({
       var errorsFound = false;
       var result = stateObj.attributes.extra_data_template.replace(
           /{([^}!]+)(!=)?([^}]+)?}/g,
-          function (match, p1, p2, p3) {
+          (match, p1, p2, p3) => {
             var data;
             if (p1.startsWith('state.') && hass.states[p1.substr(6)]) {
               data = hass.states[p1.substr(6)].state;
