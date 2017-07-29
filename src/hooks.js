@@ -137,9 +137,7 @@ window.customUI = window.customUI || {
   },
 
   useCustomizer: function () {
-    const main = window.customUI.getElementHierarchy(document, [
-      'home-assistant',
-      'home-assistant-main']);
+    const main = window.customUI.lightOrShadow(document, 'home-assistant');
     const customizer = main.hass.states['customizer.customizer'];
     if (!customizer) return;
     window.hassUtil.LOGIC_STATE_ATTRIBUTES = window.hassUtil.LOGIC_STATE_ATTRIBUTES || [];
