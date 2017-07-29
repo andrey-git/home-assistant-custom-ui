@@ -1,10 +1,14 @@
-# Custom UI elements for https://home-assistant.io
+# Custom UI elements for [Home Assistant](https://home-assistant.io)
 
   * [Changelog](#changelog)
-  * [Usage](#usage)
+  * [Installing](#installing)
+  * [Activating](#activating)
   * [Features available for all domains](#features-available-for-all-domains)
+    + [Customizer component](#customizer-component)
+    + [CustomUI panel](#customui-panel)
     + [Context-aware attributes](#context-aware-attributes)
     + [Badges in state cards](#badges-in-state-cards)
+    + [Per entity themeing](#per-entity-theming)
   * [Features available for almost all domains](#features-available-for-almost-all-domains)
       - [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
   * [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
@@ -20,13 +24,28 @@
 
 ## Changelog
 
-#### 2017-07-06
-* Fix bug introduced on 20170701 which caused slider to do nothing.
+#### 2017-07-29
+New features
+* New (optional) CustomUI panel.
+* New (optional) [customizer](https://github.com/andrey-git/home-assistant-customizer) custom component.
+  * Register CustomUI panel above.
+  * Hide CustomUI attribute in `more-info` (Requires HA 0.50+)
+  * Hide arbitrary attributes in `more-info` (Requires HA 0.50+)
+  * Dynamic customization.
+* New `update.sh` script that will keep CustomUI up to date.
+* Group names can now be context-aware.
+* `extra_data_template` can now look into another entity's state.
+* CustomUI version is now displayed in `dev-info` panel.
+* Attributes can now be device-aware in addition to being context-aware. Device name is set via CustomUI panel.
+* Per-entity theming (Requires HA 0.50+)
+* Confirmable controls
 
 [Full Changelog](CHANGELOG.md)
 
-## Usage
-Place [state-card-custom-ui.html](state-card-custom-ui.html?raw=true) and [state-card-custom-ui.html.gz](state-card-custom-ui.html.gz?raw=true) in `~/.homeassistant/www/custom_ui/` dir.  
+## Installing
+See [instructions](docs/installing.md)
+
+## Activating
 
 In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: custom-ui` for the relevant entities / domains.
 
@@ -46,58 +65,29 @@ customize_glob:
   "*.*":
     custom_ui_state_card: custom-ui
 ```
+
+
 ## Features available for all domains
+
+### Customizer component
+See instruction in dedicated repo: https://github.com/andrey-git/home-assistant-customizer/
+Provides the following features:
+* Register CustomUI panel above.
+* Hide CustomUI attribute in `more-info` (Requires HA 0.50+)
+* Hide arbitrary attributes in `more-info` (Requires HA 0.50+)
+* Dynamic customization.
+
+
+### CustomUI panel
+![custom_panel](https://user-images.githubusercontent.com/5478779/28746049-c015846a-74bf-11e7-939b-c48fc9d606b1.png)
+
+Use it to set device name.
 
 ### Context-aware attributes
 ![context_aware](https://cloud.githubusercontent.com/assets/5478779/26284053/45fbc000-3e3b-11e7-8d4a-56ef0d5e6c60.png)
-You can use context-aware attributes to give different names for the same entity in different groups or views.
-For example if you have a *Yard Light* and a *Yard Sensor* in a group named *Yard*, you could name the entities as *Light* and *Sensor* in the group only by using context-aware `friendly_name` attribute. This will also work in views (`view: yes` groups). In order to rename an entity in the default view, use `deafult_view` view name (even if you didn't define such a view).
 
-Example:
-```yaml
-homeassistant:
-  customize_glob:
-    "*.*":
-      custom_ui_state_card: custom-ui  
-    light.yard_light:
-      friendly_name: Yard Light
-      group:
-        group.yard:
-          friendly_name: Light
-    sensor.yard_sensor:
-      friendly_name: Yard Sensor
-      group:
-        group.yard:
-          friendly_name: Sensor
-
-group:
-  yard:
-    entities:
-      - light.yard_light
-      - sensor.yard_sensor
-```
-
-#### Context-aware hide
-In case you want a device to be a member of a group but not *show* in the group - use context-aware `hidden` attribute.
-Unlike regular `hidden: true` which hides the device in all views, context-aware `hidden: true` will hide the devices in specified groups only.
-```yaml
-homeassistant:
-  customize:
-  ...
-    light.yard_light:
-      group:
-        group.yard:
-          hidden: true
-
-group:
-  yard:
-    entities:
-      - light.yard_light
-      ...
-```
-
-#### Other uses
-Context-aware attributes also work for custom attributes, like `hide_control`, `show_last_changed`, and others.
+You can use context-aware attributes to give different names for the same entity in different groups, views, or devices.
+See [context-aware.md](docs/context-aware.md)
 
 ### Badges in state cards
 ![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)
@@ -187,6 +177,21 @@ group:
       - group.my_group
 ```
 
+### Per entity theming
+Required HA 0.50+
+
+![entity_themed](https://user-images.githubusercontent.com/5478779/28746280-0839b3f2-74c4-11e7-9478-bb197f9fd005.png)
+
+You can select per-entity theme from the list of defined [themes](https://home-assistant.io/components/frontend/)
+```yaml
+frontend:
+  themes:
+    green_example:
+      paper-toggle-button-checked-button-color: green
+light.yard:
+  theme: green_example
+```
+
 ## Features available for almost all domains.
 
 The following is supported for all state cards except `configurator`
@@ -203,7 +208,7 @@ Note that if you use the [extra_data_template](#you-can-add-extra-data-below-the
 The next features are available for 4 types of cards:
 * Light
 * Cover,
-* "Plain" i.e. card with icon, name, and state (not including binary_sensor)
+* "Plain" i.e. card with icon, name, and state.
 * "Toggle" i.e. card with icon, name, and toggle.
 
 #### You can hide the control altogether
@@ -218,6 +223,12 @@ Use `extra_data_template` to add extra data below the entity name. The format is
 For example `{power_consumption}W` will parse as `27W` if the value of `power_consumption` is 27.
 
 You can add an attribute value conditionally if it isn't equal to some constant. For example `{power_consumption!=0}W` to only add power consumption if it is not zero.
+
+Instead of an attribute you can show the state of another entity by using `state.<id>`.
+For example:
+```yaml
+extra_data_template: Door is {state.sensor.door!=close}
+```
 
 #### Add badge to the state card [Requires HA 0.42+]
 ![extra_badge](https://cloud.githubusercontent.com/assets/5478779/24772030/8a7cc4ea-1b18-11e7-9313-f7654ffb0c71.png)
@@ -242,6 +253,13 @@ extra_badge:
   blacklist_states: 0
 ```
 
+### Confirmable controls
+![confirmable](https://user-images.githubusercontent.com/5478779/28746903-6abd4be2-74ce-11e7-94d9-77423894c423.png)
+
+Sometimes you don't want to flip a switch by mistake.
+
+Use `confirm_controls_show_lock` to block the control and show a transparent lock icon over it. Tapping on the lock will open it for 5 seconds allowing to use the control. If you would like to prevent accidental flip without the visual lock hint, use `confirm_controls` instead.
+
 ## Features available for light and cover domains only
 
 If there is enough space the card will have icon+name on the left, optional slider in the middle and toggle on the right:
@@ -255,7 +273,7 @@ If there is enough space the card will have icon+name on the left, optional slid
 
 | `state_card_mode` value | description |
 | --- | --- |
-| break-slider-toggle | Move the slider and the toggle together to a second line. | 
+| break-slider-toggle | Move the slider and the toggle together to a second line. |
 | single-line | Never use more than one line. Shrink the name and the slider. |
 | break-slider | Move slider to second line. Leave toggle on the first line.|
 | hide-slider | Hide the slider.|
@@ -286,6 +304,7 @@ homeassistant:
       extra_data_template: "{power_consumption!=10}W"
       hide_control: false
       show_last_changed: false
+      confirm_controls_show_lock: true
       slider_theme:
         min: 10
         max: 200
@@ -297,7 +316,6 @@ homeassistant:
         attribute: power_consumption
         unit: W
         blacklist_states: 0
-        
 ```
 
 
