@@ -4,3 +4,5 @@ build/
 .idea/
 # Locally installed version
 www/
+custom_components/
+panels/

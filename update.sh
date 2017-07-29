@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 function get_file {
   DOWNLOAD_PATH=${2}?raw=true
@@ -43,12 +43,17 @@ function get_file_and_gz {
 
 function check_dir {
   if [ ! -d $1 ]; then
-    echo "$1 dir not found."
-    exit
+    read -p "$1 dir not found. Create? (y/n): [n] " r
+    r=${r:-n}
+    if [[ $r == 'y' || $r == 'Y' ]]; then
+      mkdir -p $1
+    else
+      exit
+    fi
   fi
 }
 
-get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
+#get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
 
 
 check_dir "www/custom_ui"
@@ -74,4 +79,3 @@ check_dir "custom_components/customizer"
 
 get_file __init__.py https://github.com/andrey-git/home-assistant-customizer/blob/master/customizer/__init__.py custom_components/customizer/
 get_file services.yaml https://github.com/andrey-git/home-assistant-customizer/blob/master/customizer/services.yaml custom_components/customizer/
-
