@@ -46,7 +46,7 @@ Polymer({
       if (!stateObj.attributes.badges_list ||
           stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
         states.push(window.customUI.maybeChangeObject(
-            this, state, false /* inDialog */, false /* allowHidden */));
+          this, state, false /* inDialog */, false /* allowHidden */));
       }
     });
     window.hassUtil.dynamicContentUpdater(
@@ -66,7 +66,7 @@ Polymer({
       return;
     }
     var modifiedObj = window.customUI.maybeChangeObject(
-        this, stateObj, inDialog, true /* allowHidden */);
+      this, stateObj, inDialog, true /* allowHidden */);
     if (!modifiedObj) {
       var rootEl = Polymer.dom(this);
       if (rootEl.lastChild) {
@@ -81,7 +81,7 @@ Polymer({
 
     if (modifiedObj.attributes.theme) {
       window.hassUtil.applyThemesOnElement(
-          this, hass.themes, modifiedObj.attributes.theme);
+        this, hass.themes, modifiedObj.attributes.theme);
     }
 
     var params = {

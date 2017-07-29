@@ -27,8 +27,8 @@ Polymer({
 
   observerFunc: function (hass, stateObj, elementName, inDialog) {
     window.hassUtil.dynamicContentUpdater(
-        this, elementName.toUpperCase(),
-        { hass: hass, stateObj: stateObj, inDialog: inDialog });
+      this, elementName ? elementName.toUpperCase() : 'DIV',
+      { hass: hass, stateObj: stateObj, inDialog: inDialog });
   },
 });
 </script>

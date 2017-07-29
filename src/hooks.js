@@ -1,10 +1,10 @@
 window.customUI = window.customUI || {
-  VERSION: '20170724',
+  VERSION: '20170729',
 
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
-        elem.shadowRoot.querySelector(selector) :
-        elem.querySelector(selector);
+      elem.shadowRoot.querySelector(selector) :
+      elem.querySelector(selector);
   },
 
   getElementHierarchy: function (root, hierarchy) {
@@ -145,7 +145,7 @@ window.customUI = window.customUI || {
     window.hassUtil.LOGIC_STATE_ATTRIBUTES = window.hassUtil.LOGIC_STATE_ATTRIBUTES || [];
     if (customizer.attributes.hide_attributes) {
       Array.prototype.push.apply(
-          window.hassUtil.LOGIC_STATE_ATTRIBUTES, customizer.attributes.hide_attributes);
+        window.hassUtil.LOGIC_STATE_ATTRIBUTES, customizer.attributes.hide_attributes);
     }
     if (customizer.attributes.hide_customui_attributes) {
       window.hassUtil.LOGIC_STATE_ATTRIBUTES.push(
