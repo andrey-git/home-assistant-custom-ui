@@ -8,13 +8,14 @@
     + [CustomUI panel](#customui-panel)
     + [Context-aware attributes](#context-aware-attributes)
     + [Badges in state cards](#badges-in-state-cards)
-    + [Per entity themeing](#per-entity-theming)
+    + [Per entity themeing (Requires HA 0.50+)](#per-entity-theming)
   * [Features available for almost all domains](#features-available-for-almost-all-domains)
       - [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
   * [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
       - [You can hide the control altogether](#you-can-hide-the-control-altogether)
       - [You can add extra data below the entity name [Requires HA 0.43+]](#you-can-add-extra-data-below-the-entity-name-requires-ha-043)
       - [Add badge to the state card [Requires HA 0.42+]](#add-badge-to-the-state-card-requires-ha-042)
+      - [Confirmable controls](#confirmable-controls)
   * [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
       - [If there is not enough horizontal space the mode is set by `state_card_mode` parameter](#if-there-is-not-enough-horizontal-space-the-mode-is-set-by-state_card_mode-parameter)
       - [If the slider got moved to a new line it will be 200 px wide.](#if-the-slider-got-moved-to-a-new-line-it-will-be-200-px-wide)
@@ -253,7 +254,7 @@ extra_badge:
   blacklist_states: 0
 ```
 
-### Confirmable controls
+#### Confirmable controls
 ![confirmable](https://user-images.githubusercontent.com/5478779/28746903-6abd4be2-74ce-11e7-94d9-77423894c423.png)
 
 Sometimes you don't want to flip a switch by mistake.
