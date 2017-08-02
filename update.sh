@@ -53,7 +53,7 @@ function check_dir {
   fi
 }
 
-#get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
+get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
 
 
 check_dir "www/custom_ui"
