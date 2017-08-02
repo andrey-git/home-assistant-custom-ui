@@ -1,5 +1,5 @@
 window.customUI = window.customUI || {
-  VERSION: '20170729',
+  VERSION: '20170802',
 
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
@@ -158,6 +158,7 @@ window.customUI = window.customUI || {
         'stretch_slider',
         'slider_theme',
         'theme',
+        'theme_template',
         'confirm_controls',
         'confirm_controls_show_lock'
       );
@@ -187,6 +188,14 @@ window.customUI = window.customUI || {
 
   setName: function (name) {
     window.localStorage.setItem('ha-device-name', name || '');
+  },
+
+  computeTemplate: function (template, hass, entities, entity, attributes) {
+    const functionBody = (template.indexOf('return') >= 0) ? template : 'return `' + template + '`;';
+    /* eslint-disable no-new-func */
+    const func = new Function('hass', 'entities', 'entity', 'attributes', functionBody);
+    /* eslint-enable no-new-func */
+    return func(hass, entities, entity, attributes);
   },
 };
 

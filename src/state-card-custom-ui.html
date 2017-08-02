@@ -78,8 +78,16 @@ Polymer({
       }
       return;
     }
-
-    if (modifiedObj.attributes.theme) {
+    if (modifiedObj.attributes.theme_template) {
+      const value = window.customUI.computeTemplate(
+        modifiedObj.attributes.theme_template,
+        hass,
+        hass.states,
+        modifiedObj,
+        modifiedObj.attributes);
+      window.hassUtil.applyThemesOnElement(
+        this, hass.themes, value);
+    } else if (modifiedObj.attributes.theme) {
       window.hassUtil.applyThemesOnElement(
         this, hass.themes, modifiedObj.attributes.theme);
     }

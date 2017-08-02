@@ -273,24 +273,12 @@ Polymer({
 
   computeExtra: function (hass, stateObj) {
     if (stateObj.attributes.extra_data_template) {
-      var errorsFound = false;
-      var result = stateObj.attributes.extra_data_template.replace(
-        /{([^}!]+)(!=)?([^}]+)?}/g,
-        (match, p1, p2, p3) => {
-          var data;
-          if (p1.startsWith('state.') && hass.states[p1.substr(6)]) {
-            data = hass.states[p1.substr(6)].state;
-          } else {
-            data = stateObj.attributes[p1];
-          }
-          if (!data || (p2 && new RegExp(p3).test(data))) {
-            errorsFound = true;
-            return '';
-          }
-          return data;
-        });
-      if (errorsFound) return null;
-      return result;
+      return window.customUI.computeTemplate(
+        stateObj.attributes.extra_data_template,
+        hass,
+        hass.states,
+        stateObj,
+        stateObj.attributes);
     }
     return null;
   },

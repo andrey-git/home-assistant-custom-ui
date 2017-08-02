@@ -25,21 +25,9 @@
 
 ## Changelog
 
-#### 2017-07-29
-New features
-* New (optional) CustomUI panel.
-* New (optional) [customizer](https://github.com/andrey-git/home-assistant-customizer) custom component.
-  * Register CustomUI panel above.
-  * Hide CustomUI attribute in `more-info` (Requires HA 0.50+)
-  * Hide arbitrary attributes in `more-info` (Requires HA 0.50+)
-  * Dynamic customization.
-* New `update.sh` script that will keep CustomUI up to date.
-* Group names can now be context-aware.
-* `extra_data_template` can now look into another entity's state.
-* CustomUI version is now displayed in `dev-info` panel.
-* Attributes can now be device-aware in addition to being context-aware. Device name is set via CustomUI panel.
-* Per-entity theming (Requires HA 0.50+)
-* Confirmable controls
+#### 2017-08-02
+* [Breaking Change] `extra_data_template` format changed.
+* Added `theme_template` attribute to make  conditional entity-theming easy.
 
 [Full Changelog](CHANGELOG.md)
 
@@ -193,6 +181,17 @@ light.yard:
   theme: green_example
 ```
 
+You can also use a conditional theme by using `theme_template` attribute. See [Templates](docs/templates.md)
+```yaml
+frontend:
+  themes:
+    green_example:
+      paper-toggle-button-checked-button-color: green
+light.yard:
+  theme_template: ${entity.state}
+```
+
+
 ## Features available for almost all domains.
 
 The following is supported for all state cards except `configurator`
@@ -220,15 +219,10 @@ Use `hide_control: true` to hide the control (toggle / cover buttons) altogether
 #### You can add extra data below the entity name [Requires HA 0.43+]
 ![extra_data](https://cloud.githubusercontent.com/assets/5478779/24772032/8a7e90e0-1b18-11e7-9b3e-e36b56ef2417.png)
 
-Use `extra_data_template` to add extra data below the entity name. The format is a string where `{attribute_name}`will be replaced by the attribute value.
-For example `{power_consumption}W` will parse as `27W` if the value of `power_consumption` is 27.
-
-You can add an attribute value conditionally if it isn't equal to some constant. For example `{power_consumption!=0}W` to only add power consumption if it is not zero.
-
-Instead of an attribute you can show the state of another entity by using `state.<id>`.
-For example:
+Use `extra_data_template` to add extra data below the entity name. The format is a [Templates](docs/templates.md).
+For example to show power consumption from the `power_consumption` attribute use:
 ```yaml
-extra_data_template: Door is {state.sensor.door!=close}
+extra_data_template: ${attributes.power_consumption}W
 ```
 
 #### Add badge to the state card [Requires HA 0.42+]

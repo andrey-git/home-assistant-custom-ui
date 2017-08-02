@@ -1,5 +1,5 @@
 <html><head><meta charset="UTF-8"><script>window.customUI = window.customUI || {
-  VERSION: '20170729',
+  VERSION: '20170802',
 
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
@@ -158,6 +158,7 @@
         'stretch_slider',
         'slider_theme',
         'theme',
+        'theme_template',
         'confirm_controls',
         'confirm_controls_show_lock'
       );
@@ -187,6 +188,14 @@
 
   setName: function (name) {
     window.localStorage.setItem('ha-device-name', name || '');
+  },
+
+  computeTemplate: function (template, hass, entities, entity, attributes) {
+    const functionBody = (template.indexOf('return') >= 0) ? template : 'return `' + template + '`;';
+    /* eslint-disable no-new-func */
+    const func = new Function('hass', 'entities', 'entity', 'attributes', functionBody);
+    /* eslint-enable no-new-func */
+    return func(hass, entities, entity, attributes);
   },
 };
 
@@ -494,24 +503,12 @@ Polymer({
 
   computeExtra: function (hass, stateObj) {
     if (stateObj.attributes.extra_data_template) {
-      var errorsFound = false;
-      var result = stateObj.attributes.extra_data_template.replace(
-        /{([^}!]+)(!=)?([^}]+)?}/g,
-        (match, p1, p2, p3) => {
-          var data;
-          if (p1.startsWith('state.') && hass.states[p1.substr(6)]) {
-            data = hass.states[p1.substr(6)].state;
-          } else {
-            data = stateObj.attributes[p1];
-          }
-          if (!data || (p2 && new RegExp(p3).test(data))) {
-            errorsFound = true;
-            return '';
-          }
-          return data;
-        });
-      if (errorsFound) return null;
-      return result;
+      return window.customUI.computeTemplate(
+        stateObj.attributes.extra_data_template,
+        hass,
+        hass.states,
+        stateObj,
+        stateObj.attributes);
     }
     return null;
   },
@@ -597,8 +594,16 @@ Polymer({
       }
       return;
     }
-
-    if (modifiedObj.attributes.theme) {
+    if (modifiedObj.attributes.theme_template) {
+      const value = window.customUI.computeTemplate(
+        modifiedObj.attributes.theme_template,
+        hass,
+        hass.states,
+        modifiedObj,
+        modifiedObj.attributes);
+      window.hassUtil.applyThemesOnElement(
+        this, hass.themes, value);
+    } else if (modifiedObj.attributes.theme) {
       window.hassUtil.applyThemesOnElement(
         this, hass.themes, modifiedObj.attributes.theme);
     }

@@ -1,4 +1,8 @@
 ## Changelog
+#### 2017-08-02
+* [Breaking Change] `extra_data_template` format changed.
+* Added `theme_template` attribute to make  conditional entity-theming easy.
+
 #### 2017-07-29
 New features
 * New (optional) CustomUI panel.
@@ -26,7 +30,7 @@ Bugfixes:
 
 #### 2017-07-01 [BROKEN]
 * Now features are also supported on all "plain" and "toggle" cards in addition to light and cover cards.
-* [Breaking Change] Now all atributes can be context-aware, not just `friendly_name` and `hidden`.
+* [Breaking Change] Now all attributes can be context-aware, not just `friendly_name` and `hidden`.
 
 #### 2017-05-22
 * Extend support for context-aware names to views (in addition to groups)
