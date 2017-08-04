@@ -5,7 +5,8 @@ function get_file {
   SAVE_PATH=${3}
   TMP_NAME=${1}.tmp
   echo "Getting $1"
-  wget $DOWNLOAD_PATH -q -O $TMP_NAME
+  # wget $DOWNLOAD_PATH -q -O $TMP_NAME
+  curl -s -q -L -o $TMP_NAME $DOWNLOAD_PATH
   rv=$?
   if [ $rv != 0 ]; then
     rm $TMP_NAME
