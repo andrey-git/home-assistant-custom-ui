@@ -53,6 +53,15 @@ function check_dir {
   fi
 }
 
+if [ ! -f configuration.yaml ]; then
+  echo "There is no configuration.yaml in current dir. 'update.sh' should run from Homeassistant config dir"
+  read -p "Are you sure you want to continue? (y/n): [n] " r
+  r=${r:-n}
+  if [[ $r == 'n' || $r == 'N' ]]; then
+    exit
+  fi
+fi
+
 get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
 
 
