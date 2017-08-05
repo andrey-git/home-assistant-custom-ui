@@ -8,10 +8,7 @@ Polymer({
   is: 'state-card-custom-ui',
 
   attached: function () {
-    if (this.hass && this.stateObj && this._context !== undefined) {
-      this._context = undefined;
-      this.inputChanged(this.hass, this.inDialog, this.stateObj);
-    }
+    this.inputChanged(this.hass, this.inDialog, this.stateObj);
   },
 
   properties: {
@@ -59,7 +56,7 @@ Polymer({
   inputChanged: function (hass, inDialog, stateObj) {
     var stateCardType;
     var domain;
-    if (!stateObj || !hass) return;
+    if (!stateObj || !hass || !this.isAttached) return;
     domain = window.hassUtil.computeDomain(stateObj);
     if (!inDialog && domain === 'group' && stateObj.attributes.state_card_mode === 'badges') {
       this.badgeMode(hass, stateObj);
