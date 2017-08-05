@@ -39,6 +39,10 @@
       .top-wrapper.stretch {
         display: block;
       }
+
+      .hidden {
+        display: none;
+      }
     </style>
 
     <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
@@ -48,7 +52,7 @@
             <span>[[extra]]</span>
           </template>
         </state-info>
-        <template is='dom-if' if='[[breakSlider]]'>
+        <template is='dom-if' if='[[breakSlider]]' class='hidden'>
           <dynamic-with-extra hass='[[hass]]' state-obj='[[stateObj]]' control-element='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-with-extra>
         </template>
       </div>
