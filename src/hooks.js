@@ -1,5 +1,5 @@
 window.customUI = window.customUI || {
-  VERSION: '20170802',
+  VERSION: '20170805',
 
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?

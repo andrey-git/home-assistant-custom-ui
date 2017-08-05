@@ -1,5 +1,5 @@
 <html><head><meta charset="UTF-8"><script>window.customUI = window.customUI || {
-  VERSION: '20170802',
+  VERSION: '20170805',
 
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
@@ -305,7 +305,7 @@ window.customUI.init();</script></head><body><div hidden="" by-vulcanize=""><dom
     }, 5000);
     e.stopPropagation();
   }
-});</script><dom-module id="state-card-with-slider" assetpath="./"><template><style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style><style>.second-line,.state-and-toggle,.state-info{max-width:100%}.nowrap .state-and-toggle{overflow:hidden;flex-grow:0}.nowrap .second-line{overflow:hidden}.second-line{padding-top:20px;padding-bottom:16px;margin-top:-20px;margin-bottom:-16px}.stretch .second-line,.stretch ha-themed-slider{width:100%;--ha-paper-slider-width:100%}.nowrap .state-info{min-width:initial}.top-wrapper,ha-themed-slider{min-width:100px;max-width:100%}.top-wrapper.stretch{display:block}</style><div id="container" class$="horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]"><div class="horizontal layout justified flex-auto state-and-toggle"><state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[extra]]"><template is="dom-if" if="[[extra]]"><span>[[extra]]</span></template></state-info><template is="dom-if" if="[[breakSlider]]"><dynamic-with-extra hass="[[hass]]" state-obj="[[stateObj]]" control-element="[[controlElement]]" in-dialog="[[inDialog]]"></dynamic-with-extra></template></div><template is="dom-if" if="[[showSlider]]"><div class="horizontal layout flex-auto end-justified second-line"><ha-themed-slider id="slider" max="[[max]]" min="[[min]]" theme="[[stateObj.attributes.slider_theme]]" is-on="[[isOn(stateObj, nameOn)]]" value="{{sliderValue}}" disable-off-when-min="{{disableOffWhenMin}}" on-change="sliderChanged" on-tap="stopPropagation"></ha-themed-slider><template is="dom-if" if="[[!breakSlider]]"><dynamic-with-extra hass="[[hass]]" state-obj="[[stateObj]]" control-element="[[controlElement]]" in-dialog="[[inDialog]]"></dynamic-with-extra></template></div></template></div></template></dom-module><script>var SUPPORTED_MODES = [
+});</script><dom-module id="state-card-with-slider" assetpath="./"><template><style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style><style>.second-line,.state-and-toggle,.state-info{max-width:100%}.nowrap .state-and-toggle{overflow:hidden;flex-grow:0}.nowrap .second-line{overflow:hidden}.second-line{padding-top:20px;padding-bottom:16px;margin-top:-20px;margin-bottom:-16px}.stretch .second-line,.stretch ha-themed-slider{width:100%;--ha-paper-slider-width:100%}.nowrap .state-info{min-width:initial}.top-wrapper,ha-themed-slider{min-width:100px;max-width:100%}.top-wrapper.stretch{display:block}.hidden{display:none}</style><div id="container" class$="horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]"><div class="horizontal layout justified flex-auto state-and-toggle"><state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[extra]]"><template is="dom-if" if="[[extra]]"><span>[[extra]]</span></template></state-info><template is="dom-if" if="[[breakSlider]]" class="hidden"><dynamic-with-extra hass="[[hass]]" state-obj="[[stateObj]]" control-element="[[controlElement]]" in-dialog="[[inDialog]]"></dynamic-with-extra></template></div><template is="dom-if" if="[[showSlider]]"><div class="horizontal layout flex-auto end-justified second-line"><ha-themed-slider id="slider" max="[[max]]" min="[[min]]" theme="[[stateObj.attributes.slider_theme]]" is-on="[[isOn(stateObj, nameOn)]]" value="{{sliderValue}}" disable-off-when-min="{{disableOffWhenMin}}" on-change="sliderChanged" on-tap="stopPropagation"></ha-themed-slider><template is="dom-if" if="[[!breakSlider]]"><dynamic-with-extra hass="[[hass]]" state-obj="[[stateObj]]" control-element="[[controlElement]]" in-dialog="[[inDialog]]"></dynamic-with-extra></template></div></template></div></template></dom-module><script>var SUPPORTED_MODES = [
   'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'];
 var DEFAULT_MODE = 'no-slider';
 Polymer({
@@ -524,10 +524,7 @@ Polymer({
   is: 'state-card-custom-ui',
 
   attached: function () {
-    if (this.hass && this.stateObj && this._context !== undefined) {
-      this._context = undefined;
-      this.inputChanged(this.hass, this.inDialog, this.stateObj);
-    }
+    this.inputChanged(this.hass, this.inDialog, this.stateObj);
   },
 
   properties: {
@@ -575,7 +572,7 @@ Polymer({
   inputChanged: function (hass, inDialog, stateObj) {
     var stateCardType;
     var domain;
-    if (!stateObj || !hass) return;
+    if (!stateObj || !hass || !this.isAttached) return;
     domain = window.hassUtil.computeDomain(stateObj);
     if (!inDialog && domain === 'group' && stateObj.attributes.state_card_mode === 'badges') {
       this.badgeMode(hass, stateObj);

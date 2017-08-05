@@ -1,4 +1,8 @@
 ## Changelog
+#### 2017-08-05 (minor change)
+* Improve performance by recalculating only after attachment.
+* Visual fix for Polymer2
+
 #### 2017-08-02
 * [Breaking Change] `extra_data_template` format changed.
 * Added `theme_template` attribute to make  conditional entity-theming easy.
