@@ -3,9 +3,9 @@
   * [Changelog](#changelog)
   * [Installing](#installing)
   * [Activating](#activating)
+  * [Customizer component](#customizer-component)
+  * [CustomUI panel](#customui-panel)
   * [Features available for all domains](#features-available-for-all-domains)
-    + [Customizer component](#customizer-component)
-    + [CustomUI panel](#customui-panel)
     + [Context-aware attributes](#context-aware-attributes)
     + [Badges in state cards](#badges-in-state-cards)
     + [Per entity themeing (Requires HA 0.50+)](#per-entity-theming)
@@ -55,10 +55,7 @@ customize_glob:
     custom_ui_state_card: custom-ui
 ```
 
-
-## Features available for all domains
-
-### Customizer component
+## Customizer component
 See instruction in dedicated repo: https://github.com/andrey-git/home-assistant-customizer/
 Provides the following features:
 * Register CustomUI panel above.
@@ -67,10 +64,12 @@ Provides the following features:
 * Dynamic customization.
 
 
-### CustomUI panel
+## CustomUI panel
 ![custom_panel](https://user-images.githubusercontent.com/5478779/28746049-c015846a-74bf-11e7-939b-c48fc9d606b1.png)
 
 Use it to set device name.
+
+## Features available for all domains
 
 ### Context-aware attributes
 ![context_aware](https://cloud.githubusercontent.com/assets/5478779/26284053/45fbc000-3e3b-11e7-8d4a-56ef0d5e6c60.png)
