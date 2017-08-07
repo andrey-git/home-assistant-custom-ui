@@ -2,7 +2,12 @@
 
 function get_file {
   DOWNLOAD_PATH=${2}?raw=true
-  SAVE_PATH=${3}
+  FILE_NAME=$1
+  if [ "${FILE_NAME:0:1}" = "/" ]; then
+    SAVE_PATH=$FILE_NAME
+  else
+    SAVE_PATH=$3$FILE_NAME
+  fi
   TMP_NAME=${1}.tmp
   echo "Getting $1"
   # wget $DOWNLOAD_PATH -q -O $TMP_NAME
@@ -13,13 +18,13 @@ function get_file {
     echo "Download failed with error $rv"
     exit
   fi
-  diff ${SAVE_PATH}$1 $TMP_NAME &>/dev/null
+  diff ${SAVE_PATH} $TMP_NAME &>/dev/null
   if [ $? == 0 ]; then
     echo "File up to date."
     rm $TMP_NAME
     return 0
   else
-    mv $TMP_NAME ${SAVE_PATH}$1
+    mv $TMP_NAME ${SAVE_PATH}
     if [ $1 == $0 ]; then
       chmod u+x $0
       echo "Restarting"
@@ -63,7 +68,7 @@ if [ ! -f configuration.yaml ]; then
   fi
 fi
 
-get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
+#get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
 
 
 check_dir "www/custom_ui"
