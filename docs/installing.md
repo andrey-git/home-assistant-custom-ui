@@ -5,7 +5,7 @@
 1) Download [update.sh](../update.sh) to your homeassistant config dir. (For example `/home/homeassistant/.homeassistant/`)
 You can do so by running
 ```bash
-$ wget "https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/update.sh?raw=true"
+$ curl -o update.sh "https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/update.sh?raw=true"
 ```
 from that dir.
 2) Make `update.sh` executable by running
