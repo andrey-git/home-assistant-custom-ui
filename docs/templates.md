@@ -31,4 +31,7 @@ homeassistant:
         if (attributes.power_consumption > 10) return 'red'; else return 'default';
       extra_data_template: >
         ${attributes.power_consumption !== 0 ? (attributes.power_consumption + 'W') : ''}
+    light.kitchen:
+      theme_template: >
+        if (entities['light.bedroom'].state === 'on') return 'red'; else return 'default';
 ```
