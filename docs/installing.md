@@ -8,6 +8,7 @@ You can do so by running
 $ curl -o update.sh "https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/update.sh?raw=true"
 ```
 from that dir.
+
 2) Make `update.sh` executable by running
 ```
 $ chmod u+x update.sh
