@@ -68,9 +68,11 @@ Polymer({
     Polymer.dom(this).lastChild.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
     Polymer.dom(this).lastChild.style.setProperty('--label-badge-red', badgeLabelBorder);
     Polymer.dom(this).lastChild.style.setProperty('--label-badge-text-color', badgeLabelText);
-    Polymer.dom(this).parentNode.parentNode.style.setProperty('background-color', badgeBackground);
-    Polymer.dom(this).parentNode.parentNode.style.setProperty('display', 'inline-block');
-    Polymer.dom(this).parentNode.parentNode.style.setProperty('padding', '4px 10px');
+    Polymer.dom(this).lastChild.style.setProperty('--label-badge-background-color', badgeBackground);
+    if (Polymer.dom(this).parentNode.parentNode.tagName === "DIV" && Polymer.dom(this).parentNode.parentNode.classList.contains('state')) {
+      Polymer.dom(this).parentNode.parentNode.style.setProperty('display', 'inline-block');
+      Polymer.dom(this).parentNode.parentNode.style.setProperty('padding', '4px 10px');
+    }
   },
 
   inputChanged: function (hass, inDialog, stateObj) {
@@ -82,7 +84,6 @@ Polymer({
     if (!stateObj || !hass || !this.isAttached) return;
     domain = window.hassUtil.computeDomain(stateObj);
     if (!inDialog && stateObj.attributes.state_card_mode === 'badges') {
-    // if (!inDialog && domain === 'group' && stateObj.attributes.state_card_mode === 'badges') {
       if (typeof stateObj.attributes.label_badge_color !== 'undefined') {
         badgeLabelBorder = stateObj.attributes.label_badge_color;
       } else {
@@ -93,10 +94,10 @@ Polymer({
       } else {
         badgeLabelText = 'var(--label-badge-text-color)';
       }
-      if (typeof stateObj.attributes.background !== 'undefined') {
-        badgeBackground = stateObj.attributes.background;
+      if (typeof stateObj.attributes.label_background_color !== 'undefined') {
+        badgeBackground = stateObj.attributes.label_background_color;
       } else {
-        badgeBackground = 'transparent';
+        badgeBackground = 'var(--label-badge-background-color)';
       }
       this.badgeMode(hass, stateObj, badgeLabelBorder, badgeLabelText, badgeBackground, domain);
       return;
@@ -126,6 +127,11 @@ Polymer({
     } else if (modifiedObj.attributes.theme) {
       window.hassUtil.applyThemesOnElement(
         this, hass.themes, modifiedObj.attributes.theme);
+    }
+    if (modifiedObj.attributes.background_color) {
+      if (Polymer.dom(this).parentNode.parentNode.tagName === "DIV" && Polymer.dom(this).parentNode.parentNode.classList.contains('state')) {
+        Polymer.dom(this).parentNode.parentNode.style.setProperty('background-color', modifiedObj.attributes.background_color);
+      }
     }
 
     var params = {
