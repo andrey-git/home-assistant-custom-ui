@@ -48,18 +48,15 @@ Polymer({
         }
       });
     } else {
-        var state = hass.states[stateObj.entity_id];
+        var state = stateObj;
         if (!state) {
           /* eslint-disable no-console */
           console.warn('Unknown ID ' + stateObj.entity_id + ' in group ' + stateObj.entity_id);
           /* eslint-enable no-console */
           return;
         }
-        if (!stateObj.attributes.badges_list ||
-            stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
-          states.push(window.customUI.maybeChangeObject(
-            this, state, false /* inDialog */, false /* allowHidden */));
-        }
+        states.push(window.customUI.maybeChangeObject(
+          this, state, false /* inDialog */, false /* allowHidden */));
     }
     window.hassUtil.dynamicContentUpdater(
       this,
@@ -77,29 +74,27 @@ Polymer({
 
   inputChanged: function (hass, inDialog, stateObj) {
     var stateCardType;
-    var domain;
     var badgeLabelBorder;
     var badgeLabelText;
     var badgeBackground;
     if (!stateObj || !hass || !this.isAttached) return;
-    domain = window.hassUtil.computeDomain(stateObj);
     if (!inDialog && stateObj.attributes.state_card_mode === 'badges') {
-      if (typeof stateObj.attributes.label_badge_color !== 'undefined') {
+      if (stateObj.attributes.label_badge_color) {
         badgeLabelBorder = stateObj.attributes.label_badge_color;
       } else {
         badgeLabelBorder = 'var(--label-badge-red)';
       }
-      if (typeof stateObj.attributes.label_badge_text_color !== 'undefined') {
+      if (stateObj.attributes.label_badge_text_color) {
         badgeLabelText = stateObj.attributes.label_badge_text_color;
       } else {
         badgeLabelText = 'var(--label-badge-text-color)';
       }
-      if (typeof stateObj.attributes.label_background_color !== 'undefined') {
+      if (stateObj.attributes.label_background_color) {
         badgeBackground = stateObj.attributes.label_background_color;
       } else {
         badgeBackground = 'var(--label-badge-background-color)';
       }
-      this.badgeMode(hass, stateObj, badgeLabelBorder, badgeLabelText, badgeBackground, domain);
+      this.badgeMode(hass, stateObj, badgeLabelBorder, badgeLabelText, badgeBackground);
       return;
     }
     var modifiedObj = window.customUI.maybeChangeObject(
@@ -132,6 +127,8 @@ Polymer({
       if (Polymer.dom(this).parentNode.parentNode.tagName === "DIV" && Polymer.dom(this).parentNode.parentNode.classList.contains('state')) {
         Polymer.dom(this).parentNode.parentNode.style.setProperty('background-color', modifiedObj.attributes.background_color);
       }
+    } else {
+      Polymer.dom(this).parentNode.parentNode.style.setProperty('background-color', 'transparent');
     }
 
     var params = {
