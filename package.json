@@ -9,12 +9,13 @@
     "eslint-config-airbnb-base": "^11.3.1",
     "eslint-plugin-html": "^3.1.1",
     "eslint-plugin-import": "^2.7.0",
-    "google-closure-compiler-js": "^20170626.0.0",
+    "google-closure-compiler-js": "^20170806.0.0",
     "html-minifier": "^3.5.3",
     "hydrolysis": "^1.25.0",
     "vulcanize": "^1.16.0"
   },
   "scripts": {
+    "init": "yarn install",
     "test": "eslint src/* panel/*",
     "vulcanize": "node script/vulcanize.js",
     "gzip": "gzip state-card-custom-ui.html ha-panel-custom-ui.html -9fk",
