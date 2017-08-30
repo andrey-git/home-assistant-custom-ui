@@ -108,7 +108,7 @@ function vulcanizeEntry(entry) {
 const haMain = homeAssistantPolymerPath + 'src/home-assistant.html';
 
 copyHtmlSources('src/');
-copyFile('src/hooks.js', 'build/hooks.js');
+//copyFile('src/hooks.js', 'build/hooks.js');
 //compileJs('src/hooks.js');
 
 // Fetch all dependencies of main app and exclude them from panels
