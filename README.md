@@ -42,7 +42,8 @@ See [activating](docs/activating.md)
 ## Customizer component
 See instruction in dedicated repo: https://github.com/andrey-git/home-assistant-customizer/
 Provides the following features:
-* Register CustomUI panel below.
+* Load CustomUI files (HA 0.53+)
+* Register CustomUI panel (HA 0.52 and below).
 * Hide CustomUI attributes in `more-info` (HA 0.50 - 0.52)
 * Hide arbitrary attributes in `more-info` (Requires HA 0.50+)
 * Dynamic customization.
@@ -52,6 +53,9 @@ Provides the following features:
 ![custom_panel](https://user-images.githubusercontent.com/5478779/28746049-c015846a-74bf-11e7-939b-c48fc9d606b1.png)
 
 Use it to set device name.
+
+In HA 0.52 or below needs to be registered manually or via customizer.<br>
+In HA 0.53+ is added automatically to config panel.
 
 ## Features available for all domains
 
