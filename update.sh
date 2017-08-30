@@ -68,7 +68,7 @@ if [ ! -f configuration.yaml ]; then
   fi
 fi
 
-#get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
+get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh .
 
 
 check_dir "www/custom_ui"
@@ -77,16 +77,6 @@ get_file_and_gz state-card-custom-ui.html https://github.com/andrey-git/home-ass
 
 if [ $? != 0 ]; then
   echo "Updated to Custom UI `grep -o -e "'[0-9][0-9][0-9]*'" www/custom_ui/state-card-custom-ui.html`"
-fi
-
-
-
-check_dir "panels"
-
-get_file_and_gz ha-panel-custom-ui.html https://github.com/andrey-git/home-assistant-custom-ui/blob/master/ha-panel-custom-ui.html panels/
-
-if [ $? != 0 ]; then
-  echo "Updated Panel to `grep -o -e "'[0-9][0-9][0-9]*'" panels/ha-panel-custom-ui.html`"
 fi
 
 

@@ -10,7 +10,7 @@ Example:
 homeassistant:
   customize_glob:
     "*.*":
-      custom_ui_state_card: custom-ui  
+      custom_ui_state_card: state-card-custom-ui  
     light.yard_light:
       friendly_name: Yard Light
       group:
@@ -35,7 +35,7 @@ You can also change attributes per device. For example:
 homeassistant:
   customize_glob:
     "*.*":
-      custom_ui_state_card: custom-ui  
+      custom_ui_state_card: state-card-custom-ui  
     device_tracker.joe_phone:
       friendly_name: Joe phone
       device:
@@ -51,11 +51,11 @@ If both context-aware and device-aware attributes are specified - device-aware w
 homeassistant:
   customize_glob:
     "*.*":
-      custom_ui_state_card: custom-ui  
+      custom_ui_state_card: state-card-custom-ui  
     device_tracker.joe_phone:
       friendly_name: Joe phone
       group:
-        phones:
+        group.phones:
           friendly_name: Joe
       device:
         joe_mobile:
@@ -73,7 +73,7 @@ group:
 
 ### Context-aware hide
 In case you want a device to be a member of a group but not *show* in the group - use context-aware `hidden` attribute.
-Unlike regular `hidden: true` which hides the device in all views, context-aware `hidden: true` will hide the devices in specified groups only.
+Unlike the regular `hidden: true` which hides the device in all views, context-aware `hidden: true` will hide the devices in specified groups only.
 ```yaml
 homeassistant:
   customize:

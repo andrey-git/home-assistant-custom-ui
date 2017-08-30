@@ -1,6 +1,20 @@
 # Installing CustomUI
 
-## Automatic install.
+## Hosted use [HA 0.53+]
+
+Instead of installing CustomUI files on you Home Assistant machine you can have your browser fetch them directly from github server. In this case you don't need to download any files.
+
+Pros:
+  * Easier to set up.
+  * You can choose to always use the 'latest' release.
+
+Cons:
+  * Requires Internet connection.
+  * The hoster of the files (github) can track how often you open Home Assistant.
+
+## Local install
+
+### Automatic install.
 
 1) Download [update.sh](../update.sh) to your homeassistant config dir. (For example `/home/homeassistant/.homeassistant/`)
 You can do so by running
@@ -20,13 +34,13 @@ $ ./update.sh
 
 The script updates itself and downloads CustomUI main code into `www/custom_ui`, CustomUI panel into `panels`, and Customizer component into `custom_components`. The script will prompt you about creating any of those 3 dirs if they don't exist.
 
-## Updating
+### Updating
 Run
 ```bash
 $ ./update.sh
 ```
 again. It will update everything telling you which files changed.
-## Manual install
+### Manual install
 
 Place [state-card-custom-ui.html](../state-card-custom-ui.html?raw=true) and [state-card-custom-ui.html.gz](../state-card-custom-ui.html.gz?raw=true) in `~/.homeassistant/www/custom_ui/` dir to install the main code.
 

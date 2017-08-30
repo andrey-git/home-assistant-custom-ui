@@ -1,5 +1,9 @@
 window.customUI = window.customUI || {
-  VERSION: '20170805',
+  VERSION: '20170830',
+
+  SUPPORTED_SLIDER_MODES: [
+    'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
+  ],
 
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
@@ -128,7 +132,11 @@ window.customUI = window.customUI || {
       'home-assistant-main',
       'partial-panel-resolver',
       'ha-panel-dev-info']);
-    if (devInfo === null) return;
+    if (devInfo === null) {
+      // DOM not ready. Wait 1 second.
+      window.setTimeout(window.customUI.showVersion, 1000);
+      return;
+    }
     const about = window.customUI.lightOrShadow(devInfo, '.about');
     const secondP = about.querySelectorAll('p')[1];
     const version = document.createElement('p');
@@ -140,46 +148,118 @@ window.customUI = window.customUI || {
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     const customizer = main.hass.states['customizer.customizer'];
     if (!customizer) return;
-    window.hassUtil.LOGIC_STATE_ATTRIBUTES = window.hassUtil.LOGIC_STATE_ATTRIBUTES || [];
+
     if (customizer.attributes.hide_attributes) {
-      Array.prototype.push.apply(
-        window.hassUtil.LOGIC_STATE_ATTRIBUTES, customizer.attributes.hide_attributes);
+      if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
+        Array.prototype.push.apply(
+          window.hassUtil.LOGIC_STATE_ATTRIBUTES, customizer.attributes.hide_attributes);
+      }
+      if (window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
+        customizer.attributes.hide_attributes.forEach((attr) => {
+          if (!Object.prototype.hasOwnProperty.call(
+            window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES, attr)) {
+            window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES[attr] = undefined;
+          }
+        });
+      }
     }
-    if (customizer.attributes.hide_customui_attributes) {
-      window.hassUtil.LOGIC_STATE_ATTRIBUTES.push(
-        'custom_ui_state_card',
-        'group',
-        'state_card_mode',
-        'badges_list',
-        'show_last_changed',
-        'hide_control',
-        'extra_data_template',
-        'extra_badge',
-        'stretch_slider',
-        'slider_theme',
-        'theme',
-        'theme_template',
-        'confirm_controls',
-        'confirm_controls_show_lock'
-      );
+  },
+
+  updateAttributes: function () {
+    const customUiAttributes = {
+      group: undefined,
+      device: undefined,
+      state_card_mode: {
+        type: 'array',
+        options: {
+          light: window.customUI.SUPPORTED_SLIDER_MODES,
+          cover: window.customUI.SUPPORTED_SLIDER_MODES,
+          group: ['badges'],
+        },
+      },
+      badges_list: { type: 'json' },
+      show_last_changed: { type: 'boolean' },
+      hide_control: { type: 'boolean' },
+      extra_data_template: { type: 'string' },
+      extra_badge: { type: 'json' },
+      stretch_slider: { type: 'boolean' },
+      slider_theme: { type: 'json' },
+      theme: { type: 'string' },
+      theme_template: { type: 'string' },
+      confirm_controls: { type: 'boolean' },
+      confirm_controls_show_lock: { type: 'boolean' },
+    };
+    if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
+      Array.prototype.push.apply(
+        window.hassUtil.LOGIC_STATE_ATTRIBUTES, Object.keys(customUiAttributes));
+    }
+    if (window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
+      Object.assign(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES, customUiAttributes);
+    }
+  },
+
+  updateConfigPanel: function () {
+    if (!window.location.pathname.startsWith('/config')) return;
+    const haPanelConfig = window.customUI.getElementHierarchy(document, [
+      'home-assistant',
+      'home-assistant-main',
+      'partial-panel-resolver',
+      'ha-panel-config']);
+    if (!haPanelConfig) {
+      // DOM not ready. Wait 1 second.
+      window.setTimeout(window.customUI.updateConfigPanel, 1000);
+      return;
+    }
+    const ironPages = window.customUI.lightOrShadow(haPanelConfig, 'iron-pages');
+    if (!ironPages) return;
+    const haConfigNavigation = window.customUI.getElementHierarchy(haPanelConfig, [
+      'ha-config-dashboard',
+      'ha-config-navigation']);
+    if (!haConfigNavigation) return;
+    if (ironPages.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
+      const haConfigCustomUi = document.createElement('ha-config-custom-ui');
+      haConfigCustomUi.isWide = ironPages.domHost.isWide;
+      haConfigCustomUi.setAttribute('page-name', 'customui');
+      ironPages.appendChild(haConfigCustomUi);
+      ironPages.addEventListener('iron-items-changed', () => {
+        if (window.location.pathname.startsWith('/config/customui')) {
+          ironPages.select('customui');
+        }
+      });
+    }
+    if (!haConfigNavigation.pages.some(conf => conf.domain === 'customui')) {
+      haConfigNavigation.push('pages', {
+        domain: 'customui',
+        caption: 'Custom UI',
+        description: 'Set UI tweaks.',
+        loaded: true
+      });
     }
   },
 
   init: function () {
+    if (window.customUI.initDone) return;
+    const main = window.customUI.lightOrShadow(document, 'home-assistant');
+    if (!main.hass) {
+      // Connection wasn't made yet. Try in 1 second.
+      window.setTimeout(window.customUI.init, 1000);
+      return;
+    }
+    window.customUI.initDone = true;
+
     window.customUI.runHooks();
     window.customUI.useCustomizer();
-    if (!window.customUI.initDone) {
-      window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
-      window.customUI.initDone = true;
-      /* eslint-disable no-console */
-      console.log('Loaded CustomUI ' + window.customUI.VERSION);
-      /* eslint-enable no-console */
-    }
+    window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
+    /* eslint-disable no-console */
+    console.log('Loaded CustomUI ' + window.customUI.VERSION);
+    /* eslint-enable no-console */
   },
 
   runHooks: function () {
     window.customUI.fixGroupTitles();
     window.customUI.showVersion();
+    window.customUI.updateAttributes();
+    window.customUI.updateConfigPanel();
   },
 
   getName: function () {

@@ -84,11 +84,6 @@ const panelVulcan = new Vulcanize({
 const toProcess = [
   // This is the main entry point
   {
-    source: './panel/ha-panel-custom-ui.html',
-    output: './ha-panel-custom-ui.html',
-    vulcan: panelVulcan,
-  },
-  {
     source: './build/state-card-custom-ui.html',
     output: './state-card-custom-ui.html',
     vulcan: panelVulcan,

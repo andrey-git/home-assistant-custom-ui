@@ -25,41 +25,25 @@
 
 ## Changelog
 
-#### 2017-08-02
-* [Breaking Change] `extra_data_template` format changed.
-* Added `theme_template` attribute to make  conditional entity-theming easy.
+#### 2017-08-29 (Update required to work with HA 0.53+)
+* Support CustomUI attributes in customization config UI introduced in Home Assistant 0.53
+* Add CustomUI config subpanel.
+* Customizer support for loading local (on Home Assistant machine) or hosted on Github CustomUI.
+
 
 [Full Changelog](CHANGELOG.md)
 
 ## Installing
-See [instructions](docs/installing.md)
+See [installing](docs/installing.md)
 
 ## Activating
-
-In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: custom-ui` for the relevant entities / domains.
-
-For example:
-```yaml
-homeassistant:
-  customize_glob:
-    light.*:
-      custom_ui_state_card: custom-ui
-    cover.*:
-      custom_ui_state_card: custom-ui
-```
-
-Note that yaml keys can't start with an asterix. Use quotes in that case:
-```yaml
-customize_glob:
-  "*.*":
-    custom_ui_state_card: custom-ui
-```
+See [activating](docs/activating.md)
 
 ## Customizer component
 See instruction in dedicated repo: https://github.com/andrey-git/home-assistant-customizer/
 Provides the following features:
-* Register CustomUI panel above.
-* Hide CustomUI attribute in `more-info` (Requires HA 0.50+)
+* Register CustomUI panel below.
+* Hide CustomUI attributes in `more-info` (HA 0.50 - 0.52)
 * Hide arbitrary attributes in `more-info` (Requires HA 0.50+)
 * Dynamic customization.
 
@@ -88,7 +72,7 @@ There are 3 ways to put badges in a state card.
 homeassistant:
   customize_glob:
     "*.*":
-      custom_ui_state_card: custom-ui  
+      custom_ui_state_card: state-card-custom-ui  
     group.inner_group:
       state_card_mode: badges
 
@@ -123,7 +107,7 @@ group:
 homeassistant:
   customize_glob:
     "*.*":
-      custom_ui_state_card: custom-ui  
+      custom_ui_state_card: state-card-custom-ui  
     group.my_group:
       state_card_mode: badges
 
@@ -141,7 +125,7 @@ Full example:
 homeassistant:
   customize_glob:
     "*.*":
-      custom_ui_state_card: custom-ui  
+      custom_ui_state_card: state-card-custom-ui  
     group.my_group:
       state_card_mode: badges
       badges_list:
@@ -227,7 +211,7 @@ extra_data_template: ${attributes.power_consumption}W
 #### Add badge to the state card [Requires HA 0.42+]
 ![extra_badge](https://cloud.githubusercontent.com/assets/5478779/24772030/8a7cc4ea-1b18-11e7-9313-f7654ffb0c71.png)
 
-Instead of using a grey text below the enity name you can add a sensor-like badge. There are two ways to do that:
+Instead of using a grey text below the entity name you can add a sensor-like badge. There are two ways to do that:
 1) Specify a real sensor by entity ID:
 ```yaml
 extra_badge:
@@ -284,20 +268,21 @@ In that dictionary the following optional fields are available:
 | min | 0 | Minimum slider value |
 | max | 255 for light, 100 for cover | Maximum slider value |
 | pin | False | Display numeric value when moving the slider |
-| off_when_min | True | Whether to turn the light *off* when moving the slider to the mininmum value if that value is not 0 |
-| report_when_not_changed | True | Whether to send the light-controlling command if the slider was returned to the initial position. I.e. you movied the slider and then changed your mind |
+| off_when_min | True | Whether to turn the light *off* when moving the slider to the minimum value if that value is not 0 |
+| report_when_not_changed | True | Whether to send the light-controlling command if the slider was returned to the initial position. I.e. you moved the slider and then changed your mind |
 
 ## Complete example
 ```yaml
 homeassistant:
   customize:
     light.bedroom:
-      custom_ui_state_card: custom-ui
+      custom_ui_state_card: state-card-custom-ui
       state_card_mode: break-slider
       stretch_slider: true
-      extra_data_template: "{power_consumption!=10}W"
+      extra_data_template: ${attributes.power_consumption !== 0 ? (attributes.power_consumption + 'W') : null}
       hide_control: false
       show_last_changed: false
+      theme: happy
       confirm_controls_show_lock: true
       slider_theme:
         min: 10
@@ -310,6 +295,10 @@ homeassistant:
         attribute: power_consumption
         unit: W
         blacklist_states: 0
+
+frontend:
+  extra_html_url:
+    - /local/custom_ui/state-card-custom-ui.html
 ```
 
 

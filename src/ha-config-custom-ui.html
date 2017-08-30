@@ -1,0 +1,61 @@
+<script src="hooks.js"></script>
+
+<dom-module id="ha-config-custom-ui">
+  <template>
+    <style include="ha-style"></style>
+    <app-header-layout has-scrolling-region>
+      <app-header slot="header" fixed>
+        <app-toolbar>
+          <paper-icon-button
+            icon='mdi:arrow-left'
+            on-tap='_backTapped'
+          ></paper-icon-button>
+          <div main-title>Custom UI settings</div>
+        </app-toolbar>
+      </app-header>
+
+      <ha-config-section is-wide='[[isWide]]'>
+        <paper-card heading='Device name'>
+          <div class='card-content'>
+            Set device name so that you can reference it in per-device settings
+            <paper-input
+              label='Name'
+              value='{{name}}'
+            ></paper-input>
+          </div>
+        </paper-card>
+      </ha-config-section>
+    </app-header-layout>
+  </template>
+</dom-module>
+
+<script>
+class HaConfigCustomUi extends Polymer.Element {
+  static get is() { return 'ha-config-custom-ui'; }
+
+  static get properties() {
+    return {
+      isWide: Boolean,
+
+      name: {
+        type: String,
+        observer: 'nameChanged',
+      }
+    };
+  }
+
+  ready() {
+    super.ready();
+    this.name = window.customUI.getName();
+  }
+
+  nameChanged(name) {
+    window.customUI.setName(name);
+  }
+
+  _backTapped() {
+    history.back();
+  }
+}
+customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);
+</script>

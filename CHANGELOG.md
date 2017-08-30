@@ -1,4 +1,9 @@
 ## Changelog
+#### 2017-08-29 (Update required to work with HA 0.53+)
+* Support CustomUI attributes in customization config UI introduced in Home Assistant 0.53
+* Add CustomUI config subpanel.
+* Customizer support for loading local (on Home Assistant machine) or hosted on Github CustomUI.
+
 #### 2017-08-05 (minor change)
 * Improve performance by recalculating only after attachment.
 * Visual fix for Polymer2
@@ -23,9 +28,9 @@ New features
 * Per-entity theming (Requires HA 0.50+)
 * Confirmable controls.
 
-
 Bugfixes:
 * Customization now works for *unavailable* entities #24 (Requires HA 0.50+)
+
 #### 2017-07-06
 * Fix bug introduced on 20170701 which caused slider to do nothing.
 

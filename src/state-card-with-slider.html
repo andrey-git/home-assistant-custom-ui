@@ -2,7 +2,7 @@
 
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
 <link rel="import" href="dynamic-with-extra.html">
-
+<script src="hooks.js"></script>
 
 <dom-module id="state-card-with-slider">
   <template>
@@ -79,8 +79,6 @@
 </dom-module>
 
 <script>
-var SUPPORTED_MODES = [
-  'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'];
 var DEFAULT_MODE = 'no-slider';
 Polymer({
   is: 'state-card-with-slider',
@@ -256,7 +254,8 @@ Polymer({
       this.sliderValue = 0;
     }
     if (stateObj) {
-      if (SUPPORTED_MODES.indexOf(stateObj.attributes.state_card_mode) !== -1) {
+      if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(
+        stateObj.attributes.state_card_mode) !== -1) {
         this.mode = stateObj.attributes.state_card_mode;
       } else {
         this.mode = DEFAULT_MODE;

@@ -18,7 +18,7 @@
     "init": "yarn install",
     "test": "eslint src/* panel/*",
     "vulcanize": "node script/vulcanize.js",
-    "gzip": "gzip state-card-custom-ui.html ha-panel-custom-ui.html -9fk",
+    "gzip": "gzip state-card-custom-ui.html -9fk",
     "build": "npm run vulcanize && npm run gzip",
     "deploy": "npm run test && npm run build && cp state-card-custom-ui.html* ~/.homeassistant/www/custom_ui/ && cp ha-panel-custom-ui.html* ~/.homeassistant/panels/",
     "deploy_dev": "npm run test && rm -f ~/.homeassistant/www/custom_ui/*.gz ~/.homeassistant/panels/*.gz && cp src/* ~/.homeassistant/www/custom_ui/ && cp panel/* ~/.homeassistant/panels/",
