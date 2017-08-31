@@ -31,36 +31,71 @@ Polymer({
     'inputChanged(hass, inDialog, stateObj)',
   ],
 
-  badgeMode: function (hass, stateObj) {
+  badgeMode: function (hass, stateObj, badgeLabelBorder, badgeLabelText, badgeBackground) {
     var states = [];
-    stateObj.attributes.entity_id.forEach((id) => {
-      var state = hass.states[id];
-      if (!state) {
-        /* eslint-disable no-console */
-        console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
-        /* eslint-enable no-console */
-        return;
-      }
-      if (!stateObj.attributes.badges_list ||
-          stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
+    if ( typeof stateObj.attributes.entity_id !== 'undefined' && window.hassUtil.computeDomain(stateObj) === 'group' ) {
+      stateObj.attributes.entity_id.forEach((id) => {
+        var state = hass.states[id];
+        if (!state) {
+          /* eslint-disable no-console */
+          console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
+          /* eslint-enable no-console */
+          return;
+        }
+        if (!stateObj.attributes.badges_list ||
+            stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
+          states.push(window.customUI.maybeChangeObject(
+            this, state, false /* inDialog */, false /* allowHidden */));
+        }
+      });
+    } else {
+        var state = stateObj;
+        if (!state) {
+          /* eslint-disable no-console */
+          console.warn('Unknown ID ' + stateObj.entity_id + ' in group ' + stateObj.entity_id);
+          /* eslint-enable no-console */
+          return;
+        }
         states.push(window.customUI.maybeChangeObject(
           this, state, false /* inDialog */, false /* allowHidden */));
-      }
-    });
+    }
     window.hassUtil.dynamicContentUpdater(
       this,
       'HA-BADGES-CARD',
       { hass: hass, states: states });
     Polymer.dom(this).lastChild.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
+    Polymer.dom(this).lastChild.style.setProperty('--label-badge-red', badgeLabelBorder);
+    Polymer.dom(this).lastChild.style.setProperty('--label-badge-text-color', badgeLabelText);
+    Polymer.dom(this).lastChild.style.setProperty('--label-badge-background-color', badgeBackground);
+    if (Polymer.dom(this).parentNode.parentNode.tagName === "DIV" && Polymer.dom(this).parentNode.parentNode.classList.contains('state')) {
+      Polymer.dom(this).parentNode.parentNode.style.setProperty('display', 'inline-block');
+      Polymer.dom(this).parentNode.parentNode.style.setProperty('padding', '4px 10px');
+    }
   },
 
   inputChanged: function (hass, inDialog, stateObj) {
     var stateCardType;
-    var domain;
+    var badgeLabelBorder;
+    var badgeLabelText;
+    var badgeBackground;
     if (!stateObj || !hass || !this.isAttached) return;
-    domain = window.hassUtil.computeDomain(stateObj);
-    if (!inDialog && domain === 'group' && stateObj.attributes.state_card_mode === 'badges') {
-      this.badgeMode(hass, stateObj);
+    if (!inDialog && stateObj.attributes.state_card_mode === 'badges') {
+      if (stateObj.attributes.label_badge_color) {
+        badgeLabelBorder = stateObj.attributes.label_badge_color;
+      } else {
+        badgeLabelBorder = 'var(--label-badge-red)';
+      }
+      if (stateObj.attributes.label_badge_text_color) {
+        badgeLabelText = stateObj.attributes.label_badge_text_color;
+      } else {
+        badgeLabelText = 'var(--label-badge-text-color)';
+      }
+      if (stateObj.attributes.label_background_color) {
+        badgeBackground = stateObj.attributes.label_background_color;
+      } else {
+        badgeBackground = 'var(--label-badge-background-color)';
+      }
+      this.badgeMode(hass, stateObj, badgeLabelBorder, badgeLabelText, badgeBackground);
       return;
     }
     var modifiedObj = window.customUI.maybeChangeObject(
@@ -88,6 +123,13 @@ Polymer({
     } else if (modifiedObj.attributes.theme) {
       window.hassUtil.applyThemesOnElement(
         this, hass.themes, modifiedObj.attributes.theme);
+    }
+    if (modifiedObj.attributes.background_color) {
+      if (Polymer.dom(this).parentNode.parentNode.tagName === "DIV" && Polymer.dom(this).parentNode.parentNode.classList.contains('state')) {
+        Polymer.dom(this).parentNode.parentNode.style.setProperty('background-color', modifiedObj.attributes.background_color);
+      }
+    } else {
+      Polymer.dom(this).parentNode.parentNode.style.setProperty('background-color', 'transparent');
     }
 
     var params = {
