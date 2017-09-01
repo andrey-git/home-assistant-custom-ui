@@ -31,27 +31,55 @@ Polymer({
     'inputChanged(hass, inDialog, stateObj)',
   ],
 
-  badgeMode: function (hass, stateObj) {
-    var states = [];
-    stateObj.attributes.entity_id.forEach((id) => {
-      var state = hass.states[id];
-      if (!state) {
-        /* eslint-disable no-console */
-        console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
-        /* eslint-enable no-console */
-        return;
+  badgeMode: function (hass, stateObj, domain) {
+    const states = [];
+    if (domain === 'group') {
+      stateObj.attributes.entity_id.forEach((id) => {
+        const state = hass.states[id];
+        if (!state) {
+          /* eslint-disable no-console */
+          console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
+          /* eslint-enable no-console */
+          return;
+        }
+        if (!stateObj.attributes.badges_list ||
+            stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
+          states.push(window.customUI.maybeChangeObject(
+            this, state, false /* inDialog */, false /* allowHidden */));
+        }
+      });
+    } else {
+      states.push(stateObj);
+      const container = this.parentNode.parentNode;
+      if (container.tagName === 'DIV' && container.classList.contains('state')) {
+        container.style.display = 'inline-block';
+        this.style.display = 'inline-block';
+        this.style.margin = '0 -6px';
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            mutation.removedNodes.forEach((node) => {
+              if (node === this) {
+                container.style.display = '';
+                observer.disconnect();
+              }
+            });
+          });
+        });
+        observer.observe(this.parentNode, { childList: true });
       }
-      if (!stateObj.attributes.badges_list ||
-          stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
-        states.push(window.customUI.maybeChangeObject(
-          this, state, false /* inDialog */, false /* allowHidden */));
-      }
-    });
+    }
     window.hassUtil.dynamicContentUpdater(
       this,
       'HA-BADGES-CARD',
       { hass: hass, states: states });
-    Polymer.dom(this).lastChild.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
+    // Since this varioable only affects badges mode - no need to clean it up.
+    this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
+  },
+
+  cleanBadgeStyle: function () {
+    this.parentNode.parentNode.style.display = '';
+    this.style.display = '';
+    this.style.margin = '';
   },
 
   inputChanged: function (hass, inDialog, stateObj) {
@@ -59,10 +87,6 @@ Polymer({
     var domain;
     if (!stateObj || !hass || !this.isAttached) return;
     domain = window.hassUtil.computeDomain(stateObj);
-    if (!inDialog && domain === 'group' && stateObj.attributes.state_card_mode === 'badges') {
-      this.badgeMode(hass, stateObj);
-      return;
-    }
     var modifiedObj = window.customUI.maybeChangeObject(
       this, stateObj, inDialog, true /* allowHidden */);
     if (!modifiedObj) {
@@ -76,6 +100,7 @@ Polymer({
       }
       return;
     }
+
     if (modifiedObj.attributes.theme_template) {
       const value = window.customUI.computeTemplate(
         modifiedObj.attributes.theme_template,
@@ -88,7 +113,16 @@ Polymer({
     } else if (modifiedObj.attributes.theme) {
       window.hassUtil.applyThemesOnElement(
         this, hass.themes, modifiedObj.attributes.theme);
+    } else {
+      // If this entity has no theme - clean up any theme leftovers.
+      window.hassUtil.applyThemesOnElement(this, hass.themes);
     }
+
+    if (!inDialog && modifiedObj.attributes.state_card_mode === 'badges') {
+      this.badgeMode(hass, modifiedObj, domain);
+      return;
+    }
+    this.cleanBadgeStyle();
 
     var params = {
       hass: hass,
@@ -97,6 +131,7 @@ Polymer({
     };
     domain = window.hassUtil.computeDomain(stateObj);
     stateCardType = window.hassUtil.stateCardType(hass, stateObj);
+    const secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
 
     if (domain === 'light') {
       Object.assign(params, {
@@ -124,7 +159,11 @@ Polymer({
         controlElement: '',
       });
     }
-    if (domain === 'light' || domain === 'cover' || stateCardType === 'toggle' || stateCardType === 'display') {
+    if (!secondaryStateCardType &&
+       (domain === 'light' ||
+        domain === 'cover' ||
+        stateCardType === 'toggle' ||
+        stateCardType === 'display')) {
       stateCardType = 'with-slider';
       Object.assign(params, {
         domain: domain,
@@ -141,7 +180,7 @@ Polymer({
 
     window.hassUtil.dynamicContentUpdater(
       this,
-      'STATE-CARD-' + stateCardType.toUpperCase(),
+      secondaryStateCardType || ('STATE-CARD-' + stateCardType.toUpperCase()),
       params);
   },
 });

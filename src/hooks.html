@@ -173,11 +173,12 @@ window.customUI = window.customUI || {
       state_card_mode: {
         type: 'array',
         options: {
-          light: window.customUI.SUPPORTED_SLIDER_MODES,
-          cover: window.customUI.SUPPORTED_SLIDER_MODES,
-          group: ['badges'],
+          light: window.customUI.SUPPORTED_SLIDER_MODES.concat('badges'),
+          cover: window.customUI.SUPPORTED_SLIDER_MODES.concat('badges'),
+          '*': ['badges'],
         },
       },
+      state_card_custom_ui_secondary: { type: 'string' },
       badges_list: { type: 'json' },
       show_last_changed: { type: 'boolean' },
       hide_control: { type: 'boolean' },
