@@ -1,5 +1,16 @@
 ## Changelog
-#### 2017-08-29 (Update required to work with HA 0.53+)
+
+Note: Update to at least 20170830 required for HA 0.53+
+
+#### 2017-09-03
+* Use badges without using group-in-group
+* Per-entity theming improvements (Thanks @ahofelt for reference implementation):
+ * paper-card-background-color will now properly set per-entity background.
+ * Label-related variable will now properly affect labels.
+* Support for using your own custom UI state cards with this CustomUI framework.
+
+
+#### 2017-08-30
 * Support CustomUI attributes in customization config UI introduced in Home Assistant 0.53
 * Add CustomUI config subpanel.
 * Customizer support for loading local (on Home Assistant machine) or hosted on Github CustomUI.
