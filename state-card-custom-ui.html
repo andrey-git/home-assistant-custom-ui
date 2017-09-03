@@ -1,5 +1,5 @@
 <html><head><meta charset="UTF-8"></head><body><div hidden="" by-vulcanize=""><script>window.customUI = window.customUI || {
-  VERSION: '20170830',
+  VERSION: '20170903',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
@@ -172,11 +172,12 @@
       state_card_mode: {
         type: 'array',
         options: {
-          light: window.customUI.SUPPORTED_SLIDER_MODES,
-          cover: window.customUI.SUPPORTED_SLIDER_MODES,
-          group: ['badges'],
+          light: window.customUI.SUPPORTED_SLIDER_MODES.concat('badges'),
+          cover: window.customUI.SUPPORTED_SLIDER_MODES.concat('badges'),
+          '*': ['badges'],
         },
       },
+      state_card_custom_ui_secondary: { type: 'string' },
       badges_list: { type: 'json' },
       show_last_changed: { type: 'boolean' },
       hide_control: { type: 'boolean' },
@@ -624,100 +625,157 @@ Polymer({
     if (extra) return false;
     return !!stateObj.attributes.show_last_changed;
   },
-});</script><script>var SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
+});</script><script>const SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
+class StateCardCustomUi extends Polymer.Element {
+  static get is() { return 'state-card-custom-ui'; }
 
-Polymer({
-  is: 'state-card-custom-ui',
+  static get properties() {
+    return {
+      hass: Object,
 
-  attached: function () {
+      inDialog: {
+        type: Boolean,
+        value: false,
+      },
+
+      stateObj: Object,
+    };
+  }
+
+  static get observers() {
+    return [
+      'inputChanged(hass, inDialog, stateObj)',
+    ];
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    const container = this.parentNode.parentNode;
+    if (container.tagName === 'DIV' && container.classList.contains('state')) {
+      this._container = container;
+
+      // Since this doesn't actually change the background - no need to clear it.
+      container.style.setProperty(
+        'background-color', 'var(--paper-card-background-color, inherit)');
+
+      // Polyfill 'updateStyles'.
+      if (!container.updateStyles) {
+        container.updateStyles = (styles) => {
+          Object.keys(styles).forEach((key) => {
+            container.style.setProperty(key, styles[key]);
+          });
+        };
+      }
+    }
+    this._isAttached = true;
     this.inputChanged(this.hass, this.inDialog, this.stateObj);
-  },
+  }
 
-  properties: {
-    hass: {
-      type: Object,
-    },
+  disconnectedCallback() {
+    this._isAttached = false;
+    if (this._container) {
+      this._container.updateStyles({ display: '', margin: '', padding: '' });
+      window.hassUtil.applyThemesOnElement(this._container, this.hass.themes, 'default');
+      this._container = null;
+    }
+    super.disconnectedCallback();
+  }
 
-    inDialog: {
-      type: Boolean,
-      value: false,
-    },
-
-    stateObj: {
-      type: Object,
-    },
-  },
-
-  observers: [
-    'inputChanged(hass, inDialog, stateObj)',
-  ],
-
-  badgeMode: function (hass, stateObj) {
-    var states = [];
-    stateObj.attributes.entity_id.forEach((id) => {
-      var state = hass.states[id];
-      if (!state) {
-        /* eslint-disable no-console */
-        console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
-        /* eslint-enable no-console */
-        return;
+  badgeMode(hass, stateObj, domain) {
+    const states = [];
+    if (domain === 'group') {
+      stateObj.attributes.entity_id.forEach((id) => {
+        const state = hass.states[id];
+        if (!state) {
+          /* eslint-disable no-console */
+          console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
+          /* eslint-enable no-console */
+          return;
+        }
+        if (!stateObj.attributes.badges_list ||
+            stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
+          states.push(window.customUI.maybeChangeObject(
+            this, state, false /* inDialog */, false /* allowHidden */));
+        }
+      });
+    } else {
+      states.push(stateObj);
+      if (this._container) {
+        this._container.style.display = 'inline-block';
+        this.updateStyles({ display: 'inline-block', margin: '0 -6px' });
       }
-      if (!stateObj.attributes.badges_list ||
-          stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
-        states.push(window.customUI.maybeChangeObject(
-          this, state, false /* inDialog */, false /* allowHidden */));
-      }
-    });
+    }
     window.hassUtil.dynamicContentUpdater(
       this,
       'HA-BADGES-CARD',
       { hass: hass, states: states });
-    Polymer.dom(this).lastChild.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
-  },
+    // Since this variable only affects badges mode - no need to clean it up.
+    this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
+  }
 
-  inputChanged: function (hass, inDialog, stateObj) {
-    var stateCardType;
-    var domain;
-    if (!stateObj || !hass || !this.isAttached) return;
-    domain = window.hassUtil.computeDomain(stateObj);
-    if (!inDialog && domain === 'group' && stateObj.attributes.state_card_mode === 'badges') {
-      this.badgeMode(hass, stateObj);
-      return;
+  cleanBadgeStyle() {
+    if (this._container) {
+      this._container.style.display = '';
     }
-    var modifiedObj = window.customUI.maybeChangeObject(
-      this, stateObj, inDialog, true /* allowHidden */);
-    if (!modifiedObj) {
-      var rootEl = Polymer.dom(this);
-      if (rootEl.lastChild) {
-        rootEl.removeChild(rootEl.lastChild);
-      }
-      if (rootEl.parentNode && rootEl.parentNode.parentElement) {
-        rootEl.parentNode.parentElement.style.margin = '0';
-        rootEl.parentNode.parentElement.style.padding = '0';
-      }
-      return;
+    this.updateStyles({ display: '', margin: '' });
+  }
+
+  applyThemes(hass, modifiedObj) {
+    let themeTarget = this;
+    let themeName = 'default';
+    if (this._container) {
+      themeTarget = this._container;
     }
     if (modifiedObj.attributes.theme_template) {
-      const value = window.customUI.computeTemplate(
+      themeName = window.customUI.computeTemplate(
         modifiedObj.attributes.theme_template,
         hass,
         hass.states,
         modifiedObj,
-        modifiedObj.attributes);
-      window.hassUtil.applyThemesOnElement(
-        this, hass.themes, value);
+        modifiedObj.attributes) || themeName;
     } else if (modifiedObj.attributes.theme) {
-      window.hassUtil.applyThemesOnElement(
-        this, hass.themes, modifiedObj.attributes.theme);
+      themeName = modifiedObj.attributes.theme;
     }
+    window.hassUtil.applyThemesOnElement(themeTarget, hass.themes, themeName);
+  }
 
-    var params = {
+  maybeHideEntity(modifiedObj) {
+    if (!modifiedObj) {
+      if (this.lastChild) {
+        this.removeChild(this.lastChild);
+      }
+      if (this._container) {
+        this._container.updateStyles({ margin: '0', padding: '0' });
+      }
+      return true;
+    }
+    this._container.updateStyles({ margin: '', padding: '' });
+    return false;
+  }
+
+  inputChanged(hass, inDialog, stateObj) {
+    if (!stateObj || !hass || !this._isAttached) return;
+    const domain = window.hassUtil.computeDomain(stateObj);
+    const modifiedObj = window.customUI.maybeChangeObject(
+      this, stateObj, inDialog, true /* allowHidden */);
+
+    if (this.maybeHideEntity(modifiedObj)) return;
+
+    this.applyThemes(hass, modifiedObj);
+
+    if (!inDialog && modifiedObj.attributes.state_card_mode === 'badges') {
+      this.badgeMode(hass, modifiedObj, domain);
+      return;
+    }
+    this.cleanBadgeStyle();
+
+    const params = {
       hass: hass,
       stateObj: modifiedObj,
       inDialog: inDialog,
     };
-    domain = window.hassUtil.computeDomain(stateObj);
-    stateCardType = window.hassUtil.stateCardType(hass, stateObj);
+    let stateCardType = window.hassUtil.stateCardType(hass, stateObj);
+    const secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
 
     if (domain === 'light') {
       Object.assign(params, {
@@ -745,7 +803,11 @@ Polymer({
         controlElement: '',
       });
     }
-    if (domain === 'light' || domain === 'cover' || stateCardType === 'toggle' || stateCardType === 'display') {
+    if (!secondaryStateCardType &&
+       (domain === 'light' ||
+        domain === 'cover' ||
+        stateCardType === 'toggle' ||
+        stateCardType === 'display')) {
       stateCardType = 'with-slider';
       Object.assign(params, {
         domain: domain,
@@ -762,7 +824,8 @@ Polymer({
 
     window.hassUtil.dynamicContentUpdater(
       this,
-      'STATE-CARD-' + stateCardType.toUpperCase(),
+      secondaryStateCardType || ('STATE-CARD-' + stateCardType.toUpperCase()),
       params);
-  },
-});</script></div></body></html>
+  }
+}
+customElements.define(StateCardCustomUi.is, StateCardCustomUi);</script></div></body></html>

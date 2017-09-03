@@ -2,20 +2,39 @@
 
 ## For Home Assistant 0.53+
 
-#### 1. Tell Home Assistant to load relevant the files.
+#### 1. Tell Home Assistant to load relevant files.
 
-For [local install](installing.md#local-install)
+Using [customizer](https://github.com/andrey-git/home-assistant-customizer/) for [local install](installing.md#local-install)
+```yaml
+customizer:
+  custom_ui: local
+```
+
+Manually for [local install](installing.md#local-install)
 ```yaml
 frontend:
   extra_html_url:
     - /local/custom_ui/state-card-custom-ui.html
 ```
 
-For [hosted use](installing.md#hosted-use-053)
+Using [customizer](https://github.com/andrey-git/home-assistant-customizer/) for [hosted](installing.md#hosted-use-053) use of head version
+```yaml
+customizer:
+  custom_ui: hosted
+```
+
+Manually for [hosted](installing.md#hosted-use-053) use of head version.
 ```yaml
 frontend:
   extra_html_url:
     - https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/state-card-custom-ui.html
+```
+
+For [hosted use](installing.md#hosted-use-053) of a specific release.
+```yaml
+frontend:
+  extra_html_url:
+    - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20170830/state-card-custom-ui.html
 ```
 
 #### 2. Tell Home Assistant to use CustomUI for state cards.

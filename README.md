@@ -9,6 +9,7 @@
     + [Context-aware attributes](#context-aware-attributes)
     + [Badges in state cards](#badges-in-state-cards)
     + [Per entity themeing (Requires HA 0.50+)](#per-entity-theming)
+    + [Secondary custom UI](#secondary-customui)
   * [Features available for almost all domains](#features-available-for-almost-all-domains)
       - [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
   * [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
@@ -25,10 +26,21 @@
 
 ## Changelog
 
-#### 2017-08-29 (Update required to work with HA 0.53+)
+**Note: Update to at least 20170830 required for HA 0.53+**
+
+#### 2017-09-03
+* Use badges without using group-in-group
+* Per-entity theming improvements (Thanks @ahofelt for reference implementation):
+ * paper-card-background-color will now properly set per-entity background.
+ * Label-related variable will now properly affect labels.
+* Support for using your own custom UI state cards with this CustomUI framework.
+
+
+#### 2017-08-30
 * Support CustomUI attributes in customization config UI introduced in Home Assistant 0.53
 * Add CustomUI config subpanel.
 * Customizer support for loading local (on Home Assistant machine) or hosted on Github CustomUI.
+
 
 
 [Full Changelog](CHANGELOG.md)
@@ -69,9 +81,29 @@ See [context-aware.md](docs/context-aware.md)
 ![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)
 
 If you like badges, you can now put them in the state cards. This also works for domains that are usually not used as a badge. Lights for example.
-There are 3 ways to put badges in a state card.
+There are 4 ways to put badges in a state card.
 
-1) Create a dedicated group of devices you want to display as badges and apply `state_card_mode: badges` to it. Note that this group must be in another group. The example below will show 2 sensors as badges in outer_group's card.
+1) Turn a single state card into a badge. Adjacent badges will clamp together to a single line.
+
+```yaml
+homeassistant:
+  customize_glob:
+    "*.*":
+      custom_ui_state_card: state-card-custom-ui  
+    sensor.door_sensor:
+      state_card_mode: badges
+    sensor.yard_sensor:
+      state_card_mode: badges
+
+group:
+  my_group:
+    entities:
+      - sensor.door_sensor
+      - sensor.yard_sensor
+```
+
+2) Create a dedicated group of devices you want to display as badges and apply `state_card_mode: badges` to it. Note that this group must be in another group. The example below will show 2 sensors as badges in outer_group's card.
+
 ```yaml
 homeassistant:
   customize_glob:
@@ -91,7 +123,7 @@ group:
       *all other devices of outer_group*
 ```
 
-2) If you already have a group, *part* of which you want to display as badges *inside another group* - use `badges_list` to filter badge wannabe entities. In the previous example, if you wanted to show only `sensor.door_sensor` as a badge in outer_group:
+3) If you already have a group, *part* of which you want to display as badges *inside another group* - use `badges_list` to filter badge wannabe entities. In the previous example, if you wanted to show only `sensor.door_sensor` as a badge in outer_group:
 ```yaml
 ...
     group.inner_group:
@@ -106,7 +138,7 @@ group:
 ...
 ```
 
-3) Creating a dedicated group has a downside that the group will also show in the UI as whole in the default_view. To prevent that, you can make the group include itself. In the following example `inner_group` and `outer_group` are the same group:
+4) Creating a dedicated group has a downside that the group will also show in the UI as whole in the default_view. To prevent that, you can make the group include itself. In the following example `inner_group` and `outer_group` are the same group:
 ```yaml
 homeassistant:
   customize_glob:
@@ -178,6 +210,18 @@ light.yard:
   theme_template: ${entity.state}
 ```
 
+### Secondary customUI
+![secondary_custom_ui](https://user-images.githubusercontent.com/5478779/30005196-a8d8bd2a-90e5-11e7-9f4c-a787a1227076.png)
+
+If you would like to use your own [state-card-custom-alarm.html](https://community.home-assistant.io/t/custom-ui-with-buttons-fan-control/13808/46) for `alarm_control_panel` but still enjoy framework features of CustomUI, like theming, you can use `state_card_custom_ui_secondary`:
+```yaml
+homeassistant:
+  customize_glob:
+    "*.*":
+      custom_ui_state_card: state-card-custom-ui
+    alarm_control_panel.alarm:
+      state_card_custom_ui_secondary: state-card-custom_alarm
+```
 
 ## Features available for almost all domains.
 
