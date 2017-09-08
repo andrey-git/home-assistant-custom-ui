@@ -229,7 +229,7 @@ Polymer({
   sliderChanged: function (ev) {
     var value = parseInt(ev.target.value, 10);
     var param = { entity_id: this.stateObj.entity_id };
-    if (isNaN(value)) return;
+    if (Number.isNaN(value)) return;
     var target = this.$$('#slider');
     if (ev.target !== target) {
       // No Shadow DOM - we have access to original target.
