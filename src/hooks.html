@@ -6,6 +6,12 @@ window.customUI = window.customUI || {
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
   ],
 
+  domHost: function (elem) {
+    if (elem === document) return null;
+    const root = elem.getRootNode();
+    return (root instanceof DocumentFragment) ? /** @type {ShadowRoot} */ (root).host : root;
+  },
+
   lightOrShadow: function (elem, selector) {
     return elem.shadowRoot ?
       elem.shadowRoot.querySelector(selector) :
@@ -25,7 +31,8 @@ window.customUI = window.customUI || {
   getContext: function (elem) {
     if (elem._context === undefined) {
       elem._context = [];
-      for (let element = (elem.tagName === 'HA-ENTITIES-CARD' ? elem.domHost : elem); element; element = element.domHost) {
+      for (let element = (elem.tagName === 'HA-ENTITIES-CARD' ? window.customUI.domHost(elem) : elem);
+        element; element = window.customUI.domHost(element)) {
         switch (element.tagName) {
           case 'HA-ENTITIES-CARD':
             if (element.groupEntity) {
@@ -220,7 +227,7 @@ window.customUI = window.customUI || {
     if (!haConfigNavigation) return;
     if (ironPages.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
       const haConfigCustomUi = document.createElement('ha-config-custom-ui');
-      haConfigCustomUi.isWide = ironPages.domHost.isWide;
+      haConfigCustomUi.isWide = window.customUI.domHost(ironPages).isWide;
       haConfigCustomUi.setAttribute('page-name', 'customui');
       ironPages.appendChild(haConfigCustomUi);
       ironPages.addEventListener('iron-items-changed', () => {

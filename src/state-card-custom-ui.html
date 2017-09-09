@@ -29,7 +29,8 @@ class StateCardCustomUi extends Polymer.Element {
   connectedCallback() {
     super.connectedCallback();
     const container = this.parentNode.parentNode;
-    if (container.tagName === 'DIV' && container.classList.contains('state')) {
+    if (container.tagName === 'DIV' &&
+        (container.classList.contains('state') || container.classList.contains('child-card'))) {
       this._container = container;
 
       // Since this doesn't actually change the background - no need to clear it.
@@ -53,7 +54,8 @@ class StateCardCustomUi extends Polymer.Element {
     this._isAttached = false;
     if (this._container) {
       this._container.updateStyles({ display: '', margin: '', padding: '' });
-      window.hassUtil.applyThemesOnElement(this._container, this.hass.themes, 'default');
+      window.hassUtil.applyThemesOnElement(
+        this._container, this.hass.themes || { default_theme: 'default', themes: {} }, 'default');
       this._container = null;
     }
     super.disconnectedCallback();
@@ -80,7 +82,11 @@ class StateCardCustomUi extends Polymer.Element {
       states.push(stateObj);
       if (this._container) {
         this._container.style.display = 'inline-block';
-        this.updateStyles({ display: 'inline-block', margin: '0 -6px' });
+        const params = { display: 'inline-block' };
+        if (this._container.classList.contains('state')) {
+          params.margin = '0 -6px';
+        }
+        this.updateStyles(params);
       }
     }
     window.hassUtil.dynamicContentUpdater(
@@ -114,7 +120,8 @@ class StateCardCustomUi extends Polymer.Element {
     } else if (modifiedObj.attributes.theme) {
       themeName = modifiedObj.attributes.theme;
     }
-    window.hassUtil.applyThemesOnElement(themeTarget, hass.themes, themeName);
+    window.hassUtil.applyThemesOnElement(
+      themeTarget, hass.themes || { default_theme: 'default', themes: {} }, themeName);
   }
 
   maybeHideEntity(modifiedObj) {
@@ -127,7 +134,9 @@ class StateCardCustomUi extends Polymer.Element {
       }
       return true;
     }
-    this._container.updateStyles({ margin: '', padding: '' });
+    if (this._container) {
+      this._container.updateStyles({ margin: '', padding: '' });
+    }
     return false;
   }
 
