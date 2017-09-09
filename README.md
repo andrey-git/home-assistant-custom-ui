@@ -26,9 +26,12 @@
 
 ## Changelog
 
-**Note: Update to at least 20170830 required for HA 0.53+**
+**Note: Update to at least 20170909 required for HA 0.53+**
 
-#### 2017-09-03
+#### 2017-09-09
+* Compress code better and transpile it for ES5: Now it should support all browsers supported by Home Assistant.
+
+#### 2017-09-03 [Broken]
 * Use badges without using group-in-group
 * Per-entity theming improvements (Thanks @ahofelt for reference implementation):
  * paper-card-background-color will now properly set per-entity background.
@@ -36,11 +39,10 @@
 * Support for using your own custom UI state cards with this CustomUI framework.
 
 
-#### 2017-08-30
+#### 2017-08-30 [Config panel is broken]
 * Support CustomUI attributes in customization config UI introduced in Home Assistant 0.53
 * Add CustomUI config subpanel.
 * Customizer support for loading local (on Home Assistant machine) or hosted on Github CustomUI.
-
 
 
 [Full Changelog](CHANGELOG.md)

@@ -1,0 +1,8 @@
+{
+  "entrypoint": "bower_components/polymer/polymer-element.html",
+  "shell": "bower_components/polymer/polymer-element.html",
+  "fragments": [ "src/state-card-custom-ui.html"],
+  "sources": [
+    "src/**/*"
+  ]
+}
