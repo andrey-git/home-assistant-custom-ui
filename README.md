@@ -26,11 +26,14 @@
 
 ## Changelog
 
-**Important Note: Update to at least 20170909 required for HA 0.53+**
+**Important Note: Update to at least 20170910 required for HA 0.53+**
 
 **Important Note: Make a force refresh (ctrl+f5) after upgrding HA to 0.53**
 
-#### 2017-09-09
+#### 2017-09-10
+* Fix some Polymer2-related bugs.
+
+#### 2017-09-09 [Broken]
 * Compress code better and transpile it for ES5: Now it should support all browsers supported by Home Assistant.
 
 #### 2017-09-03 [Broken]
