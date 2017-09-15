@@ -39,3 +39,20 @@ homeassistant:
       extra_data_template: >
         if (entities['light.bedroom'].attributes.brightness > 30) return 'Yes'; else return null;
 ```
+
+If you always want to display brightness (even if it is 0%)
+```
+homeassistant:
+  customize:
+    light.my_light:
+      extra_data_template: ${Math.round(attributes.brightness || 0) / 2.55}%
+```
+
+To display brightness only if it exists and is non-zero:
+```
+homeassistant:
+  customize:
+    light.my_light:
+      extra_data_template: >
+        if (attributes.brightness) return Math.round(attributes.brightness / 2.55) + '%'; else return null;
+```
