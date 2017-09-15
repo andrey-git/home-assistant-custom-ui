@@ -41,7 +41,7 @@ homeassistant:
 ```
 
 If you always want to display brightness (even if it is 0%)
-```
+```yaml
 homeassistant:
   customize:
     light.my_light:
@@ -49,7 +49,7 @@ homeassistant:
 ```
 
 To display brightness only if it exists and is non-zero:
-```
+```yaml
 homeassistant:
   customize:
     light.my_light:
