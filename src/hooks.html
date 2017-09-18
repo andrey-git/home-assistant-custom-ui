@@ -1,6 +1,6 @@
 <script>
 window.customUI = window.customUI || {
-  VERSION: '20170910',
+  VERSION: '20170918',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
@@ -249,7 +249,7 @@ window.customUI = window.customUI || {
   init: function () {
     if (window.customUI.initDone) return;
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
-    if (!main.hass) {
+    if (!main.hass || !main.hass.states) {
       // Connection wasn't made yet. Try in 1 second.
       window.setTimeout(window.customUI.init, 1000);
       return;
@@ -281,10 +281,20 @@ window.customUI = window.customUI || {
 
   computeTemplate: function (template, hass, entities, entity, attributes) {
     const functionBody = (template.indexOf('return') >= 0) ? template : 'return `' + template + '`;';
-    /* eslint-disable no-new-func */
-    const func = new Function('hass', 'entities', 'entity', 'attributes', functionBody);
-    /* eslint-enable no-new-func */
-    return func(hass, entities, entity, attributes);
+    try {
+      /* eslint-disable no-new-func */
+      const func = new Function('hass', 'entities', 'entity', 'attributes', functionBody);
+      /* eslint-enable no-new-func */
+      return func(hass, entities, entity, attributes);
+    } catch (e) {
+      /* eslint-disable no-console */
+      if ((e instanceof SyntaxError) || e instanceof ReferenceError) {
+        console.warn(e.name + ': ' + e.message + ' in template ' + functionBody);
+        return null;
+      }
+      /* eslint-enable no-console */
+      throw e;
+    }
   },
 };
 
