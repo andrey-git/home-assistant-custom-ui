@@ -30,25 +30,9 @@
 
 **Important Note: Make a force refresh (ctrl+f5) after upgrding HA to 0.53**
 
-#### 2017-09-10
-* Fix some Polymer2-related bugs.
-
-#### 2017-09-09 [Broken]
-* Compress code better and transpile it for ES5: Now it should support all browsers supported by Home Assistant.
-
-#### 2017-09-03 [Broken]
-* Use badges without using group-in-group
-* Per-entity theming improvements (Thanks @ahofelt for reference implementation):
- * paper-card-background-color will now properly set per-entity background.
- * Label-related variable will now properly affect labels.
-* Support for using your own custom UI state cards with this CustomUI framework.
-
-
-#### 2017-08-30 [Config panel is broken]
-* Support CustomUI attributes in customization config UI introduced in Home Assistant 0.53
-* Add CustomUI config subpanel.
-* Customizer support for loading local (on Home Assistant machine) or hosted on Github CustomUI.
-
+#### 2017-09-18
+* Delay initialization until states are loaded.
+* Give better error for broken templates.
 
 [Full Changelog](CHANGELOG.md)
 

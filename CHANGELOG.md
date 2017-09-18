@@ -2,6 +2,10 @@
 
 Note: Update to at least 20170910 required for HA 0.53+
 
+#### 2017-09-18
+* Delay initialization until states are loaded.
+* Give better error for broken templates.
+
 #### 2017-09-10
 * Fix some Polymer2-related bugs.
 
