@@ -7,6 +7,7 @@
   * [CustomUI panel](#customui-panel)
   * [Features available for all domains](#features-available-for-all-domains)
     + [Context-aware attributes](#context-aware-attributes)
+    + [Template attributes [New in 20170927]](#template-attributes)
     + [Badges in state cards](#badges-in-state-cards)
     + [Per entity themeing (Requires HA 0.50+)](#per-entity-theming)
     + [Secondary custom UI](#secondary-customui)
@@ -14,8 +15,8 @@
       - [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
   * [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
       - [You can hide the control altogether](#you-can-hide-the-control-altogether)
-      - [You can add extra data below the entity name [Requires HA 0.43+]](#you-can-add-extra-data-below-the-entity-name-requires-ha-043)
-      - [Add badge to the state card [Requires HA 0.42+]](#add-badge-to-the-state-card-requires-ha-042)
+      - [You can add extra data below the entity name](#you-can-add-extra-data-below-the-entity-name)
+      - [Add badge to the state card](#add-badge-to-the-state-card)
       - [Confirmable controls](#confirmable-controls)
   * [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
       - [If there is not enough horizontal space the mode is set by `state_card_mode` parameter](#if-there-is-not-enough-horizontal-space-the-mode-is-set-by-state_card_mode-parameter)
@@ -30,9 +31,10 @@
 
 **Important Note: Make a force refresh (ctrl+f5) after upgrding HA to 0.53**
 
-#### 2017-09-18
-* Delay initialization until states are loaded.
-* Give better error for broken templates.
+#### 2017-09-27 : Breaking Change
+* Entity state and attributes can now be overridden by templates. See [Templates](docs/templates.md)
+* [Breaking change]: `theme_template` attribute has been removed. Used templates to tweak `themes` attribute.
+  Note that `extra_data_template` behavior didn't change.
 
 [Full Changelog](CHANGELOG.md)
 
@@ -67,6 +69,18 @@ In HA 0.53+ is added automatically to config panel.
 
 You can use context-aware attributes to give different names for the same entity in different groups, views, or devices.
 See [context-aware.md](docs/context-aware.md)
+
+### Template attributes
+You can set entity's attributes or state using javascript templates. See [Templates](docs/templates.md) for more info.
+
+For example to show "Active" instead of "on" for binary sensor:
+```yaml
+homeassistant:
+  customize:
+    binary_sensor.my_sensor:
+      templates:
+        state: if state === 'on' return 'Active'; else return state;
+```
 
 ### Badges in state cards
 ![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)
@@ -191,16 +205,6 @@ light.yard:
   theme: green_example
 ```
 
-You can also use a conditional theme by using `theme_template` attribute. See [Templates](docs/templates.md)
-```yaml
-frontend:
-  themes:
-    green_example:
-      paper-toggle-button-checked-button-color: green
-light.yard:
-  theme_template: ${entity.state}
-```
-
 ### Secondary customUI
 ![secondary_custom_ui](https://user-images.githubusercontent.com/5478779/30005196-a8d8bd2a-90e5-11e7-9f4c-a787a1227076.png)
 
@@ -238,7 +242,7 @@ The next features are available for 4 types of cards:
 
 Use `hide_control: true` to hide the control (toggle / cover buttons) altogether.
 
-#### You can add extra data below the entity name [Requires HA 0.43+]
+#### You can add extra data below the entity name
 ![extra_data](https://cloud.githubusercontent.com/assets/5478779/24772032/8a7e90e0-1b18-11e7-9b3e-e36b56ef2417.png)
 
 Use `extra_data_template` to add extra data below the entity name. The format is a [Templates](docs/templates.md).
@@ -247,7 +251,7 @@ For example to show power consumption from the `power_consumption` attribute use
 extra_data_template: ${attributes.power_consumption}W
 ```
 
-#### Add badge to the state card [Requires HA 0.42+]
+#### Add badge to the state card
 ![extra_badge](https://cloud.githubusercontent.com/assets/5478779/24772030/8a7cc4ea-1b18-11e7-9313-f7654ffb0c71.png)
 
 Instead of using a grey text below the entity name you can add a sensor-like badge. There are two ways to do that:

@@ -110,14 +110,7 @@ class StateCardCustomUi extends Polymer.Element {
     if (this._container) {
       themeTarget = this._container;
     }
-    if (modifiedObj.attributes.theme_template) {
-      themeName = window.customUI.computeTemplate(
-        modifiedObj.attributes.theme_template,
-        hass,
-        hass.states,
-        modifiedObj,
-        modifiedObj.attributes) || themeName;
-    } else if (modifiedObj.attributes.theme) {
+    if (modifiedObj.attributes.theme) {
       themeName = modifiedObj.attributes.theme;
     }
     window.hassUtil.applyThemesOnElement(

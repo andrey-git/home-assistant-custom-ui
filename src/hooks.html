@@ -1,6 +1,6 @@
 <script>
 window.customUI = window.customUI || {
-  VERSION: '20170918',
+  VERSION: '20170927',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
@@ -89,6 +89,27 @@ window.customUI = window.customUI || {
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
+  maybeApplyTemplates: function (elem, stateObj) {
+    if (!stateObj.attributes.templates) {
+      return stateObj;
+    }
+    const attributes = {};
+    Object.keys(stateObj.attributes.templates).forEach((key) => {
+      const template = stateObj.attributes.templates[key];
+      const value = window.customUI.computeTemplate(
+        template, elem.hass, elem.hass.states, stateObj, stateObj.attributes,
+        stateObj.attributes[key], stateObj.state);
+      attributes[key] = value;
+    });
+
+    if (!Object.keys(attributes).length) return stateObj;
+    const result = window.customUI.applyAttributes(stateObj, attributes);
+    if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
+      return Object.assign(result, { state: attributes.state });
+    }
+    return result;
+  },
+
   applyAttributes: function (stateObj, attributes) {
     return {
       entity_id: stateObj.entity_id,
@@ -102,6 +123,7 @@ window.customUI = window.customUI || {
     if (inDialog) return stateObj;
     let obj = window.customUI.maybeChangeObjectByDevice(stateObj);
     obj = window.customUI.maybeChangeObjectByGroup(elem, obj);
+    obj = window.customUI.maybeApplyTemplates(elem, obj);
 
     if (obj !== stateObj && obj.attributes.hidden && allowHidden) {
       return null;
@@ -279,13 +301,14 @@ window.customUI = window.customUI || {
     window.localStorage.setItem('ha-device-name', name || '');
   },
 
-  computeTemplate: function (template, hass, entities, entity, attributes) {
+  computeTemplate: function (template, hass, entities, entity, attributes, attribute, state) {
     const functionBody = (template.indexOf('return') >= 0) ? template : 'return `' + template + '`;';
     try {
       /* eslint-disable no-new-func */
-      const func = new Function('hass', 'entities', 'entity', 'attributes', functionBody);
+      const func = new Function(
+        'hass', 'entities', 'entity', 'attributes', 'attribute', 'state', functionBody);
       /* eslint-enable no-new-func */
-      return func(hass, entities, entity, attributes);
+      return func(hass, entities, entity, attributes, attribute, state);
     } catch (e) {
       /* eslint-disable no-console */
       if ((e instanceof SyntaxError) || e instanceof ReferenceError) {

@@ -1,6 +1,10 @@
 ## Changelog
 
 Note: Update to at least 20170910 required for HA 0.53+
+#### 2017-09-27 : Breaking Change
+* Entity state and attributes can now be overridden by templates. See [Templates](docs/templates.md)
+* [Breaking change]: `theme_template` attribute has been removed. Used templates to tweak `themes` attribute.
+  Note that `extra_data_template` behavior didn't change.
 
 #### 2017-09-18
 * Delay initialization until states are loaded.
@@ -31,7 +35,7 @@ Note: Update to at least 20170910 required for HA 0.53+
 
 #### 2017-08-02
 * [Breaking Change] `extra_data_template` format changed.
-* Added `theme_template` attribute to make  conditional entity-theming easy.
+* Added `theme_template` attribute to make conditional entity-theming easy.
 
 #### 2017-07-29
 New features
