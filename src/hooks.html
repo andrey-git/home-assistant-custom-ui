@@ -1,6 +1,6 @@
 <script>
 window.customUI = window.customUI || {
-  VERSION: '20170927',
+  VERSION: '20171018',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
@@ -46,8 +46,8 @@ window.customUI = window.customUI || {
               elem._context.push(element.stateObj.entity_id);
             }
             break;
-          case 'PARTIAL-CARDS':
-            elem._context.push(element.currentView ? element.currentView : 'default_view');
+          case 'HA-CARDS':
+            elem._context.push(element.getAttribute('data-view') || 'default_view');
             break;
           // no default
         }
@@ -132,11 +132,18 @@ window.customUI = window.customUI || {
   },
 
   fixGroupTitles: function () {
-    const haCards = window.customUI.getElementHierarchy(document, [
+    const homeAssistantMain = window.customUI.getElementHierarchy(document, [
       'home-assistant',
-      'home-assistant-main',
+      'home-assistant-main']);
+    if (homeAssistantMain === null) {
+      // DOM not ready. Wait 1 second.
+      window.setTimeout(window.customUI.fixGroupTitles, 1000);
+      return;
+    }
+
+    const haCards = window.customUI.getElementHierarchy(homeAssistantMain, [
       'partial-cards',
-      'ha-cards']);
+      'ha-cards[view-visible]']);
     if (haCards === null) return;
     const main = window.customUI.lightOrShadow(haCards, '.main');
     const cards = main.querySelectorAll('ha-entities-card');
