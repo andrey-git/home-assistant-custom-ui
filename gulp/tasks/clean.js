@@ -2,5 +2,5 @@ const del = require('del');
 const gulp = require('gulp');
 
 gulp.task('clean', () => {
-  return del(['build']);
+  return del(['build', 'build-dbg']);
 });

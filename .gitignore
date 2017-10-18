@@ -1,6 +1,7 @@
 node_modules/
 bower_components/
 build/
+build-dbg/
 # IDE
 .idea/
 # Locally installed version

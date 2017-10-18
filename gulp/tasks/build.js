@@ -13,9 +13,9 @@ const mergeStream = require('merge-stream');
 
 const polymerConfig = require('../../polymer');
 
-function minifyStream(stream) {
+function minifyStream(stream, minify) {
   const sourcesHtmlSplitter = new HtmlSplitter();
-  return stream
+  let result = stream
     .pipe(sourcesHtmlSplitter.split())
     .pipe(gulpif(/src\/.*\.js$/, babel({
       sourceType: 'script',
@@ -23,13 +23,16 @@ function minifyStream(stream) {
         ['es2015', { modules: false }]
       ]
     })))
-    .pipe(gulpif(/src\/.*\.js$/, uglify({ sourceMap: false })))
-    .pipe(gulpif(/\.html$/, htmlMinifier({
-      collapseWhitespace: true,
-      removeComments: true,
-      minifyCSS: true,
-    })))
-    .pipe(sourcesHtmlSplitter.rejoin());
+    if (minify) {
+      result = result
+        .pipe(gulpif(/src\/.*\.js$/, uglify({ sourceMap: false })))
+        .pipe(gulpif(/\.html$/, htmlMinifier({
+          collapseWhitespace: true,
+          removeComments: true,
+          minifyCSS: true,
+        })))
+    }
+    return result.pipe(sourcesHtmlSplitter.rejoin());
 };
 
 /**
@@ -46,15 +49,30 @@ function minifyStream(stream) {
   };
 };
 
-gulp.task('build', ['clean'], () => {
+gulp.task('build', ['build-minify', 'build-dbg']);
+
+gulp.task('build-minify', ['clean'], () => {
   const strategy = generateShellMergeStrategy(polymerConfig.shell);
   const project = new PolymerProject(polymerConfig);
-  return mergeStream(minifyStream(project.sources()),
-             minifyStream(project.dependencies()))
+  return mergeStream(minifyStream(project.sources(), true),
+             minifyStream(project.dependencies(), true ))
     .pipe(project.bundler({
       strategy,
       sourcemaps: false,
     }))
     .pipe(filter(['src/state-card-custom-ui.html']))
     .pipe(gulp.dest('build/'));
+});
+
+gulp.task('build-dbg', ['clean'], () => {
+  const strategy = generateShellMergeStrategy(polymerConfig.shell);
+  const project = new PolymerProject(polymerConfig);
+  return mergeStream(minifyStream(project.sources(), false),
+             minifyStream(project.dependencies(), false ))
+    .pipe(project.bundler({
+      strategy,
+      sourcemaps: false,
+    }))
+    .pipe(filter(['src/state-card-custom-ui.html']))
+    .pipe(gulp.dest('build-dbg/'));
 });
