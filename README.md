@@ -29,12 +29,10 @@
 
 **Important Note: Update to at least 20170910 required for HA 0.53+**
 
-**Important Note: Make a force refresh (ctrl+f5) after upgrding HA to 0.53**
+**Important Note: Make a force refresh (ctrl+f5) after upgrading HA to 0.53**
 
-#### 2017-09-27 : Breaking Change
-* Entity state and attributes can now be overridden by templates. See [Templates](docs/templates.md)
-* [Breaking change]: `theme_template` attribute has been removed. Used templates to tweak `themes` attribute.
-  Note that `extra_data_template` behavior didn't change.
+#### 2017-10-18
+* Fix context-aware group names
 
 [Full Changelog](CHANGELOG.md)
 
