@@ -23,7 +23,16 @@
 
 ```
 
-<!-- Ctrl+Shift+J on Chrome / Firefox --> 
+<!-- Ctrl+Shift+J on Chrome / Firefox -->
+<!-- If there are any errors here, please try to use the Debug version of CustomUI:
+  * If using customizer custom_component, use it load hosted debug version:
+    customizer:
+      custom_ui: local
+  * If loading manually, replace URL with the following:
+    frontend:
+      extra_html_url:
+        - https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/state-card-custom-ui-dbg.html
+  -->
 **Any errors from browser Javascript console:**
 ```
 

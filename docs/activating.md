@@ -44,6 +44,19 @@ frontend:
     - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20170830/state-card-custom-ui.html
 ```
 
+1.7 Using [customizer](https://github.com/andrey-git/home-assistant-customizer/) for debug head version. (Only use for reporting readable Javascript errors!)
+```yaml
+customizer:
+  custom_ui: debug
+```
+
+1.8 Manually for debug head version. (Only use for reporting readable Javascript errors!)
+```yaml
+frontend:
+  extra_html_url:
+    - https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/state-card-custom-ui-dbg.html
+```
+
 #### 2. Tell Home Assistant to use CustomUI for state cards.
 
 In the `customize:` section of `configuration.yaml` put `custom_ui_state_card: state-card-custom-ui` for the relevant entities / domains.
