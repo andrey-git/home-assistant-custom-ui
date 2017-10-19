@@ -2,6 +2,9 @@
 
 Note: Update to at least 20170910 required for HA 0.53+
 
+#### 2017-10-19
+* Add `_stateDisplay` template attribute to allow setting final visual state.
+
 #### 2017-10-18
 * Fix context-aware group names
 

@@ -18,10 +18,14 @@ In order for a template to return "nothing", for example so that `extra_data_tem
 
 `attributes` attributes map of the current entity. Shortcut for `entity.attributes`.
 
-`attribute` the original (non-template) value of the attribute being calculated by a template. When calculating `state` or `extra_data_template` it will be undefined.
+`attribute` the original (non-template) value of the attribute being calculated by a template. When calculating `state`, `_stateDisplay`, or `extra_data_template` it will be undefined.
 
 `state` the original (non-template) state of the entity.
 
+#### Special attributes
+There are two special template attributes:
+ * `state` will override the entity state. Note that logic that applies visual state still applies. For example non-`off` motion sensor is displayed as `detected`. Changing the `state` template wouldn't prevent this logic from running.
+ * `_stateDisplay` sets the final display string and prevents any visual state logic from running.
 
 #### Template formats
 You can provide the template in two slightly different formats.
@@ -72,4 +76,8 @@ homeassistant:
     binary_sensor.my_sensor:
       templates:
         state: if (state === 'on') return 'activated'; else return state;
+    binary_sensor.motion_sensor:
+      templates:
+        # null will make the regular state-based logic to run.
+        _stateDisplay: if (state === 'on') return 'activated'; else return null;
 ```

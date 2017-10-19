@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171018',
+  VERSION: '20171019',
 
   SUPPORTED_SLIDER_MODES: ['single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'],
 
@@ -97,7 +97,10 @@ window.customUI = window.customUI || {
     if (!Object.keys(attributes).length) return stateObj;
     var result = window.customUI.applyAttributes(stateObj, attributes);
     if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
-      return Object.assign(result, { state: attributes.state });
+      result.state = attributes.state;
+    }
+    if (Object.prototype.hasOwnProperty.call(attributes, '_stateDisplay')) {
+      result._stateDisplay = attributes._stateDisplay;
     }
     return result;
   },
