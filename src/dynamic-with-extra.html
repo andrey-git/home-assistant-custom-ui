@@ -69,33 +69,30 @@
 </dom-module>
 
 <script>
-Polymer({
-  is: 'dynamic-with-extra',
-  properties: {
-    hass: {
-      type: Object,
-    },
-    inDialog: {
-      type: Boolean,
-      value: false,
-    },
-    stateObj: {
-      type: Object,
-    },
-    controlElement: {
-      type: String,
-    },
-    extraObj: {
-      type: Object,
-      computed: 'computeExtra(hass, stateObj, inDialog)',
-    },
-    extraObjVisible: {
-      type: Boolean,
-      computed: 'computeExtraVisible(hass, stateObj, inDialog)',
-    },
-  },
+class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
+  static get is() { return 'dynamic-with-extra'; }
 
-  _getObject: function (hass, stateObj) {
+  static get properties() {
+    return {
+      hass: Object,
+      inDialog: {
+        type: Boolean,
+        value: false,
+      },
+      stateObj: Object,
+      controlElement: String,
+      extraObj: {
+        type: Object,
+        computed: 'computeExtra(hass, stateObj, inDialog)',
+      },
+      extraObjVisible: {
+        type: Boolean,
+        computed: 'computeExtraVisible(hass, stateObj, inDialog)',
+      },
+    };
+  }
+
+  _getObject(hass, stateObj) {
     if (!stateObj.attributes.extra_badge) return null;
     var extraBadge = stateObj.attributes.extra_badge;
     if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
@@ -110,9 +107,9 @@ Polymer({
       };
     }
     return null;
-  },
+  }
 
-  computeExtra: function (hass, stateObj) {
+  computeExtra(hass, stateObj) {
     var result = this._getObject(hass, stateObj);
     if (!result) {
       return {
@@ -123,9 +120,9 @@ Polymer({
     }
     result._entityDisplay = '';
     return result;
-  },
+  }
 
-  computeExtraVisible: function (hass, stateObj, inDialog) {
+  computeExtraVisible(hass, stateObj, inDialog) {
     if (inDialog) return false;
     var result = this._getObject(hass, stateObj);
     if (!result) return false;
@@ -139,27 +136,30 @@ Polymer({
       }
     }
     return true;
-  },
+  }
 
-  extraClass: function (extraObjVisible) {
+  extraClass(extraObjVisible) {
     return extraObjVisible ? 'extra' : '';
-  },
+  }
 
-  _showControl: function (inDialog, stateObj) {
+  _showControl(inDialog, stateObj) {
     if (inDialog) return true;
     return !stateObj.attributes.hide_control;
-  },
+  }
 
-  computeStateDisplay: function (stateObj) {
-    return window.hassUtil.computeStateState(stateObj);
-  },
+  computeStateDisplay(stateObj) {
+    if (window.hassUtil.computeStateState) {
+      return window.hassUtil.computeStateState(stateObj);
+    }
+    return super.computeStateDisplay(this.haLocalize, stateObj);
+  }
 
-  isConfirmControls: function (stateObj) {
+  isConfirmControls(stateObj) {
     return stateObj.attributes.confirm_controls ||
         stateObj.attributes.confirm_controls_show_lock;
-  },
+  }
 
-  tapHandler: function (e) {
+  tapHandler(e) {
     this.$$('#overlay').style.pointerEvents = 'none';
     const lock = this.$$('#lock');
     if (lock) {
@@ -175,5 +175,6 @@ Polymer({
     }, 5000);
     e.stopPropagation();
   }
-});
+}
+customElements.define(DynamicWithExtra.is, DynamicWithExtra);
 </script>
