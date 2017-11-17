@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171019',
+  VERSION: '20171117',
 
   SUPPORTED_SLIDER_MODES: ['single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'],
 
@@ -594,117 +594,152 @@ Polymer({
   </template>
 </dom-module>
 
-<script>
-Polymer({
-  is: 'dynamic-with-extra',
-  properties: {
-    hass: {
-      type: Object
-    },
-    inDialog: {
-      type: Boolean,
-      value: false
-    },
-    stateObj: {
-      type: Object
-    },
-    controlElement: {
-      type: String
-    },
-    extraObj: {
-      type: Object,
-      computed: 'computeExtra(hass, stateObj, inDialog)'
-    },
-    extraObjVisible: {
-      type: Boolean,
-      computed: 'computeExtraVisible(hass, stateObj, inDialog)'
-    }
-  },
+<script>var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-  _getObject: function _getObject(hass, stateObj) {
-    if (!stateObj.attributes.extra_badge) return null;
-    var extraBadge = stateObj.attributes.extra_badge;
-    if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
-      return Object.assign({}, hass.states[extraBadge.entity_id]);
-    }
-    if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
-      return {
-        state: stateObj.attributes[extraBadge.attribute],
-        _domain: 'none',
-        entity_id: null,
-        attributes: { unit_of_measurement: extraBadge.unit }
-      };
-    }
-    return null;
-  },
+var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-  computeExtra: function computeExtra(hass, stateObj) {
-    var result = this._getObject(hass, stateObj);
-    if (!result) {
-      return {
-        _entityDisplay: '',
-        _domain: 'none',
-        attributes: {}
-      };
-    }
-    result._entityDisplay = '';
-    return result;
-  },
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-  computeExtraVisible: function computeExtraVisible(hass, stateObj, inDialog) {
-    if (inDialog) return false;
-    var result = this._getObject(hass, stateObj);
-    if (!result) return false;
-    var blacklist = stateObj.attributes.extra_badge.blacklist_states;
-    if (blacklist) {
-      if (!Array.isArray(blacklist)) {
-        blacklist = [blacklist];
-      }
-      if (blacklist.some(function (v) {
-        return RegExp(v).test(result.state.toString());
-      })) {
-        return false;
-      }
-    }
-    return true;
-  },
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-  extraClass: function extraClass(extraObjVisible) {
-    return extraObjVisible ? 'extra' : '';
-  },
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-  _showControl: function _showControl(inDialog, stateObj) {
-    if (inDialog) return true;
-    return !stateObj.attributes.hide_control;
-  },
+var DynamicWithExtra = function (_ref) {
+  _inherits(DynamicWithExtra, _ref);
 
-  computeStateDisplay: function computeStateDisplay(stateObj) {
-    return window.hassUtil.computeStateState(stateObj);
-  },
+  function DynamicWithExtra() {
+    _classCallCheck(this, DynamicWithExtra);
 
-  isConfirmControls: function isConfirmControls(stateObj) {
-    return stateObj.attributes.confirm_controls || stateObj.attributes.confirm_controls_show_lock;
-  },
-
-  tapHandler: function tapHandler(e) {
-    var _this = this;
-
-    this.$$('#overlay').style.pointerEvents = 'none';
-    var lock = this.$$('#lock');
-    if (lock) {
-      lock.icon = 'mdi:lock-open-outline';
-      lock.style.opacity = '0.1';
-    }
-    window.setTimeout(function () {
-      _this.$$('#overlay').style.pointerEvents = '';
-      if (lock) {
-        lock.icon = 'mdi:lock-outline';
-        lock.style.opacity = '';
-      }
-    }, 5000);
-    e.stopPropagation();
+    return _possibleConstructorReturn(this, (DynamicWithExtra.__proto__ || Object.getPrototypeOf(DynamicWithExtra)).apply(this, arguments));
   }
-});</script>
+
+  _createClass(DynamicWithExtra, [{
+    key: '_getObject',
+    value: function _getObject(hass, stateObj) {
+      if (!stateObj.attributes.extra_badge) return null;
+      var extraBadge = stateObj.attributes.extra_badge;
+      if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
+        return Object.assign({}, hass.states[extraBadge.entity_id]);
+      }
+      if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
+        return {
+          state: stateObj.attributes[extraBadge.attribute],
+          _domain: 'none',
+          entity_id: null,
+          attributes: { unit_of_measurement: extraBadge.unit }
+        };
+      }
+      return null;
+    }
+  }, {
+    key: 'computeExtra',
+    value: function computeExtra(hass, stateObj) {
+      var result = this._getObject(hass, stateObj);
+      if (!result) {
+        return {
+          _entityDisplay: '',
+          _domain: 'none',
+          attributes: {}
+        };
+      }
+      result._entityDisplay = '';
+      return result;
+    }
+  }, {
+    key: 'computeExtraVisible',
+    value: function computeExtraVisible(hass, stateObj, inDialog) {
+      if (inDialog) return false;
+      var result = this._getObject(hass, stateObj);
+      if (!result) return false;
+      var blacklist = stateObj.attributes.extra_badge.blacklist_states;
+      if (blacklist) {
+        if (!Array.isArray(blacklist)) {
+          blacklist = [blacklist];
+        }
+        if (blacklist.some(function (v) {
+          return RegExp(v).test(result.state.toString());
+        })) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }, {
+    key: 'extraClass',
+    value: function extraClass(extraObjVisible) {
+      return extraObjVisible ? 'extra' : '';
+    }
+  }, {
+    key: '_showControl',
+    value: function _showControl(inDialog, stateObj) {
+      if (inDialog) return true;
+      return !stateObj.attributes.hide_control;
+    }
+  }, {
+    key: 'computeStateDisplay',
+    value: function computeStateDisplay(stateObj) {
+      if (window.hassUtil.computeStateState) {
+        return window.hassUtil.computeStateState(stateObj);
+      }
+      return _get(DynamicWithExtra.prototype.__proto__ || Object.getPrototypeOf(DynamicWithExtra.prototype), 'computeStateDisplay', this).call(this, this.haLocalize, stateObj);
+    }
+  }, {
+    key: 'isConfirmControls',
+    value: function isConfirmControls(stateObj) {
+      return stateObj.attributes.confirm_controls || stateObj.attributes.confirm_controls_show_lock;
+    }
+  }, {
+    key: 'tapHandler',
+    value: function tapHandler(e) {
+      var _this2 = this;
+
+      this.$$('#overlay').style.pointerEvents = 'none';
+      var lock = this.$$('#lock');
+      if (lock) {
+        lock.icon = 'mdi:lock-open-outline';
+        lock.style.opacity = '0.1';
+      }
+      window.setTimeout(function () {
+        _this2.$$('#overlay').style.pointerEvents = '';
+        if (lock) {
+          lock.icon = 'mdi:lock-outline';
+          lock.style.opacity = '';
+        }
+      }, 5000);
+      e.stopPropagation();
+    }
+  }], [{
+    key: 'is',
+    get: function get() {
+      return 'dynamic-with-extra';
+    }
+  }, {
+    key: 'properties',
+    get: function get() {
+      return {
+        hass: Object,
+        inDialog: {
+          type: Boolean,
+          value: false
+        },
+        stateObj: Object,
+        controlElement: String,
+        extraObj: {
+          type: Object,
+          computed: 'computeExtra(hass, stateObj, inDialog)'
+        },
+        extraObjVisible: {
+          type: Boolean,
+          computed: 'computeExtraVisible(hass, stateObj, inDialog)'
+        }
+      };
+    }
+  }]);
+
+  return DynamicWithExtra;
+}(StateCardDisplay || Polymer.Element);
+
+customElements.define(DynamicWithExtra.is, DynamicWithExtra);</script>
 <dom-module id="state-card-with-slider">
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
