@@ -1,32 +1,38 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171117',
+  VERSION: '20171129',
 
-  SUPPORTED_SLIDER_MODES: ['single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'],
+  SUPPORTED_SLIDER_MODES: [
+    'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
+  ],
 
-  domHost: function domHost(elem) {
+  domHost: function (elem) {
     if (elem === document) return null;
-    var root = elem.getRootNode();
-    return root instanceof DocumentFragment ? /** @type {ShadowRoot} */root.host : root;
+    const root = elem.getRootNode();
+    return (root instanceof DocumentFragment) ? /** @type {ShadowRoot} */ (root).host : root;
   },
 
-  lightOrShadow: function lightOrShadow(elem, selector) {
-    return elem.shadowRoot ? elem.shadowRoot.querySelector(selector) : elem.querySelector(selector);
+  lightOrShadow: function (elem, selector) {
+    return elem.shadowRoot ?
+      elem.shadowRoot.querySelector(selector) :
+      elem.querySelector(selector);
   },
 
-  getElementHierarchy: function getElementHierarchy(root, hierarchy) {
+  getElementHierarchy: function (root, hierarchy) {
     if (root === null) return null;
-    var elem = hierarchy.shift();
+    const elem = hierarchy.shift();
     if (elem) {
-      return window.customUI.getElementHierarchy(window.customUI.lightOrShadow(root, elem), hierarchy);
+      return window.customUI.getElementHierarchy(
+        window.customUI.lightOrShadow(root, elem), hierarchy);
     }
     return root;
   },
 
-  getContext: function getContext(elem) {
+  getContext: function (elem) {
     if (elem._context === undefined) {
       elem._context = [];
-      for (var element = elem.tagName === 'HA-ENTITIES-CARD' ? window.customUI.domHost(elem) : elem; element; element = window.customUI.domHost(element)) {
+      for (let element = (elem.tagName === 'HA-ENTITIES-CARD' ? window.customUI.domHost(elem) : elem);
+        element; element = window.customUI.domHost(element)) {
         switch (element.tagName) {
           case 'HA-ENTITIES-CARD':
             if (element.groupEntity) {
@@ -51,28 +57,28 @@ window.customUI = window.customUI || {
     return elem._context;
   },
 
-  maybeChangeObjectByDevice: function maybeChangeObjectByDevice(stateObj) {
-    var name = window.customUI.getName();
+  maybeChangeObjectByDevice: function (stateObj) {
+    const name = window.customUI.getName();
     if (!name) return stateObj;
 
     if (!stateObj.attributes.device || !stateObj.attributes.device[name]) {
       return stateObj;
     }
-    var attributes = Object.assign({}, stateObj.attributes.device[name]);
+    const attributes = Object.assign({}, stateObj.attributes.device[name]);
 
     if (!Object.keys(attributes).length) return stateObj;
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
-  maybeChangeObjectByGroup: function maybeChangeObjectByGroup(elem, stateObj) {
-    var context = window.customUI.getContext(elem);
+  maybeChangeObjectByGroup: function (elem, stateObj) {
+    const context = window.customUI.getContext(elem);
     if (!context) return stateObj;
 
     if (!stateObj.attributes.group) {
       return stateObj;
     }
-    var attributes = {};
-    context.forEach(function (c) {
+    const attributes = {};
+    context.forEach((c) => {
       if (stateObj.attributes.group[c]) {
         Object.assign(attributes, stateObj.attributes.group[c]);
       }
@@ -83,19 +89,21 @@ window.customUI = window.customUI || {
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
-  maybeApplyTemplates: function maybeApplyTemplates(elem, stateObj) {
+  maybeApplyTemplates: function (elem, stateObj) {
     if (!stateObj.attributes.templates) {
       return stateObj;
     }
-    var attributes = {};
-    Object.keys(stateObj.attributes.templates).forEach(function (key) {
-      var template = stateObj.attributes.templates[key];
-      var value = window.customUI.computeTemplate(template, elem.hass, elem.hass.states, stateObj, stateObj.attributes, stateObj.attributes[key], stateObj.state);
+    const attributes = {};
+    Object.keys(stateObj.attributes.templates).forEach((key) => {
+      const template = stateObj.attributes.templates[key];
+      const value = window.customUI.computeTemplate(
+        template, elem.hass, elem.hass.states, stateObj, stateObj.attributes,
+        stateObj.attributes[key], stateObj.state);
       attributes[key] = value;
     });
 
     if (!Object.keys(attributes).length) return stateObj;
-    var result = window.customUI.applyAttributes(stateObj, attributes);
+    const result = window.customUI.applyAttributes(stateObj, attributes);
     if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
       result.state = attributes.state;
     }
@@ -105,18 +113,18 @@ window.customUI = window.customUI || {
     return result;
   },
 
-  applyAttributes: function applyAttributes(stateObj, attributes) {
+  applyAttributes: function (stateObj, attributes) {
     return {
       entity_id: stateObj.entity_id,
       state: stateObj.state,
       attributes: Object.assign({}, stateObj.attributes, attributes),
-      last_changed: stateObj.last_changed
+      last_changed: stateObj.last_changed,
     };
   },
 
-  maybeChangeObject: function maybeChangeObject(elem, stateObj, inDialog, allowHidden) {
+  maybeChangeObject: function (elem, stateObj, inDialog, allowHidden) {
     if (inDialog) return stateObj;
-    var obj = window.customUI.maybeChangeObjectByDevice(stateObj);
+    let obj = window.customUI.maybeChangeObjectByDevice(stateObj);
     obj = window.customUI.maybeChangeObjectByGroup(elem, obj);
     obj = window.customUI.maybeApplyTemplates(elem, obj);
 
@@ -126,57 +134,70 @@ window.customUI = window.customUI || {
     return obj;
   },
 
-  fixGroupTitles: function fixGroupTitles() {
-    var homeAssistantMain = window.customUI.getElementHierarchy(document, ['home-assistant', 'home-assistant-main']);
+  fixGroupTitles: function () {
+    const homeAssistantMain = window.customUI.getElementHierarchy(document, [
+      'home-assistant',
+      'home-assistant-main']);
     if (homeAssistantMain === null) {
       // DOM not ready. Wait 1 second.
       window.setTimeout(window.customUI.fixGroupTitles, 1000);
       return;
     }
 
-    var haCards = window.customUI.getElementHierarchy(homeAssistantMain, ['partial-cards', 'ha-cards[view-visible]']);
+    const haCards = window.customUI.getElementHierarchy(homeAssistantMain, [
+      'partial-cards',
+      'ha-cards[view-visible]']);
     if (haCards === null) return;
-    var main = window.customUI.lightOrShadow(haCards, '.main');
-    var cards = main.querySelectorAll('ha-entities-card');
-    cards.forEach(function (card) {
+    const main = window.customUI.lightOrShadow(haCards, '.main');
+    const cards = main.querySelectorAll('ha-entities-card');
+    cards.forEach((card) => {
       if (card.groupEntity) {
-        var obj = window.customUI.maybeChangeObject(card, card.groupEntity, false /* inDialog */
-        , false /* allowHidden */);
+        const obj = window.customUI.maybeChangeObject(
+          card,
+          card.groupEntity,
+          false /* inDialog */,
+          false /* allowHidden */);
         if (obj !== card.groupEntity && obj.attributes.friendly_name) {
-          var nameElem = window.customUI.lightOrShadow(card, '.name');
+          const nameElem = window.customUI.lightOrShadow(card, '.name');
           nameElem.textContent = obj.attributes.friendly_name;
         }
       }
     });
   },
 
-  showVersion: function showVersion() {
+  showVersion: function () {
     if (window.location.pathname !== '/dev-info') return;
-    var devInfo = window.customUI.getElementHierarchy(document, ['home-assistant', 'home-assistant-main', 'partial-panel-resolver', 'ha-panel-dev-info']);
+    const devInfo = window.customUI.getElementHierarchy(document, [
+      'home-assistant',
+      'home-assistant-main',
+      'partial-panel-resolver',
+      'ha-panel-dev-info']);
     if (devInfo === null) {
       // DOM not ready. Wait 1 second.
       window.setTimeout(window.customUI.showVersion, 1000);
       return;
     }
-    var about = window.customUI.lightOrShadow(devInfo, '.about');
-    var secondP = about.querySelectorAll('p')[1];
-    var version = document.createElement('p');
+    const about = window.customUI.lightOrShadow(devInfo, '.about');
+    const secondP = about.querySelectorAll('p')[1];
+    const version = document.createElement('p');
     version.textContent = 'Custom UI ' + window.customUI.VERSION;
     about.insertBefore(version, secondP);
   },
 
-  useCustomizer: function useCustomizer() {
-    var main = window.customUI.lightOrShadow(document, 'home-assistant');
-    var customizer = main.hass.states['customizer.customizer'];
+  useCustomizer: function () {
+    const main = window.customUI.lightOrShadow(document, 'home-assistant');
+    const customizer = main.hass.states['customizer.customizer'];
     if (!customizer) return;
 
     if (customizer.attributes.hide_attributes) {
       if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
-        Array.prototype.push.apply(window.hassUtil.LOGIC_STATE_ATTRIBUTES, customizer.attributes.hide_attributes);
+        Array.prototype.push.apply(
+          window.hassUtil.LOGIC_STATE_ATTRIBUTES, customizer.attributes.hide_attributes);
       }
       if (window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
-        customizer.attributes.hide_attributes.forEach(function (attr) {
-          if (!Object.prototype.hasOwnProperty.call(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES, attr)) {
+        customizer.attributes.hide_attributes.forEach((attr) => {
+          if (!Object.prototype.hasOwnProperty.call(
+            window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES, attr)) {
             window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES[attr] = undefined;
           }
         });
@@ -184,8 +205,8 @@ window.customUI = window.customUI || {
     }
   },
 
-  updateAttributes: function updateAttributes() {
-    var customUiAttributes = {
+  updateAttributes: function () {
+    const customUiAttributes = {
       group: undefined,
       device: undefined,
       templates: undefined,
@@ -194,8 +215,8 @@ window.customUI = window.customUI || {
         options: {
           light: window.customUI.SUPPORTED_SLIDER_MODES.concat('badges'),
           cover: window.customUI.SUPPORTED_SLIDER_MODES.concat('badges'),
-          '*': ['badges']
-        }
+          '*': ['badges'],
+        },
       },
       state_card_custom_ui_secondary: { type: 'string' },
       badges_list: { type: 'json' },
@@ -207,42 +228,47 @@ window.customUI = window.customUI || {
       slider_theme: { type: 'json' },
       theme: { type: 'string' },
       confirm_controls: { type: 'boolean' },
-      confirm_controls_show_lock: { type: 'boolean' }
+      confirm_controls_show_lock: { type: 'boolean' },
     };
     if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
-      Array.prototype.push.apply(window.hassUtil.LOGIC_STATE_ATTRIBUTES, Object.keys(customUiAttributes));
+      Array.prototype.push.apply(
+        window.hassUtil.LOGIC_STATE_ATTRIBUTES, Object.keys(customUiAttributes));
     }
     if (window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
       Object.assign(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES, customUiAttributes);
     }
   },
 
-  updateConfigPanel: function updateConfigPanel() {
+  updateConfigPanel: function () {
     if (!window.location.pathname.startsWith('/config')) return;
-    var haPanelConfig = window.customUI.getElementHierarchy(document, ['home-assistant', 'home-assistant-main', 'partial-panel-resolver', 'ha-panel-config']);
+    const haPanelConfig = window.customUI.getElementHierarchy(document, [
+      'home-assistant',
+      'home-assistant-main',
+      'partial-panel-resolver',
+      'ha-panel-config']);
     if (!haPanelConfig) {
       // DOM not ready. Wait 1 second.
       window.setTimeout(window.customUI.updateConfigPanel, 1000);
       return;
     }
-    var ironPages = window.customUI.lightOrShadow(haPanelConfig, 'iron-pages');
+    const ironPages = window.customUI.lightOrShadow(haPanelConfig, 'iron-pages');
     if (!ironPages) return;
-    var haConfigNavigation = window.customUI.getElementHierarchy(haPanelConfig, ['ha-config-dashboard', 'ha-config-navigation']);
+    const haConfigNavigation = window.customUI.getElementHierarchy(haPanelConfig, [
+      'ha-config-dashboard',
+      'ha-config-navigation']);
     if (!haConfigNavigation) return;
     if (ironPages.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
-      var haConfigCustomUi = document.createElement('ha-config-custom-ui');
+      const haConfigCustomUi = document.createElement('ha-config-custom-ui');
       haConfigCustomUi.isWide = window.customUI.domHost(ironPages).isWide;
       haConfigCustomUi.setAttribute('page-name', 'customui');
       ironPages.appendChild(haConfigCustomUi);
-      ironPages.addEventListener('iron-items-changed', function () {
+      ironPages.addEventListener('iron-items-changed', () => {
         if (window.location.pathname.startsWith('/config/customui')) {
           ironPages.select('customui');
         }
       });
     }
-    if (!haConfigNavigation.pages.some(function (conf) {
-      return conf.domain === 'customui';
-    })) {
+    if (!haConfigNavigation.pages.some(conf => conf.domain === 'customui')) {
       haConfigNavigation.push('pages', {
         domain: 'customui',
         caption: 'Custom UI',
@@ -252,9 +278,9 @@ window.customUI = window.customUI || {
     }
   },
 
-  init: function init() {
+  init: function () {
     if (window.customUI.initDone) return;
-    var main = window.customUI.lightOrShadow(document, 'home-assistant');
+    const main = window.customUI.lightOrShadow(document, 'home-assistant');
     if (!main.hass || !main.hass.states) {
       // Connection wasn't made yet. Try in 1 second.
       window.setTimeout(window.customUI.init, 1000);
@@ -270,41 +296,43 @@ window.customUI = window.customUI || {
     /* eslint-enable no-console */
   },
 
-  runHooks: function runHooks() {
+  runHooks: function () {
     window.customUI.fixGroupTitles();
     window.customUI.showVersion();
     window.customUI.updateAttributes();
     window.customUI.updateConfigPanel();
   },
 
-  getName: function getName() {
+  getName: function () {
     return window.localStorage.getItem('ha-device-name') || '';
   },
 
-  setName: function setName(name) {
+  setName: function (name) {
     window.localStorage.setItem('ha-device-name', name || '');
   },
 
-  computeTemplate: function computeTemplate(template, hass, entities, entity, attributes, attribute, state) {
-    var functionBody = template.indexOf('return') >= 0 ? template : 'return `' + template + '`;';
+  computeTemplate: function (template, hass, entities, entity, attributes, attribute, state) {
+    const functionBody = (template.indexOf('return') >= 0) ? template : 'return `' + template + '`;';
     try {
       /* eslint-disable no-new-func */
-      var func = new Function('hass', 'entities', 'entity', 'attributes', 'attribute', 'state', functionBody);
+      const func = new Function(
+        'hass', 'entities', 'entity', 'attributes', 'attribute', 'state', functionBody);
       /* eslint-enable no-new-func */
       return func(hass, entities, entity, attributes, attribute, state);
     } catch (e) {
       /* eslint-disable no-console */
-      if (e instanceof SyntaxError || e instanceof ReferenceError) {
+      if ((e instanceof SyntaxError) || e instanceof ReferenceError) {
         console.warn(e.name + ': ' + e.message + ' in template ' + functionBody);
         return null;
       }
       /* eslint-enable no-console */
       throw e;
     }
-  }
+  },
 };
 
-window.customUI.init();</script>
+window.customUI.init();
+</script>
 <dom-module id="ha-config-custom-ui">
   <template>
     <style include="ha-style"></style>
@@ -328,64 +356,36 @@ window.customUI.init();</script>
   </template>
 </dom-module>
 
-<script>var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+<script>
+class HaConfigCustomUi extends Polymer.Element {
+  static get is() { return 'ha-config-custom-ui'; }
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+  static get properties() {
+    return {
+      isWide: Boolean,
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var HaConfigCustomUi = function (_Polymer$Element) {
-  _inherits(HaConfigCustomUi, _Polymer$Element);
-
-  function HaConfigCustomUi() {
-    _classCallCheck(this, HaConfigCustomUi);
-
-    return _possibleConstructorReturn(this, (HaConfigCustomUi.__proto__ || Object.getPrototypeOf(HaConfigCustomUi)).apply(this, arguments));
+      name: {
+        type: String,
+        observer: 'nameChanged',
+      }
+    };
   }
 
-  _createClass(HaConfigCustomUi, [{
-    key: 'ready',
-    value: function ready() {
-      _get(HaConfigCustomUi.prototype.__proto__ || Object.getPrototypeOf(HaConfigCustomUi.prototype), 'ready', this).call(this);
-      this.name = window.customUI.getName();
-    }
-  }, {
-    key: 'nameChanged',
-    value: function nameChanged(name) {
-      window.customUI.setName(name);
-    }
-  }, {
-    key: '_backTapped',
-    value: function _backTapped() {
-      window.history.back();
-    }
-  }], [{
-    key: 'is',
-    get: function get() {
-      return 'ha-config-custom-ui';
-    }
-  }, {
-    key: 'properties',
-    get: function get() {
-      return {
-        isWide: Boolean,
+  ready() {
+    super.ready();
+    this.name = window.customUI.getName();
+  }
 
-        name: {
-          type: String,
-          observer: 'nameChanged'
-        }
-      };
-    }
-  }]);
+  nameChanged(name) {
+    window.customUI.setName(name);
+  }
 
-  return HaConfigCustomUi;
-}(Polymer.Element);
-
-customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);</script>
+  _backTapped() {
+    window.history.back();
+  }
+}
+customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);
+</script>
 <dom-module id="ha-themed-slider">
   <template>
     <style>
@@ -413,7 +413,7 @@ customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);</script>
 <script>
 Polymer({
   is: 'ha-themed-slider',
-  ready: function ready() {
+  ready: function () {
     // If value was above 100 it wouldn't propagate to paper-slider while that had max=100
     // Force-change the value so that paper-slider will update itself.
     this.value = this.value + 1;
@@ -425,50 +425,51 @@ Polymer({
   properties: {
     min: {
       type: Number,
-      value: 0
+      value: 0,
     },
     max: {
       type: Number,
-      value: 100
+      value: 100,
     },
     pin: {
       type: Boolean,
-      value: false
+      value: false,
     },
     isOn: {
       type: Boolean,
-      value: false
+      value: false,
     },
     disableOffWhenMin: {
       type: Boolean,
       value: false,
-      notify: true
+      notify: true,
     },
     disableReportWhenNotChanged: {
       type: Boolean,
-      value: false
+      value: false,
     },
 
     theme: {
-      type: Object
+      type: Object,
     },
     value: {
       type: Number,
-      notify: true
+      notify: true,
     },
     _themedMin: {
       type: Number,
-      computed: '_computeAttribute(theme, "min", min)'
-    }
+      computed: '_computeAttribute(theme, "min", min)',
+    },
   },
 
   observers: ['computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged)'],
 
-  computeEnabledThemedReportWhenNotChanged: function computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged) {
-    this._enabledThemedReportWhenNotChanged = this._computeAttribute(theme, 'report_when_not_changed', !disableReportWhenNotChanged);
+  computeEnabledThemedReportWhenNotChanged: function (theme, disableReportWhenNotChanged) {
+    this._enabledThemedReportWhenNotChanged = this._computeAttribute(
+      theme, 'report_when_not_changed', !disableReportWhenNotChanged);
   },
 
-  _computeAttribute: function _computeAttribute(theme, attr, def) {
+  _computeAttribute: function (theme, attr, def) {
     if (theme) {
       if (attr in theme) {
         return theme[attr];
@@ -477,7 +478,7 @@ Polymer({
     return def;
   },
 
-  computeClass: function computeClass(theme, isOn, themedMin) {
+  computeClass: function (theme, isOn, themedMin) {
     var result = '';
     if (isOn) {
       result += 'is-on ';
@@ -489,14 +490,15 @@ Polymer({
     return result + 'disable-off-when-min';
   },
 
-  valueChanged: function valueChanged(ev) {
+  valueChanged: function (ev) {
     if (!this._enabledThemedReportWhenNotChanged && this.value === ev.target.value) {
       ev.stopPropagation();
       return;
     }
     this.value = ev.target.value;
-  }
-});</script>
+  },
+});
+</script>
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. --><script>
 Polymer({
@@ -504,29 +506,34 @@ Polymer({
 
   properties: {
     hass: {
-      type: Object
+      type: Object,
     },
 
     stateObj: {
-      type: Object
+      type: Object,
     },
 
     elementName: {
-      type: String
+      type: String,
     },
 
     inDialog: {
       type: Boolean,
-      value: false
-    }
+      value: false,
+    },
   },
 
-  observers: ['observerFunc(hass, stateObj, elementName, inDialog)'],
+  observers: [
+    'observerFunc(hass, stateObj, elementName, inDialog)',
+  ],
 
-  observerFunc: function observerFunc(hass, stateObj, elementName, inDialog) {
-    window.hassUtil.dynamicContentUpdater(this, elementName ? elementName.toUpperCase() : 'DIV', { hass: hass, stateObj: stateObj, inDialog: inDialog });
-  }
-});</script>
+  observerFunc: function (hass, stateObj, elementName, inDialog) {
+    window.hassUtil.dynamicContentUpdater(
+      this, elementName ? elementName.toUpperCase() : 'DIV',
+      { hass: hass, stateObj: stateObj, inDialog: inDialog });
+  },
+});
+</script>
 <dom-module id="dynamic-with-extra">
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
@@ -594,152 +601,116 @@ Polymer({
   </template>
 </dom-module>
 
-<script>var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+<script>
+class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
+  static get is() { return 'dynamic-with-extra'; }
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var DynamicWithExtra = function (_ref) {
-  _inherits(DynamicWithExtra, _ref);
-
-  function DynamicWithExtra() {
-    _classCallCheck(this, DynamicWithExtra);
-
-    return _possibleConstructorReturn(this, (DynamicWithExtra.__proto__ || Object.getPrototypeOf(DynamicWithExtra)).apply(this, arguments));
+  static get properties() {
+    return {
+      hass: Object,
+      inDialog: {
+        type: Boolean,
+        value: false,
+      },
+      stateObj: Object,
+      controlElement: String,
+      extraObj: {
+        type: Object,
+        computed: 'computeExtra(hass, stateObj, inDialog)',
+      },
+      extraObjVisible: {
+        type: Boolean,
+        computed: 'computeExtraVisible(hass, stateObj, inDialog)',
+      },
+    };
   }
 
-  _createClass(DynamicWithExtra, [{
-    key: '_getObject',
-    value: function _getObject(hass, stateObj) {
-      if (!stateObj.attributes.extra_badge) return null;
-      var extraBadge = stateObj.attributes.extra_badge;
-      if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
-        return Object.assign({}, hass.states[extraBadge.entity_id]);
-      }
-      if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
-        return {
-          state: stateObj.attributes[extraBadge.attribute],
-          _domain: 'none',
-          entity_id: null,
-          attributes: { unit_of_measurement: extraBadge.unit }
-        };
-      }
-      return null;
+  _getObject(hass, stateObj) {
+    if (!stateObj.attributes.extra_badge) return null;
+    var extraBadge = stateObj.attributes.extra_badge;
+    if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
+      return Object.assign({}, hass.states[extraBadge.entity_id]);
     }
-  }, {
-    key: 'computeExtra',
-    value: function computeExtra(hass, stateObj) {
-      var result = this._getObject(hass, stateObj);
-      if (!result) {
-        return {
-          _entityDisplay: '',
-          _domain: 'none',
-          attributes: {}
-        };
-      }
-      result._entityDisplay = '';
-      return result;
-    }
-  }, {
-    key: 'computeExtraVisible',
-    value: function computeExtraVisible(hass, stateObj, inDialog) {
-      if (inDialog) return false;
-      var result = this._getObject(hass, stateObj);
-      if (!result) return false;
-      var blacklist = stateObj.attributes.extra_badge.blacklist_states;
-      if (blacklist) {
-        if (!Array.isArray(blacklist)) {
-          blacklist = [blacklist];
-        }
-        if (blacklist.some(function (v) {
-          return RegExp(v).test(result.state.toString());
-        })) {
-          return false;
-        }
-      }
-      return true;
-    }
-  }, {
-    key: 'extraClass',
-    value: function extraClass(extraObjVisible) {
-      return extraObjVisible ? 'extra' : '';
-    }
-  }, {
-    key: '_showControl',
-    value: function _showControl(inDialog, stateObj) {
-      if (inDialog) return true;
-      return !stateObj.attributes.hide_control;
-    }
-  }, {
-    key: 'computeStateDisplay',
-    value: function computeStateDisplay(stateObj) {
-      if (window.hassUtil.computeStateState) {
-        return window.hassUtil.computeStateState(stateObj);
-      }
-      return _get(DynamicWithExtra.prototype.__proto__ || Object.getPrototypeOf(DynamicWithExtra.prototype), 'computeStateDisplay', this).call(this, this.haLocalize, stateObj);
-    }
-  }, {
-    key: 'isConfirmControls',
-    value: function isConfirmControls(stateObj) {
-      return stateObj.attributes.confirm_controls || stateObj.attributes.confirm_controls_show_lock;
-    }
-  }, {
-    key: 'tapHandler',
-    value: function tapHandler(e) {
-      var _this2 = this;
-
-      this.$$('#overlay').style.pointerEvents = 'none';
-      var lock = this.$$('#lock');
-      if (lock) {
-        lock.icon = 'mdi:lock-open-outline';
-        lock.style.opacity = '0.1';
-      }
-      window.setTimeout(function () {
-        _this2.$$('#overlay').style.pointerEvents = '';
-        if (lock) {
-          lock.icon = 'mdi:lock-outline';
-          lock.style.opacity = '';
-        }
-      }, 5000);
-      e.stopPropagation();
-    }
-  }], [{
-    key: 'is',
-    get: function get() {
-      return 'dynamic-with-extra';
-    }
-  }, {
-    key: 'properties',
-    get: function get() {
+    if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
       return {
-        hass: Object,
-        inDialog: {
-          type: Boolean,
-          value: false
-        },
-        stateObj: Object,
-        controlElement: String,
-        extraObj: {
-          type: Object,
-          computed: 'computeExtra(hass, stateObj, inDialog)'
-        },
-        extraObjVisible: {
-          type: Boolean,
-          computed: 'computeExtraVisible(hass, stateObj, inDialog)'
-        }
+        state: stateObj.attributes[extraBadge.attribute],
+        _domain: 'none',
+        entity_id: null,
+        attributes: { unit_of_measurement: extraBadge.unit },
       };
     }
-  }]);
+    return null;
+  }
 
-  return DynamicWithExtra;
-}(StateCardDisplay || Polymer.Element);
+  computeExtra(hass, stateObj) {
+    var result = this._getObject(hass, stateObj);
+    if (!result) {
+      return {
+        _entityDisplay: '',
+        _domain: 'none',
+        attributes: {},
+      };
+    }
+    result._entityDisplay = '';
+    return result;
+  }
 
-customElements.define(DynamicWithExtra.is, DynamicWithExtra);</script>
+  computeExtraVisible(hass, stateObj, inDialog) {
+    if (inDialog) return false;
+    var result = this._getObject(hass, stateObj);
+    if (!result) return false;
+    var blacklist = stateObj.attributes.extra_badge.blacklist_states;
+    if (blacklist) {
+      if (!Array.isArray(blacklist)) {
+        blacklist = [blacklist];
+      }
+      if (blacklist.some(v => RegExp(v).test(result.state.toString()))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  extraClass(extraObjVisible) {
+    return extraObjVisible ? 'extra' : '';
+  }
+
+  _showControl(inDialog, stateObj) {
+    if (inDialog) return true;
+    return !stateObj.attributes.hide_control;
+  }
+
+  computeStateDisplay(stateObj) {
+    if (window.hassUtil.computeStateState) {
+      return window.hassUtil.computeStateState(stateObj);
+    }
+    return super.computeStateDisplay(this.haLocalize, stateObj);
+  }
+
+  isConfirmControls(stateObj) {
+    return stateObj.attributes.confirm_controls ||
+        stateObj.attributes.confirm_controls_show_lock;
+  }
+
+  tapHandler(e) {
+    this.$$('#overlay').style.pointerEvents = 'none';
+    const lock = this.$$('#lock');
+    if (lock) {
+      lock.icon = 'mdi:lock-open-outline';
+      lock.style.opacity = '0.1';
+    }
+    window.setTimeout(() => {
+      this.$$('#overlay').style.pointerEvents = '';
+      if (lock) {
+        lock.icon = 'mdi:lock-outline';
+        lock.style.opacity = '';
+      }
+    }, 5000);
+    e.stopPropagation();
+  }
+}
+customElements.define(DynamicWithExtra.is, DynamicWithExtra);
+</script>
 <dom-module id="state-card-with-slider">
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
@@ -810,30 +781,30 @@ var DEFAULT_MODE = 'no-slider';
 Polymer({
   is: 'state-card-with-slider',
 
-  attached: function attached() {
-    var _this = this;
-
-    this.async(function () {
-      _this.readyToCompute = true;
-      _this._onIronResize();
+  attached: function () {
+    this.async(() => {
+      this.readyToCompute = true;
+      this._onIronResize();
     }, 1);
   },
 
-  behaviors: [Polymer.IronResizableBehavior],
+  behaviors: [
+    Polymer.IronResizableBehavior
+  ],
 
   properties: {
     hass: {
-      type: Object
+      type: Object,
     },
     inDialog: {
       type: Boolean,
-      value: false
+      value: false,
     },
     stateObj: {
-      type: Object
+      type: Object,
     },
     controlElement: {
-      type: String
+      type: String,
     },
     domain: { type: String },
     serviceMin: { type: String },
@@ -846,55 +817,57 @@ Polymer({
 
     sliderValue: {
       type: Number,
-      value: 0
+      value: 0,
     },
     disableOffWhenMin: {
-      type: Boolean
+      type: Boolean,
     },
     mode: {
-      type: String
+      type: String,
     },
     stretchSlider: {
       type: Boolean,
-      value: false
+      value: false,
     },
     breakSlider: {
       type: Boolean,
-      value: false
+      value: false,
     },
     hideSlider: {
       type: Boolean,
-      value: false
+      value: false,
     },
     lineTooLong: {
       type: Boolean,
-      value: false
+      value: false,
     },
     minLineBreak: {
       type: Number,
-      value: 0
+      value: 0,
     },
     maxLineBreak: {
       type: Number,
-      value: 999
+      value: 999,
     },
     showSlider: {
       type: Number,
-      computed: '_showSlider(inDialog, stateObj, hideSlider)'
+      computed: '_showSlider(inDialog, stateObj, hideSlider)',
     },
     extra: {
       type: String,
-      computed: 'computeExtra(hass, stateObj)'
-    }
+      computed: 'computeExtra(hass, stateObj)',
+    },
   },
 
-  observers: ['stateObjChanged(stateObj, nameOn, valueName)'],
+  observers: [
+    'stateObjChanged(stateObj, nameOn, valueName)',
+  ],
 
   listeners: {
     'iron-resize': '_onIronResize'
   },
 
-  _onIronResize: function _onIronResize() {
+  _onIronResize: function () {
     if (!this.readyToCompute) return;
     if (this.mode === 'no-slider') {
       this.hideSlider = true;
@@ -921,14 +894,16 @@ Polymer({
         this.maxLineBreak = containerWidth;
       }
     }
-    this.hideSlider = this.mode === 'hide-slider' && this.lineTooLong;
-    this.breakSlider = (this.mode === 'break-slider' || this.mode === 'hide-slider') && this.lineTooLong;
+    this.hideSlider =
+        this.mode === 'hide-slider' && this.lineTooLong;
+    this.breakSlider =
+        (this.mode === 'break-slider' || this.mode === 'hide-slider') && this.lineTooLong;
     if (!this.showSlider) {
       this.breakSlider = true;
     }
   },
 
-  _computeWrapClass: function _computeWrapClass(mode, stretchSlider, lineTooLong, inDialog) {
+  _computeWrapClass: function (mode, stretchSlider, lineTooLong, inDialog) {
     if (inDialog) {
       return '';
     }
@@ -941,7 +916,7 @@ Polymer({
     return 'wrap';
   },
 
-  _showSlider: function _showSlider(inDialog, stateObj, hideSlider) {
+  _showSlider: function (inDialog, stateObj, hideSlider) {
     var BRIGHTNESS_SUPPORTED = 1;
     if (inDialog || hideSlider) {
       return false;
@@ -949,7 +924,7 @@ Polymer({
     return stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED;
   },
 
-  sliderChanged: function sliderChanged(ev) {
+  sliderChanged: function (ev) {
     var value = parseInt(ev.target.value, 10);
     var param = { entity_id: this.stateObj.entity_id };
     if (Number.isNaN(value)) return;
@@ -962,7 +937,7 @@ Polymer({
     } else if (ev.composedPath) {
       target = ev.composedPath()[0];
     }
-    if (value === 0 || value <= target.min && !this.disableOffWhenMin) {
+    if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
       this.hass.callService(this.domain, this.serviceMin, param);
     } else {
       param[this.setValueName || this.valueName] = value;
@@ -970,14 +945,15 @@ Polymer({
     }
   },
 
-  stateObjChanged: function stateObjChanged(stateObj, nameOn, valueName) {
+  stateObjChanged: function (stateObj, nameOn, valueName) {
     if (this.isOn(stateObj, nameOn)) {
       this.sliderValue = stateObj.attributes[valueName];
     } else {
       this.sliderValue = 0;
     }
     if (stateObj) {
-      if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(stateObj.attributes.state_card_mode) !== -1) {
+      if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(
+        stateObj.attributes.state_card_mode) !== -1) {
         this.mode = stateObj.attributes.state_card_mode;
       } else {
         this.mode = DEFAULT_MODE;
@@ -988,249 +964,240 @@ Polymer({
     }
   },
 
-  isOn: function isOn(stateObj, nameOn) {
+  isOn: function (stateObj, nameOn) {
     return stateObj && stateObj.state === nameOn;
   },
 
-  stopPropagation: function stopPropagation(ev) {
+  stopPropagation: function (ev) {
     ev.stopPropagation();
   },
 
-  computeExtra: function computeExtra(hass, stateObj) {
+  computeExtra: function (hass, stateObj) {
     if (stateObj.attributes.extra_data_template) {
-      return window.customUI.computeTemplate(stateObj.attributes.extra_data_template, hass, hass.states, stateObj, stateObj.attributes,
-      /* attribute= */undefined, stateObj.state);
+      return window.customUI.computeTemplate(
+        stateObj.attributes.extra_data_template,
+        hass,
+        hass.states,
+        stateObj,
+        stateObj.attributes,
+        /* attribute= */ undefined,
+        stateObj.state);
     }
     return null;
   },
 
-  showLastChanged: function showLastChanged(stateObj, inDialog, extra) {
+  showLastChanged: function (stateObj, inDialog, extra) {
     if (inDialog) return true;
     if (extra) return false;
     return !!stateObj.attributes.show_last_changed;
-  }
-});</script>
-<script>var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+  },
+});
+</script>
+<script>
+const SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
+class StateCardCustomUi extends Polymer.Element {
+  static get is() { return 'state-card-custom-ui'; }
 
-var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
+  static get properties() {
+    return {
+      hass: Object,
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+      inDialog: {
+        type: Boolean,
+        value: false,
+      },
 
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
-
-var StateCardCustomUi = function (_Polymer$Element) {
-  _inherits(StateCardCustomUi, _Polymer$Element);
-
-  function StateCardCustomUi() {
-    _classCallCheck(this, StateCardCustomUi);
-
-    return _possibleConstructorReturn(this, (StateCardCustomUi.__proto__ || Object.getPrototypeOf(StateCardCustomUi)).apply(this, arguments));
+      stateObj: Object,
+    };
   }
 
-  _createClass(StateCardCustomUi, [{
-    key: 'connectedCallback',
-    value: function connectedCallback() {
-      _get(StateCardCustomUi.prototype.__proto__ || Object.getPrototypeOf(StateCardCustomUi.prototype), 'connectedCallback', this).call(this);
-      var container = this.parentNode.parentNode;
-      if (container.tagName === 'DIV' && (container.classList.contains('state') || container.classList.contains('child-card'))) {
-        this._container = container;
+  static get observers() {
+    return [
+      'inputChanged(hass, inDialog, stateObj)',
+    ];
+  }
 
-        // Since this doesn't actually change the background - no need to clear it.
-        container.style.setProperty('background-color', 'var(--paper-card-background-color, inherit)');
+  connectedCallback() {
+    super.connectedCallback();
+    const container = this.parentNode.parentNode;
+    if (container.tagName === 'DIV' &&
+        (container.classList.contains('state') || container.classList.contains('child-card'))) {
+      this._container = container;
 
-        // Polyfill 'updateStyles'.
-        if (!container.updateStyles) {
-          container.updateStyles = function (styles) {
-            Object.keys(styles).forEach(function (key) {
-              container.style.setProperty(key, styles[key]);
-            });
-          };
-        }
-      }
-      this._isAttached = true;
-      this.inputChanged(this.hass, this.inDialog, this.stateObj);
-    }
-  }, {
-    key: 'disconnectedCallback',
-    value: function disconnectedCallback() {
-      this._isAttached = false;
-      if (this._container) {
-        this._container.updateStyles({ display: '', margin: '', padding: '' });
-        window.hassUtil.applyThemesOnElement(this._container, this.hass.themes || { default_theme: 'default', themes: {} }, 'default');
-        this._container = null;
-      }
-      _get(StateCardCustomUi.prototype.__proto__ || Object.getPrototypeOf(StateCardCustomUi.prototype), 'disconnectedCallback', this).call(this);
-    }
-  }, {
-    key: 'badgeMode',
-    value: function badgeMode(hass, stateObj, domain) {
-      var _this2 = this;
+      // Since this doesn't actually change the background - no need to clear it.
+      container.style.setProperty(
+        'background-color', 'var(--paper-card-background-color, inherit)');
 
-      var states = [];
-      if (domain === 'group') {
-        stateObj.attributes.entity_id.forEach(function (id) {
-          var state = hass.states[id];
-          if (!state) {
-            /* eslint-disable no-console */
-            console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
-            /* eslint-enable no-console */
-            return;
-          }
-          if (!stateObj.attributes.badges_list || stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
-            states.push(window.customUI.maybeChangeObject(_this2, state, false /* inDialog */, false /* allowHidden */));
-          }
-        });
-      } else {
-        states.push(stateObj);
-        if (this._container) {
-          this._container.style.display = 'inline-block';
-          var params = { display: 'inline-block' };
-          if (this._container.classList.contains('state')) {
-            params.margin = '0 -6px';
-          }
-          this.updateStyles(params);
-        }
-      }
-      window.hassUtil.dynamicContentUpdater(this, 'HA-BADGES-CARD', { hass: hass, states: states });
-      // Since this variable only affects badges mode - no need to clean it up.
-      this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
-    }
-  }, {
-    key: 'cleanBadgeStyle',
-    value: function cleanBadgeStyle() {
-      if (this._container) {
-        this._container.style.display = '';
-      }
-      this.updateStyles({ display: '', margin: '' });
-    }
-  }, {
-    key: 'applyThemes',
-    value: function applyThemes(hass, modifiedObj) {
-      var themeTarget = this;
-      var themeName = 'default';
-      if (this._container) {
-        themeTarget = this._container;
-      }
-      if (modifiedObj.attributes.theme) {
-        themeName = modifiedObj.attributes.theme;
-      }
-      window.hassUtil.applyThemesOnElement(themeTarget, hass.themes || { default_theme: 'default', themes: {} }, themeName);
-    }
-  }, {
-    key: 'maybeHideEntity',
-    value: function maybeHideEntity(modifiedObj) {
-      if (!modifiedObj) {
-        if (this.lastChild) {
-          this.removeChild(this.lastChild);
-        }
-        if (this._container) {
-          this._container.updateStyles({ margin: '0', padding: '0' });
-        }
-        return true;
-      }
-      if (this._container) {
-        this._container.updateStyles({ margin: '', padding: '' });
-      }
-      return false;
-    }
-  }, {
-    key: 'inputChanged',
-    value: function inputChanged(hass, inDialog, stateObj) {
-      if (!stateObj || !hass || !this._isAttached) return;
-      var domain = window.hassUtil.computeDomain(stateObj);
-      var modifiedObj = window.customUI.maybeChangeObject(this, stateObj, inDialog, true /* allowHidden */);
-
-      if (this.maybeHideEntity(modifiedObj)) return;
-
-      this.applyThemes(hass, modifiedObj);
-
-      if (!inDialog && modifiedObj.attributes.state_card_mode === 'badges') {
-        this.badgeMode(hass, modifiedObj, domain);
-        return;
-      }
-      this.cleanBadgeStyle();
-
-      var params = {
-        hass: hass,
-        stateObj: modifiedObj,
-        inDialog: inDialog
-      };
-      var stateCardType = window.hassUtil.stateCardType(hass, stateObj);
-      var secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
-
-      if (domain === 'light') {
-        Object.assign(params, {
-          controlElement: 'ha-entity-toggle',
-          serviceMin: 'turn_off',
-          serviceMax: 'turn_on',
-          valueName: 'brightness'
-        });
-      } else if (domain === 'cover') {
-        Object.assign(params, {
-          controlElement: 'ha-cover-controls',
-          max: 100,
-          serviceMin: 'close_cover',
-          serviceMax: 'set_cover_position',
-          setValueName: 'position',
-          valueName: 'current_position',
-          nameOn: 'open'
-        });
-      } else if (stateCardType === 'toggle') {
-        Object.assign(params, {
-          controlElement: 'ha-entity-toggle'
-        });
-      } else if (stateCardType === 'display') {
-        Object.assign(params, {
-          controlElement: ''
-        });
-      }
-      if (!secondaryStateCardType && (domain === 'light' || domain === 'cover' || stateCardType === 'toggle' || stateCardType === 'display')) {
-        stateCardType = 'with-slider';
-        Object.assign(params, {
-          domain: domain
-        });
-        if (stateObj.state === 'unavailable') {
-          Object.assign(params, {
-            controlElement: ''
+      // Polyfill 'updateStyles'.
+      if (!container.updateStyles) {
+        container.updateStyles = (styles) => {
+          Object.keys(styles).forEach((key) => {
+            container.style.setProperty(key, styles[key]);
           });
-        }
-      } else if (modifiedObj.attributes.show_last_changed && SHOW_LAST_CHANGED_BLACKLISTED_CARDS.indexOf(stateCardType) === -1) {
-        params.inDialog = true;
+        };
       }
-
-      window.hassUtil.dynamicContentUpdater(this, secondaryStateCardType || 'STATE-CARD-' + stateCardType.toUpperCase(), params);
     }
-  }], [{
-    key: 'is',
-    get: function get() {
-      return 'state-card-custom-ui';
+    this._isAttached = true;
+    this.inputChanged(this.hass, this.inDialog, this.stateObj);
+  }
+
+  disconnectedCallback() {
+    this._isAttached = false;
+    if (this._container) {
+      this._container.updateStyles({ display: '', margin: '', padding: '' });
+      window.hassUtil.applyThemesOnElement(
+        this._container, this.hass.themes || { default_theme: 'default', themes: {} }, 'default');
+      this._container = null;
     }
-  }, {
-    key: 'properties',
-    get: function get() {
-      return {
-        hass: Object,
+    super.disconnectedCallback();
+  }
 
-        inDialog: {
-          type: Boolean,
-          value: false
-        },
-
-        stateObj: Object
-      };
+  badgeMode(hass, stateObj, domain) {
+    const states = [];
+    if (domain === 'group') {
+      stateObj.attributes.entity_id.forEach((id) => {
+        const state = hass.states[id];
+        if (!state) {
+          /* eslint-disable no-console */
+          console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
+          /* eslint-enable no-console */
+          return;
+        }
+        if (!stateObj.attributes.badges_list ||
+            stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
+          states.push(window.customUI.maybeChangeObject(
+            this, state, false /* inDialog */, false /* allowHidden */));
+        }
+      });
+    } else {
+      states.push(stateObj);
+      if (this._container) {
+        this._container.style.display = 'inline-block';
+        const params = { display: 'inline-block' };
+        if (this._container.classList.contains('state')) {
+          params.margin = '0 -6px';
+        }
+        this.updateStyles(params);
+      }
     }
-  }, {
-    key: 'observers',
-    get: function get() {
-      return ['inputChanged(hass, inDialog, stateObj)'];
+    window.hassUtil.dynamicContentUpdater(
+      this,
+      'HA-BADGES-CARD',
+      { hass: hass, states: states });
+    // Since this variable only affects badges mode - no need to clean it up.
+    this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
+  }
+
+  cleanBadgeStyle() {
+    if (this._container) {
+      this._container.style.display = '';
     }
-  }]);
+    this.updateStyles({ display: '', margin: '' });
+  }
 
-  return StateCardCustomUi;
-}(Polymer.Element);
+  applyThemes(hass, modifiedObj) {
+    let themeTarget = this;
+    let themeName = 'default';
+    if (this._container) {
+      themeTarget = this._container;
+    }
+    if (modifiedObj.attributes.theme) {
+      themeName = modifiedObj.attributes.theme;
+    }
+    window.hassUtil.applyThemesOnElement(
+      themeTarget, hass.themes || { default_theme: 'default', themes: {} }, themeName);
+  }
 
-customElements.define(StateCardCustomUi.is, StateCardCustomUi);</script></div>
+  maybeHideEntity(modifiedObj) {
+    if (!modifiedObj) {
+      if (this.lastChild) {
+        this.removeChild(this.lastChild);
+      }
+      if (this._container) {
+        this._container.updateStyles({ margin: '0', padding: '0' });
+      }
+      return true;
+    }
+    if (this._container) {
+      this._container.updateStyles({ margin: '', padding: '' });
+    }
+    return false;
+  }
+
+  inputChanged(hass, inDialog, stateObj) {
+    if (!stateObj || !hass || !this._isAttached) return;
+    const domain = window.hassUtil.computeDomain(stateObj);
+    const modifiedObj = window.customUI.maybeChangeObject(
+      this, stateObj, inDialog, true /* allowHidden */);
+
+    if (this.maybeHideEntity(modifiedObj)) return;
+
+    this.applyThemes(hass, modifiedObj);
+
+    if (!inDialog && modifiedObj.attributes.state_card_mode === 'badges') {
+      this.badgeMode(hass, modifiedObj, domain);
+      return;
+    }
+    this.cleanBadgeStyle();
+
+    const params = {
+      hass: hass,
+      stateObj: modifiedObj,
+      inDialog: inDialog,
+    };
+    let stateCardType = window.hassUtil.stateCardType(hass, stateObj);
+    const secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
+
+    if (domain === 'light') {
+      Object.assign(params, {
+        controlElement: 'ha-entity-toggle',
+        serviceMin: 'turn_off',
+        serviceMax: 'turn_on',
+        valueName: 'brightness',
+      });
+    } else if (domain === 'cover') {
+      Object.assign(params, {
+        controlElement: 'ha-cover-controls',
+        max: 100,
+        serviceMin: 'close_cover',
+        serviceMax: 'set_cover_position',
+        setValueName: 'position',
+        valueName: 'current_position',
+        nameOn: 'open',
+      });
+    } else if (stateCardType === 'toggle') {
+      Object.assign(params, {
+        controlElement: 'ha-entity-toggle',
+      });
+    } else if (stateCardType === 'display') {
+      Object.assign(params, {
+        controlElement: '',
+      });
+    }
+    if (!secondaryStateCardType &&
+       (domain === 'light' ||
+        domain === 'cover' ||
+        stateCardType === 'toggle' ||
+        stateCardType === 'display')) {
+      stateCardType = 'with-slider';
+      Object.assign(params, {
+        domain: domain,
+      });
+      if (stateObj.state === 'unavailable') {
+        Object.assign(params, {
+          controlElement: '',
+        });
+      }
+    } else if (modifiedObj.attributes.show_last_changed &&
+               SHOW_LAST_CHANGED_BLACKLISTED_CARDS.indexOf(stateCardType) === -1) {
+      params.inDialog = true;
+    }
+
+    window.hassUtil.dynamicContentUpdater(
+      this,
+      secondaryStateCardType || ('STATE-CARD-' + stateCardType.toUpperCase()),
+      params);
+  }
+}
+customElements.define(StateCardCustomUi.is, StateCardCustomUi);
+</script></div>

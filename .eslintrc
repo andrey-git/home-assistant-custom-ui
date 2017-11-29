@@ -4,6 +4,7 @@
     "__DEV__": false,
     "__DEMO__": false,
     "Polymer": true,
+    "StateCardDisplay": true,
     "webkitSpeechRecognition": false,
   },
   "env": {

@@ -1,41 +1,40 @@
 # Custom UI elements for [Home Assistant](https://home-assistant.io)
 
-  * [Changelog](#changelog)
-  * [Installing](#installing)
-  * [Activating](#activating)
-  * [Customizer component](#customizer-component)
-  * [CustomUI panel](#customui-panel)
-  * [Features available for all domains](#features-available-for-all-domains)
-    + [Context-aware attributes](#context-aware-attributes)
-    + [Template attributes [New in 20170927]](#template-attributes)
-    + [Badges in state cards](#badges-in-state-cards)
-    + [Per entity themeing (Requires HA 0.50+)](#per-entity-theming)
-    + [Secondary custom UI](#secondary-customui)
-  * [Features available for almost all domains](#features-available-for-almost-all-domains)
-      - [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
-  * [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
-      - [You can hide the control altogether](#you-can-hide-the-control-altogether)
-      - [You can add extra data below the entity name](#you-can-add-extra-data-below-the-entity-name)
-      - [Add badge to the state card](#add-badge-to-the-state-card)
-      - [Confirmable controls](#confirmable-controls)
-  * [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
-      - [If there is not enough horizontal space the mode is set by `state_card_mode` parameter](#if-there-is-not-enough-horizontal-space-the-mode-is-set-by-state_card_mode-parameter)
-      - [If the slider got moved to a new line it will be 200 px wide.](#if-the-slider-got-moved-to-a-new-line-it-will-be-200-px-wide)
-      - [The slider behavior is controlled by `slider_theme` dictionary.](#the-slider-behavior-is-controlled-by-slider_theme-dictionary)
-  * [Complete example](#complete-example)
-  * [Known issues](#known-issues)
+*   [Changelog](#changelog)
+*   [Installing](#installing)
+*   [Activating](#activating)
+*   [Customizer component](#customizer-component)
+*   [CustomUI panel](#customui-panel)
+*   [Features available for all domains](#features-available-for-all-domains)
+    +   [Context-aware attributes](#context-aware-attributes)
+    +   [Template attributes [New in 20170927]](#template-attributes)
+    +   [Badges in state cards](#badges-in-state-cards)
+    +   [Per entity theming (Requires HA 0.50+)](#per-entity-theming)
+    +   [Secondary custom UI](#secondary-customui)
+*   [Features available for almost all domains](#features-available-for-almost-all-domains)
+    +   [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
+*   [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
+    -   [You can hide the control altogether](#you-can-hide-the-control-altogether)
+    -   [You can add extra data below the entity name](#you-can-add-extra-data-below-the-entity-name)
+    -   [Add badge to the state card](#add-badge-to-the-state-card)
+    -   [Confirmable controls](#confirmable-controls)
+*   [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
+    -   [If there is not enough horizontal space the mode is set by `state_card_mode` parameter](#if-there-is-not-enough-horizontal-space-the-mode-is-set-by-state_card_mode-parameter)
+    -   [If the slider got moved to a new line it will be 200 px wide.](#if-the-slider-got-moved-to-a-new-line-it-will-be-200-px-wide)
+    -   [The slider behavior is controlled by `slider_theme` dictionary.](#the-slider-behavior-is-controlled-by-slider_theme-dictionary)
+*   [Complete example](#complete-example)
 
 ## Changelog
 
-**Important Note: Update to at least 20170910 required for HA 0.53+**
+**Important Note: Update to at least 20171129 for HA 0.59+. Update to at least 20171117 required for HA 0.58**
 
 **Important Note: Make a force refresh (ctrl+f5) after upgrading HA to 0.53**
 
-#### 2017-10-19
-* Add `_stateDisplay` template attribute to allow setting final visual state.
+#### 2017-11-29 : Breaking Change
+*   File names changed into `state-card-custom-ui.html` and `state-card-custom-ui-es5.html`. Either update [customizer](https://github.com/andrey-git/home-assistant-customizer) or see updated instructions in [Activating](docs/activating.md) section.
 
-#### 2017-10-18
-* Fix context-aware group names
+#### 2017-11-17
+*   Compatibility fix with HA 0.58
 
 [Full Changelog](CHANGELOG.md)
 
@@ -46,13 +45,13 @@ See [installing](docs/installing.md)
 See [activating](docs/activating.md)
 
 ## Customizer component
-See instruction in dedicated repo: https://github.com/andrey-git/home-assistant-customizer/
+See instruction in dedicated repo: [https://github.com/andrey-git/home-assistant-customizer](https://github.com/andrey-git/home-assistant-customizer/)
 Provides the following features:
-* Load CustomUI files (HA 0.53+)
-* Register CustomUI panel (HA 0.52 and below).
-* Hide CustomUI attributes in `more-info` (HA 0.50 - 0.52)
-* Hide arbitrary attributes in `more-info` (Requires HA 0.50+)
-* Dynamic customization.
+*   Load CustomUI files (HA 0.53+)
+*   Register CustomUI panel (HA 0.52 and below).
+*   Hide CustomUI attributes in `more-info` (HA 0.50 - 0.52)
+*   Hide arbitrary attributes in `more-info` (Requires HA 0.50+)
+*   Dynamic customization.
 
 
 ## CustomUI panel
@@ -72,7 +71,7 @@ You can use context-aware attributes to give different names for the same entity
 See [context-aware.md](docs/context-aware.md)
 
 ### Template attributes
-You can set entity's attributes or state using javascript templates. See [Templates](docs/templates.md) for more info.
+You can set entity's attributes or state using JavaScript templates. See [Templates](docs/templates.md) for more info.
 
 For example to show "Active" instead of "on" for binary sensor:
 ```yaml
@@ -233,10 +232,10 @@ Note that if you use the [extra_data_template](#you-can-add-extra-data-below-the
 ## Features available for light, cover, "plain", and "toggle" cards.
 
 The next features are available for 4 types of cards:
-* Light
-* Cover,
-* "Plain" i.e. card with icon, name, and state.
-* "Toggle" i.e. card with icon, name, and toggle.
+*   Light
+*   Cover,
+*   "Plain" i.e. card with icon, name, and state.
+*   "Toggle" i.e. card with icon, name, and toggle.
 
 #### You can hide the control altogether
 ![hide_control](https://cloud.githubusercontent.com/assets/5478779/24772031/8a7d546e-1b18-11e7-935a-4360eeb9ebc8.png)
@@ -297,8 +296,8 @@ If there is enough space the card will have icon+name on the left, optional slid
 | --- | --- |
 | break-slider-toggle | Move the slider and the toggle together to a second line. |
 | single-line | Never use more than one line. Shrink the name and the slider. |
-| break-slider | Move slider to second line. Leave toggle on the first line.|
-| hide-slider | Hide the slider.|
+| break-slider | Move slider to second line. Leave toggle on the first line. |
+| hide-slider | Hide the slider. |
 | no-slider (default) | Never show the slider even if there is enough space. |
 
 #### If the slider got moved to a new line it will be 200 px wide.
@@ -344,7 +343,3 @@ frontend:
   extra_html_url:
     - /local/custom_ui/state-card-custom-ui.html
 ```
-
-
-## Known issues
-Custom UI on iOS 10 / Mac Safari 10 requires HA 0.41
