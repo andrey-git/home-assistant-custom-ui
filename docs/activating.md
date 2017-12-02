@@ -3,7 +3,7 @@
 ## For Home Assistant 0.53+
 
 #### 1. Tell Home Assistant to load relevant files.
-(One of 1.1 - 1.6)
+(One of 1.1 - 1.8)
 
 1.1 Using [customizer](https://github.com/andrey-git/home-assistant-customizer/) for [local install](installing.md#local-install)
 ```yaml
@@ -12,15 +12,20 @@ customizer:
 ```
 
 1.2 Manually for [local install](installing.md#local-install)
+
+HA 0.53-0.58
 ```yaml
 frontend:
   extra_html_url:
     - /local/custom_ui/state-card-custom-ui.html
 ```
-Additionally for HA 0.59+ add
+HA 0.59+
 ```yaml
-extra_html_url_es5:
-  - /local/custom_ui/state-card-custom-ui-es5.html
+frontend:
+  extra_html_url:
+    - /local/custom_ui/state-card-custom-ui.html
+  extra_html_url_es5:
+    - /local/custom_ui/state-card-custom-ui-es5.html
 
 ```
 1.3 Using [customizer](https://github.com/andrey-git/home-assistant-customizer/) for [hosted](installing.md#hosted-use-053) use of head version
@@ -30,15 +35,20 @@ customizer:
 ```
 
 1.4 Manually for [hosted](installing.md#hosted-use-053) use of head version
+
+HA 0.53-0.58
 ```yaml
 frontend:
   extra_html_url:
     - https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/state-card-custom-ui.html
 ```
-Additionally for HA 0.59+ add
+HA 0.59+
 ```yaml
-extra_html_url_es5:
-  - https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/state-card-custom-ui-es5.html
+frontend:
+  extra_html_url:
+    - https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/state-card-custom-ui.html
+  extra_html_url_es5:
+    - https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/state-card-custom-ui-es5.html
 ```
 
 1.5 Using [customizer](https://github.com/andrey-git/home-assistant-customizer/) for a specific release
@@ -48,15 +58,20 @@ customizer:
 ```
 
 1.6 Manually for [hosted](installing.md#hosted-use-053) use of a specific release
+
+HA 0.53-0.58
 ```yaml
 frontend:
   extra_html_url:
     - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20170830/state-card-custom-ui.html
 ```
-Additionally for HA 0.59+ and CustomUI 20171129+ add
+HA 0.59+
 ```yaml
-extra_html_url_es5:
-  - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20171129/state-card-custom-ui-es5.html
+frontend:
+  extra_html_url:
+    - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20171129/state-card-custom-ui.html
+  extra_html_url_es5:
+    - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20171129/state-card-custom-ui-es5.html
 ```
 
 1.7 Using [customizer](https://github.com/andrey-git/home-assistant-customizer/) for debug head version. (Only use for reporting readable Javascript errors!)
@@ -65,16 +80,21 @@ customizer:
   custom_ui: debug
 ```
 
-1.8 Manually for debug head version. (Only use for reporting readable Javascript errors!)
+1.8 Manually for debug head version. (Only use for reporting readable JavaScript errors!)
+
+HA 0.53-0.58
 ```yaml
 frontend:
   extra_html_url:
     - https://raw.githubusercontent.com/andrey-git/home-assistant-custom-ui/master/state-card-custom-ui-dbg.html
 ```
-Additionally for HA 0.59+ and CustomUI 20171129+ add
+HA 0.59+
 ```yaml
-extra_html_url_es5:
-  - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20171129/state-card-custom-ui-dbg-es5.html
+frontend:
+  extra_html_url:
+    - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20171129/state-card-custom-ui-dbg.html
+  extra_html_url_es5:
+    - https://github.com/andrey-git/home-assistant-custom-ui/releases/download/20171129/state-card-custom-ui-dbg-es5.html
 ```
 
 #### 2. Tell Home Assistant to use CustomUI for state cards.

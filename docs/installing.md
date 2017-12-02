@@ -2,15 +2,17 @@
 
 ## Hosted use (HA 0.53+)
 
-Instead of installing CustomUI files on you Home Assistant machine you can have your browser fetch them directly from github server. In this case you don't need to download any files.
+Instead of installing CustomUI files on you Home Assistant machine you can have your browser fetch them directly from GitHub servers. In this case you don't need to download any files.
 
 Pros:
 *   Easier to set up.
 *   You can choose to either use the 'latest' release or a specific release.
+*   You automatically get bug-fixes if you use 'latest'.
 
 Cons:
 *   Requires Internet connection.
-*   The hoster of the files (github) can track how often you open Home Assistant.
+*   The hoster of the files (GitHub) can track how often you open Home Assistant.
+*   You automatically get breaking changes if you use 'latest'.
 
 ## Local install
 
