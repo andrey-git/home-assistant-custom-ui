@@ -1,34 +1,31 @@
 <script>
-Polymer({
-  is: 'dynamic-element',
+class DynamicElement extends Polymer.Element {
+  static get is() { return 'dynamic-element'; }
 
-  properties: {
-    hass: {
-      type: Object,
-    },
+  static get properties() {
+    return {
+      hass: Object,
+      stateObj: Object,
+      elementName: String,
 
-    stateObj: {
-      type: Object,
-    },
+      inDialog: {
+        type: Boolean,
+        value: false,
+      },
+    };
+  }
 
-    elementName: {
-      type: String,
-    },
+  static get observers() {
+    return [
+      'observerFunc(hass, stateObj, elementName, inDialog)',
+    ];
+  }
 
-    inDialog: {
-      type: Boolean,
-      value: false,
-    },
-  },
-
-  observers: [
-    'observerFunc(hass, stateObj, elementName, inDialog)',
-  ],
-
-  observerFunc: function (hass, stateObj, elementName, inDialog) {
+  observerFunc(hass, stateObj, elementName, inDialog) {
     window.hassUtil.dynamicContentUpdater(
       this, elementName ? elementName.toUpperCase() : 'DIV',
       { hass: hass, stateObj: stateObj, inDialog: inDialog });
-  },
-});
+  }
+}
+customElements.define(DynamicElement.is, DynamicElement);
 </script>
