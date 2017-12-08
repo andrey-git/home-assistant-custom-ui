@@ -55,12 +55,10 @@ Provides the following features:
 
 
 ## CustomUI panel
-![custom_panel](https://user-images.githubusercontent.com/5478779/28746049-c015846a-74bf-11e7-939b-c48fc9d606b1.png)
-
+![Section in Configuration panel](https://user-images.githubusercontent.com/5478779/33785533-1fa54a6c-dc6e-11e7-94e5-9e20071b1da9.png)
 Use it to set device name.
 
-In HA 0.52 or below needs to be registered manually or via customizer.<br>
-In HA 0.53+ is added automatically to config panel.
+In HA 0.53+ is added automatically to configuration panel.
 
 ## Features available for all domains
 
