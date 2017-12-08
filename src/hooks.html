@@ -57,14 +57,18 @@ window.customUI = window.customUI || {
     return elem._context;
   },
 
+  findMatch: function (value, options) {
+    if (!options) return null;
+    if (options[value]) return options[value];
+    return Object.keys(options).find(option => value.match(`^${option}$`));
+  },
+
   maybeChangeObjectByDevice: function (stateObj) {
     const name = window.customUI.getName();
     if (!name) return stateObj;
-
-    if (!stateObj.attributes.device || !stateObj.attributes.device[name]) {
-      return stateObj;
-    }
-    const attributes = Object.assign({}, stateObj.attributes.device[name]);
+    const match = this.findMatch(name, stateObj.attributes.device);
+    if (!match) return stateObj;
+    const attributes = Object.assign({}, stateObj.attributes.device[match]);
 
     if (!Object.keys(attributes).length) return stateObj;
     return window.customUI.applyAttributes(stateObj, attributes);
@@ -79,8 +83,9 @@ window.customUI = window.customUI || {
     }
     const attributes = {};
     context.forEach((c) => {
-      if (stateObj.attributes.group[c]) {
-        Object.assign(attributes, stateObj.attributes.group[c]);
+      const match = this.findMatch(c, stateObj.attributes.group);
+      if (stateObj.attributes.group[match]) {
+        Object.assign(attributes, stateObj.attributes.group[match]);
       }
     });
 
