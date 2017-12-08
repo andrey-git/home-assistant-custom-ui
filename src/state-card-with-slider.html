@@ -8,6 +8,9 @@
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
     <style>
+      #container {
+        position: relative;
+      }
       .second-line, .state-and-toggle, .state-info {
         max-width: 100%;
       }
@@ -148,6 +151,7 @@
     connectedCallback() {
       super.connectedCallback();
       this.addEventListener('iron-resize', () => this._onIronResize());
+      this._setMode();
       this._waitForLayout();
     }
 
