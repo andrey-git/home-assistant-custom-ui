@@ -94,19 +94,40 @@ window.customUI = window.customUI || {
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
-  maybeApplyTemplates(elem, stateObj) {
+  maybeApplyTemplates(hass, stateObj) {
     if (!stateObj.attributes.templates) {
       return stateObj;
     }
     const attributes = {};
+    let hasGlobal = false;
+    let hasChanges = false;
     Object.keys(stateObj.attributes.templates).forEach((key) => {
       const template = stateObj.attributes.templates[key];
+      if (template.match(/\b(entities|hass)\b/)) {
+        hasGlobal = true;
+      }
       const value = window.customUI.computeTemplate(
-        template, elem.hass, elem.hass.states, stateObj, stateObj.attributes,
+        template, hass, hass.states, stateObj, stateObj.attributes,
         stateObj.attributes[key], stateObj.state);
       attributes[key] = value;
+      if (key === 'state') {
+        if (attributes.state !== stateObj.state) {
+          hasChanges = true;
+        }
+      } else if (key === '_stateDisplay') {
+        if (attributes._stateDisplay !== stateObj._stateDisplay) {
+          hasChanges = true;
+        }
+      } else if (attributes[key] !== stateObj.attributes[key]) {
+        hasChanges = true;
+      }
     });
-
+    if (!hasGlobal) {
+      stateObj._cui = true;
+    }
+    if (!hasChanges) {
+      return stateObj;
+    }
     if (!Object.keys(attributes).length) return stateObj;
     const result = window.customUI.applyAttributes(stateObj, attributes);
     if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
@@ -114,6 +135,9 @@ window.customUI = window.customUI || {
     }
     if (Object.prototype.hasOwnProperty.call(attributes, '_stateDisplay')) {
       result._stateDisplay = attributes._stateDisplay;
+    }
+    if (!hasGlobal) {
+      result._cui = true;
     }
     return result;
   },
@@ -131,7 +155,7 @@ window.customUI = window.customUI || {
     if (inDialog) return stateObj;
     let obj = window.customUI.maybeChangeObjectByDevice(stateObj);
     obj = window.customUI.maybeChangeObjectByGroup(elem, obj);
-    obj = window.customUI.maybeApplyTemplates(elem, obj);
+    obj = window.customUI.maybeApplyTemplates(elem.hass, obj);
 
     if (obj !== stateObj && obj.attributes.hidden && allowHidden) {
       return null;
@@ -283,6 +307,27 @@ window.customUI = window.customUI || {
     }
   },
 
+  customUpdateHass(originalUpdate, obj) {
+    if (obj.states) {
+      Object.keys(obj.states).forEach((key) => {
+        const entity = obj.states[key];
+        if (entity._cui) return;
+        const changed = window.customUI.maybeApplyTemplates(this.hass, entity);
+        if (entity !== changed) {
+          obj.states[key] = changed;
+        }
+      });
+    }
+    originalUpdate(obj);
+  },
+
+  installStatesHook() {
+    const main = window.customUI.lightOrShadow(document, 'home-assistant');
+    const originalUpdate = main._updateHass.bind(main);
+    main._updateHass = window.customUI.customUpdateHass.bind(main, originalUpdate);
+    main._updateHass({ states: main.hass.states });
+  },
+
   init() {
     if (window.customUI.initDone) return;
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
@@ -295,6 +340,7 @@ window.customUI = window.customUI || {
 
     window.customUI.runHooks();
     window.customUI.useCustomizer();
+    window.customUI.installStatesHook();
     window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
     /* eslint-disable no-console */
     console.log(`Loaded CustomUI ${window.customUI.VERSION}`);

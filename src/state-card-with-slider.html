@@ -129,14 +129,8 @@
           type: Boolean,
           value: false,
         },
-        minLineBreak: {
-          type: Number,
-          value: 0,
-        },
-        maxLineBreak: {
-          type: Number,
-          value: 999,
-        },
+        minLineBreak: Number,
+        maxLineBreak: Number,
         showSlider: {
           type: Number,
           computed: '_showSlider(inDialog, stateObj, hideSlider)',
@@ -151,7 +145,6 @@
     connectedCallback() {
       super.connectedCallback();
       this.addEventListener('iron-resize', () => this._onIronResize());
-      this._setMode();
       this._waitForLayout();
     }
 
@@ -162,8 +155,11 @@
     }
 
     _waitForLayout() {
+      this._setMode();
+      if (this._frameId) return;
       this.readyToCompute = false;
-      window.requestAnimationFrame(() => {
+      this._frameId = window.requestAnimationFrame(() => {
+        this._frameId = null;
         this.readyToCompute = true;
         this._onIronResize();
       });
@@ -205,7 +201,6 @@
       } else {
         if (prevHideSlider && this.mode === 'hide-slider') {
           // We need to unhide the slider in order to recalculate height.
-          this._setMode();
           this._waitForLayout();
           return;
         }
@@ -269,6 +264,13 @@
         this.sliderValue = 0;
       }
       if (stateObj) {
+        this.setProperties({
+          minLineBreak: 0,
+          maxLineBreak: 999,
+          hideSlider: false,
+          breakSlider: false,
+          lineTooLong: false,
+        });
         if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(
           stateObj.attributes.state_card_mode) !== -1) {
           this.mode = stateObj.attributes.state_card_mode;
@@ -278,6 +280,7 @@
         if (stateObj.attributes.stretch_slider) {
           this.stretchSlider = true;
         }
+        this._waitForLayout();
       }
     }
 
