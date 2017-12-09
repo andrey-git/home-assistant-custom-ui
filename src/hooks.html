@@ -3,22 +3,22 @@ window.customUI = window.customUI || {
   VERSION: '20171129',
 
   SUPPORTED_SLIDER_MODES: [
-    'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
+    'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
   ],
 
-  domHost: function (elem) {
+  domHost(elem) {
     if (elem === document) return null;
     const root = elem.getRootNode();
     return (root instanceof DocumentFragment) ? /** @type {ShadowRoot} */ (root).host : root;
   },
 
-  lightOrShadow: function (elem, selector) {
+  lightOrShadow(elem, selector) {
     return elem.shadowRoot ?
       elem.shadowRoot.querySelector(selector) :
       elem.querySelector(selector);
   },
 
-  getElementHierarchy: function (root, hierarchy) {
+  getElementHierarchy(root, hierarchy) {
     if (root === null) return null;
     const elem = hierarchy.shift();
     if (elem) {
@@ -28,7 +28,7 @@ window.customUI = window.customUI || {
     return root;
   },
 
-  getContext: function (elem) {
+  getContext(elem) {
     if (elem._context === undefined) {
       elem._context = [];
       for (let element = (elem.tagName === 'HA-ENTITIES-CARD' ? window.customUI.domHost(elem) : elem);
@@ -38,7 +38,7 @@ window.customUI = window.customUI || {
             if (element.groupEntity) {
               elem._context.push(element.groupEntity.entity_id);
             } else if (element.groupEntity === false && element.states && element.states.length) {
-              elem._context.push('group.' + window.hassUtil.computeDomain(element.states[0]));
+              elem._context.push(`group.${window.hassUtil.computeDomain(element.states[0])}`);
             }
             break;
           case 'MORE-INFO-GROUP':
@@ -57,13 +57,13 @@ window.customUI = window.customUI || {
     return elem._context;
   },
 
-  findMatch: function (value, options) {
+  findMatch(value, options) {
     if (!options) return null;
     if (options[value]) return options[value];
     return Object.keys(options).find(option => value.match(`^${option}$`));
   },
 
-  maybeChangeObjectByDevice: function (stateObj) {
+  maybeChangeObjectByDevice(stateObj) {
     const name = window.customUI.getName();
     if (!name) return stateObj;
     const match = this.findMatch(name, stateObj.attributes.device);
@@ -74,7 +74,7 @@ window.customUI = window.customUI || {
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
-  maybeChangeObjectByGroup: function (elem, stateObj) {
+  maybeChangeObjectByGroup(elem, stateObj) {
     const context = window.customUI.getContext(elem);
     if (!context) return stateObj;
 
@@ -94,7 +94,7 @@ window.customUI = window.customUI || {
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
-  maybeApplyTemplates: function (elem, stateObj) {
+  maybeApplyTemplates(elem, stateObj) {
     if (!stateObj.attributes.templates) {
       return stateObj;
     }
@@ -118,7 +118,7 @@ window.customUI = window.customUI || {
     return result;
   },
 
-  applyAttributes: function (stateObj, attributes) {
+  applyAttributes(stateObj, attributes) {
     return {
       entity_id: stateObj.entity_id,
       state: stateObj.state,
@@ -127,7 +127,7 @@ window.customUI = window.customUI || {
     };
   },
 
-  maybeChangeObject: function (elem, stateObj, inDialog, allowHidden) {
+  maybeChangeObject(elem, stateObj, inDialog, allowHidden) {
     if (inDialog) return stateObj;
     let obj = window.customUI.maybeChangeObjectByDevice(stateObj);
     obj = window.customUI.maybeChangeObjectByGroup(elem, obj);
@@ -139,7 +139,7 @@ window.customUI = window.customUI || {
     return obj;
   },
 
-  fixGroupTitles: function () {
+  fixGroupTitles() {
     const homeAssistantMain = window.customUI.getElementHierarchy(document, [
       'home-assistant',
       'home-assistant-main']);
@@ -170,7 +170,7 @@ window.customUI = window.customUI || {
     });
   },
 
-  showVersion: function () {
+  showVersion() {
     if (window.location.pathname !== '/dev-info') return;
     const devInfo = window.customUI.getElementHierarchy(document, [
       'home-assistant',
@@ -185,11 +185,11 @@ window.customUI = window.customUI || {
     const about = window.customUI.lightOrShadow(devInfo, '.about');
     const secondP = about.querySelectorAll('p')[1];
     const version = document.createElement('p');
-    version.textContent = 'Custom UI ' + window.customUI.VERSION;
+    version.textContent = `Custom UI ${window.customUI.VERSION}`;
     about.insertBefore(version, secondP);
   },
 
-  useCustomizer: function () {
+  useCustomizer() {
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     const customizer = main.hass.states['customizer.customizer'];
     if (!customizer) return;
@@ -210,7 +210,7 @@ window.customUI = window.customUI || {
     }
   },
 
-  updateAttributes: function () {
+  updateAttributes() {
     const customUiAttributes = {
       group: undefined,
       device: undefined,
@@ -244,7 +244,7 @@ window.customUI = window.customUI || {
     }
   },
 
-  updateConfigPanel: function () {
+  updateConfigPanel() {
     if (!window.location.pathname.startsWith('/config')) return;
     const haPanelConfig = window.customUI.getElementHierarchy(document, [
       'home-assistant',
@@ -278,12 +278,12 @@ window.customUI = window.customUI || {
         domain: 'customui',
         caption: 'Custom UI',
         description: 'Set UI tweaks.',
-        loaded: true
+        loaded: true,
       });
     }
   },
 
-  init: function () {
+  init() {
     if (window.customUI.initDone) return;
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     if (!main.hass || !main.hass.states) {
@@ -297,27 +297,27 @@ window.customUI = window.customUI || {
     window.customUI.useCustomizer();
     window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
     /* eslint-disable no-console */
-    console.log('Loaded CustomUI ' + window.customUI.VERSION);
+    console.log(`Loaded CustomUI ${window.customUI.VERSION}`);
     /* eslint-enable no-console */
   },
 
-  runHooks: function () {
+  runHooks() {
     window.customUI.fixGroupTitles();
     window.customUI.showVersion();
     window.customUI.updateAttributes();
     window.customUI.updateConfigPanel();
   },
 
-  getName: function () {
+  getName() {
     return window.localStorage.getItem('ha-device-name') || '';
   },
 
-  setName: function (name) {
+  setName(name) {
     window.localStorage.setItem('ha-device-name', name || '');
   },
 
-  computeTemplate: function (template, hass, entities, entity, attributes, attribute, state) {
-    const functionBody = (template.indexOf('return') >= 0) ? template : 'return `' + template + '`;';
+  computeTemplate(template, hass, entities, entity, attributes, attribute, state) {
+    const functionBody = (template.indexOf('return') >= 0) ? template : `return \`${template}\`;`;
     try {
       /* eslint-disable no-new-func */
       const func = new Function(
@@ -327,7 +327,7 @@ window.customUI = window.customUI || {
     } catch (e) {
       /* eslint-disable no-console */
       if ((e instanceof SyntaxError) || e instanceof ReferenceError) {
-        console.warn(e.name + ': ' + e.message + ' in template ' + functionBody);
+        console.warn(`${e.name}: ${e.message} in template ${functionBody}`);
         return null;
       }
       /* eslint-enable no-console */

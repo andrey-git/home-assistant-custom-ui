@@ -68,7 +68,7 @@ class StateCardCustomUi extends Polymer.Element {
         const state = hass.states[id];
         if (!state) {
           /* eslint-disable no-console */
-          console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
+          console.warn(`Unknown ID ${id} in group ${stateObj.entity_id}`);
           /* eslint-enable no-console */
           return;
         }
@@ -92,7 +92,7 @@ class StateCardCustomUi extends Polymer.Element {
     window.hassUtil.dynamicContentUpdater(
       this,
       'HA-BADGES-CARD',
-      { hass: hass, states: states });
+      { hass, states });
     // Since this variable only affects badges mode - no need to clean it up.
     this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
   }
@@ -150,9 +150,9 @@ class StateCardCustomUi extends Polymer.Element {
     this.cleanBadgeStyle();
 
     const params = {
-      hass: hass,
+      hass,
       stateObj: modifiedObj,
-      inDialog: inDialog,
+      inDialog,
     };
     let stateCardType = window.hassUtil.stateCardType(hass, stateObj);
     const secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
@@ -190,7 +190,7 @@ class StateCardCustomUi extends Polymer.Element {
         stateCardType === 'display')) {
       stateCardType = 'with-slider';
       Object.assign(params, {
-        domain: domain,
+        domain,
       });
       if (stateObj.state === 'unavailable') {
         Object.assign(params, {
@@ -204,7 +204,7 @@ class StateCardCustomUi extends Polymer.Element {
 
     window.hassUtil.dynamicContentUpdater(
       this,
-      secondaryStateCardType || ('STATE-CARD-' + stateCardType.toUpperCase()),
+      secondaryStateCardType || (`STATE-CARD-${stateCardType.toUpperCase()}`),
       params);
   }
 }

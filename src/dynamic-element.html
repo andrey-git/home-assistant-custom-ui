@@ -24,7 +24,7 @@ class DynamicElement extends Polymer.Element {
   observerFunc(hass, stateObj, elementName, inDialog) {
     window.hassUtil.dynamicContentUpdater(
       this, elementName ? elementName.toUpperCase() : 'DIV',
-      { hass: hass, stateObj: stateObj, inDialog: inDialog });
+      { hass, stateObj, inDialog });
   }
 }
 customElements.define(DynamicElement.is, DynamicElement);

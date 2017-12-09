@@ -22,8 +22,8 @@ function minifyStream(stream, minify, transpile) {
     .pipe(gulpif(transpile, gulpif(/src\/.*\.js$/, babel({
       sourceType: 'script',
       presets: [
-        ['es2015', { modules: false }]
-      ]
+        ['es2015', { modules: false }],
+      ],
     }))));
   if (minify) {
     result = result
@@ -47,7 +47,7 @@ function build(minify, transpile) {
       sourcemaps: false,
     }))
     .pipe(filter(['src/state-card-custom-ui.html']))
-    .pipe(rename({ basename: 'state-card-custom-ui' + (minify ? '' : '-dbg') + (transpile ? '-es5' : '') }))
+    .pipe(rename({ basename: `state-card-custom-ui${minify ? '' : '-dbg'}${transpile ? '-es5' : ''}` }))
     .pipe(gulp.dest('build/'));
 }
 

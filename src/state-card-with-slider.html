@@ -195,7 +195,7 @@
       this.lineTooLong = false;
       this.hideSlider = false;
       this.breakSlider = false;
-      const container = this.$.container;
+      const { container } = this.$;
       const containerWidth = container.clientWidth;
       if (containerWidth === 0) return;
       if (containerWidth <= this.minLineBreak) {
@@ -248,11 +248,11 @@
       let target = this.$$('#slider');
       if (ev.target !== target) {
         // No Shadow DOM - we have access to original target.
-        target = ev.target;
+        ({ target } = ev);
       } else if (ev.path) {
-        target = ev.path[0];
+        [target] = ev.path;
       } else if (ev.composedPath) {
-        target = ev.composedPath()[0];
+        [target] = ev.composedPath();
       }
       if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
         this.hass.callService(this.domain, this.serviceMin, param);

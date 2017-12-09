@@ -95,7 +95,7 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
 
   _getObject(hass, stateObj) {
     if (!stateObj.attributes.extra_badge) return null;
-    var extraBadge = stateObj.attributes.extra_badge;
+    const extraBadge = stateObj.attributes.extra_badge;
     if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
       return Object.assign({}, hass.states[extraBadge.entity_id]);
     }
@@ -111,7 +111,7 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
   }
 
   computeExtra(hass, stateObj) {
-    var result = this._getObject(hass, stateObj);
+    const result = this._getObject(hass, stateObj);
     if (!result) {
       return {
         _entityDisplay: '',
@@ -125,9 +125,9 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
 
   computeExtraVisible(hass, stateObj, inDialog) {
     if (inDialog) return false;
-    var result = this._getObject(hass, stateObj);
+    const result = this._getObject(hass, stateObj);
     if (!result) return false;
-    var blacklist = stateObj.attributes.extra_badge.blacklist_states;
+    let blacklist = stateObj.attributes.extra_badge.blacklist_states;
     if (blacklist) {
       if (!Array.isArray(blacklist)) {
         blacklist = [blacklist];

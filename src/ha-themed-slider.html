@@ -28,9 +28,11 @@
 </dom-module>
 
 <script>
-Polymer({
-  is: 'ha-themed-slider',
-  ready: function () {
+class HaThemedSlider extends Polymer.Element {
+  static get is() { return 'ha-themed-slider'; }
+
+  ready() {
+    super.ready();
     // If value was above 100 it wouldn't propagate to paper-slider while that had max=100
     // Force-change the value so that paper-slider will update itself.
     this.value = this.value + 1;
@@ -38,65 +40,70 @@ Polymer({
     // Propagate the themed value upwards.
     this.disableOffWhenMin = !this._computeAttribute(this.theme, 'off_when_min', !this.disableOffWhenMin);
     this.computeEnabledThemedReportWhenNotChanged(this.theme, this.disableReportWhenNotChanged);
-  },
-  properties: {
-    min: {
-      type: Number,
-      value: 0,
-    },
-    max: {
-      type: Number,
-      value: 100,
-    },
-    pin: {
-      type: Boolean,
-      value: false,
-    },
-    isOn: {
-      type: Boolean,
-      value: false,
-    },
-    disableOffWhenMin: {
-      type: Boolean,
-      value: false,
-      notify: true,
-    },
-    disableReportWhenNotChanged: {
-      type: Boolean,
-      value: false,
-    },
+  }
 
-    theme: {
-      type: Object,
-    },
-    value: {
-      type: Number,
-      notify: true,
-    },
-    _themedMin: {
-      type: Number,
-      computed: '_computeAttribute(theme, "min", min)',
-    },
-  },
+  static get properties() {
+    return {
+      min: {
+        type: Number,
+        value: 0,
+      },
+      max: {
+        type: Number,
+        value: 100,
+      },
+      pin: {
+        type: Boolean,
+        value: false,
+      },
+      isOn: {
+        type: Boolean,
+        value: false,
+      },
+      disableOffWhenMin: {
+        type: Boolean,
+        value: false,
+        notify: true,
+      },
+      disableReportWhenNotChanged: {
+        type: Boolean,
+        value: false,
+      },
 
-  observers: ['computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged)'],
+      theme: Object,
+      value: {
+        type: Number,
+        notify: true,
+      },
+      _themedMin: {
+        type: Number,
+        computed: '_computeAttribute(theme, "min", min)',
+      },
+    };
+  }
 
-  computeEnabledThemedReportWhenNotChanged: function (theme, disableReportWhenNotChanged) {
+  static get observers() {
+    return [
+      'computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged)',
+    ];
+  }
+
+  computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged) {
     this._enabledThemedReportWhenNotChanged = this._computeAttribute(
       theme, 'report_when_not_changed', !disableReportWhenNotChanged);
-  },
+  }
 
-  _computeAttribute: function (theme, attr, def) {
+  _computeAttribute(theme, attr, def) {
     if (theme) {
       if (attr in theme) {
         return theme[attr];
       }
     }
     return def;
-  },
+  }
 
-  computeClass: function (theme, isOn, themedMin) {
-    var result = '';
+  computeClass(theme, isOn, themedMin) {
+    let result = '';
     if (isOn) {
       result += 'is-on ';
     }
@@ -104,15 +111,16 @@ Polymer({
       // If offWhenMin is enabled don't customize.
       return '';
     }
-    return result + 'disable-off-when-min';
-  },
+    return `${result}disable-off-when-min`;
+  }
 
-  valueChanged: function (ev) {
+  valueChanged(ev) {
     if (!this._enabledThemedReportWhenNotChanged && this.value === ev.target.value) {
       ev.stopPropagation();
       return;
     }
     this.value = ev.target.value;
-  },
-});
+  }
+}
+customElements.define(HaThemedSlider.is, HaThemedSlider);
 </script>
