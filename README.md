@@ -77,7 +77,7 @@ homeassistant:
   customize:
     binary_sensor.my_sensor:
       templates:
-        state: if state === 'on' return 'Active'; else return state;
+        state: if (state === 'on') return 'Active'; else return state;
 ```
 
 ### Badges in state cards
