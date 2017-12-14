@@ -46,7 +46,9 @@
     </style>
     <div class$='[[extraClass(extraObjVisible)]] horizontal layout'>
       <template is='dom-if' if='[[extraObjVisible]]'>
-        <ha-state-label-badge hass='[[hass]]' state='[[extraObj]]'></ha-state-label-badge>
+        <template is='dom-repeat' items='[[extraObj]]'>
+          <ha-state-label-badge hass='[[hass]]' state='[[item]]'></ha-state-label-badge>
+        </template>
       </template>
       <template is='dom-if' if='[[_showControl(inDialog, stateObj)]]'>
         <template is='dom-if' if='[[controlElement]]'>
@@ -83,60 +85,52 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
       stateObj: Object,
       controlElement: String,
       extraObj: {
-        type: Object,
-        computed: 'computeExtra(hass, stateObj, inDialog)',
+        type: Array,
+        computed: 'computeExtra(hass, stateObj)',
       },
       extraObjVisible: {
         type: Boolean,
-        computed: 'computeExtraVisible(hass, stateObj, inDialog)',
+        computed: 'computeExtraVisible(extraObj, inDialog)',
       },
     };
   }
 
-  _getObject(hass, stateObj) {
-    if (!stateObj.attributes.extra_badge) return null;
-    const extraBadge = stateObj.attributes.extra_badge;
-    if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
-      return Object.assign({}, hass.states[extraBadge.entity_id]);
-    }
-    if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
-      return {
-        state: stateObj.attributes[extraBadge.attribute],
-        _domain: 'none',
-        entity_id: null,
-        attributes: { unit_of_measurement: extraBadge.unit },
-      };
-    }
-    return null;
-  }
-
   computeExtra(hass, stateObj) {
-    const result = this._getObject(hass, stateObj);
-    if (!result) {
-      return {
-        _entityDisplay: '',
-        _domain: 'none',
-        attributes: {},
-      };
+    if (!stateObj.attributes.extra_badge) return [];
+    let extraBadges = stateObj.attributes.extra_badge;
+    if (!Array.isArray(extraBadges)) {
+      extraBadges = [extraBadges];
     }
-    result._entityDisplay = '';
-    return result;
+    return extraBadges.map((extraBadge) => {
+      let result = null;
+      if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
+        result = Object.assign({}, hass.states[extraBadge.entity_id]);
+      } else if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
+        result = {
+          state: stateObj.attributes[extraBadge.attribute],
+          _domain: 'none',
+          entity_id: null,
+          attributes: { unit_of_measurement: extraBadge.unit },
+        };
+      }
+      if (!result) return null;
+      let blacklist = extraBadge.blacklist_states;
+      if (blacklist) {
+        if (!Array.isArray(blacklist)) {
+          blacklist = [blacklist];
+        }
+        if (blacklist.some(v => RegExp(v).test(result.state.toString()))) {
+          return null;
+        }
+      }
+      result._entityDisplay = '';
+      return result;
+    }).filter(extraBadge => extraBadge != null);
   }
 
-  computeExtraVisible(hass, stateObj, inDialog) {
-    if (inDialog) return false;
-    const result = this._getObject(hass, stateObj);
-    if (!result) return false;
-    let blacklist = stateObj.attributes.extra_badge.blacklist_states;
-    if (blacklist) {
-      if (!Array.isArray(blacklist)) {
-        blacklist = [blacklist];
-      }
-      if (blacklist.some(v => RegExp(v).test(result.state.toString()))) {
-        return false;
-      }
-    }
-    return true;
+  computeExtraVisible(extraObj, inDialog) {
+    if (inDialog || !extraObj) return false;
+    return extraObj.length !== 0;
   }
 
   extraClass(extraObjVisible) {
