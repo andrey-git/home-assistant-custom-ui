@@ -57,10 +57,10 @@ window.customUI = window.customUI || {
     return elem._context;
   },
 
-  findMatch(value, options) {
+  findMatch(key, options) {
     if (!options) return null;
-    if (options[value]) return options[value];
-    return Object.keys(options).find(option => value.match(`^${option}$`));
+    if (options[key]) return key;
+    return Object.keys(options).find(option => key.match(`^${option}$`));
   },
 
   maybeChangeObjectByDevice(stateObj) {
@@ -94,52 +94,85 @@ window.customUI = window.customUI || {
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
-  maybeApplyTemplates(hass, stateObj) {
-    if (!stateObj.attributes.templates) {
+  _setKeep(obj, value) {
+    if (obj._cui_keep === undefined) {
+      obj._cui_keep = value;
+    } else {
+      obj._cui_keep = obj._cui_keep && value;
+    }
+  },
+
+  maybeApplyTemplateAttributes(hass, states, stateObj, attributes) {
+    if (!attributes.templates) {
       return stateObj;
     }
-    const attributes = {};
+    const newAttributes = {};
     let hasGlobal = false;
     let hasChanges = false;
-    Object.keys(stateObj.attributes.templates).forEach((key) => {
-      const template = stateObj.attributes.templates[key];
+    Object.keys(attributes.templates).forEach((key) => {
+      const template = attributes.templates[key];
       if (template.match(/\b(entities|hass)\b/)) {
         hasGlobal = true;
       }
       const value = window.customUI.computeTemplate(
-        template, hass, hass.states, stateObj, stateObj.attributes,
-        stateObj.attributes[key], stateObj.state);
-      attributes[key] = value;
+        template, hass, states, stateObj, attributes,
+        attributes[key], stateObj.state);
+      newAttributes[key] = value;
       if (key === 'state') {
-        if (attributes.state !== stateObj.state) {
+        if (value !== stateObj.state) {
           hasChanges = true;
         }
       } else if (key === '_stateDisplay') {
-        if (attributes._stateDisplay !== stateObj._stateDisplay) {
+        if (value !== stateObj._stateDisplay) {
           hasChanges = true;
         }
-      } else if (attributes[key] !== stateObj.attributes[key]) {
+      } else if (value !== attributes[key]) {
         hasChanges = true;
       }
     });
-    if (!hasGlobal) {
-      stateObj._cui = true;
-    }
+    window.customUI._setKeep(stateObj, !hasGlobal);
     if (!hasChanges) {
       return stateObj;
     }
-    if (!Object.keys(attributes).length) return stateObj;
-    const result = window.customUI.applyAttributes(stateObj, attributes);
-    if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
-      result.state = attributes.state;
+    if (stateObj.attributes === attributes) {
+      // We are operating on real attributes. Replace them.
+      const result = window.customUI.applyAttributes(stateObj, attributes);
+      if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
+        result.state = attributes.state;
+      }
+      if (Object.prototype.hasOwnProperty.call(attributes, '_stateDisplay')) {
+        result._stateDisplay = attributes._stateDisplay;
+      }
+      window.customUI._setKeep(result, !hasGlobal);
+      return result;
     }
-    if (Object.prototype.hasOwnProperty.call(attributes, '_stateDisplay')) {
-      result._stateDisplay = attributes._stateDisplay;
+    // Operating on context-aware attributes. Return shallow copy of object.
+    return Object.assign({}, stateObj);
+  },
+
+  maybeApplyTemplates(hass, states, stateObj) {
+    const newResult = window.customUI.maybeApplyTemplateAttributes(
+      hass, states, stateObj, stateObj.attributes);
+    let hasChanges = (newResult === stateObj);
+
+    function checkAttributes(obj) {
+      if (!obj) return;
+      Object.values(obj).forEach((attributes) => {
+        const result = window.customUI.maybeApplyTemplateAttributes(
+          hass, states, newResult, attributes);
+        hasChanges |= (result !== newResult);
+      });
+      checkAttributes(obj.device);
+      checkAttributes(obj.group);
     }
-    if (!hasGlobal) {
-      result._cui = true;
+
+    checkAttributes(stateObj.attributes.device);
+    checkAttributes(stateObj.attributes.group);
+    if (newResult !== stateObj) return newResult;
+    if (hasChanges) {
+      return Object.assign({}, stateObj);
     }
-    return result;
+    return stateObj;
   },
 
   applyAttributes(stateObj, attributes) {
@@ -155,7 +188,8 @@ window.customUI = window.customUI || {
     if (inDialog) return stateObj;
     let obj = window.customUI.maybeChangeObjectByDevice(stateObj);
     obj = window.customUI.maybeChangeObjectByGroup(elem, obj);
-    obj = window.customUI.maybeApplyTemplates(elem.hass, obj);
+    obj = window.customUI.maybeApplyTemplateAttributes(
+      elem.hass, elem.hass.states, obj, obj.attributes);
 
     if (obj !== stateObj && obj.attributes.hidden && allowHidden) {
       return null;
@@ -311,10 +345,14 @@ window.customUI = window.customUI || {
     if (obj.states) {
       Object.keys(obj.states).forEach((key) => {
         const entity = obj.states[key];
-        if (entity._cui) return;
-        const changed = window.customUI.maybeApplyTemplates(this.hass, entity);
-        if (entity !== changed) {
-          obj.states[key] = changed;
+        if (entity._cui_keep) return;
+        const newEntity = window.customUI.maybeApplyTemplates(this.hass, obj.states, entity);
+        if (entity !== this.hass.states[key]) {
+          // New state arrived. Put modified state in.
+          obj.states[key] = newEntity;
+        } else if (entity !== newEntity) {
+          // It's the same state but contents changed due to other state changes.
+          obj.states[key] = newEntity;
         }
       });
     }
