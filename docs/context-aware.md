@@ -42,9 +42,9 @@ homeassistant:
         joe_mobile:
           friendly_name: My phone
 ```
-The name of each device is set in CustomUI panel registered by [customizer](https://github.com/andrey-git/home-assistant-customizer) custom component.
+The name of each device is set in CustomUI section of `config` pane.
 
-![custom_panel](https://user-images.githubusercontent.com/5478779/28746049-c015846a-74bf-11e7-939b-c48fc9d606b1.png)
+![Section in Configuration panel](https://user-images.githubusercontent.com/5478779/33785533-1fa54a6c-dc6e-11e7-94e5-9e20071b1da9.png)
 
 If both context-aware and device-aware attributes are specified - device-aware will be applied first and then context-aware, possibly overriding device-aware attributes. Those can also be nested:
 ```yaml
@@ -70,6 +70,19 @@ group:
       - device_tracker.joe_phone
 ```
 
+### Using Regular Expressions
+The name of the group / device can be a [Regular Expression](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions). For example:
+```yaml
+homeassistant:
+  customize:
+    device_tracker.joe_phone:
+      friendly_name: Joe phone
+      group:
+        # This will catch both group.phones_boys and group.phones_girls groups
+        group.phone.*:
+          friendly_name: Joe
+```
+Note that this is a Regular Expression syntax, not Glob syntax used by `customize-glob`.
 
 ### Context-aware hide
 In case you want a device to be a member of a group but not *show* in the group - use context-aware `hidden` attribute.

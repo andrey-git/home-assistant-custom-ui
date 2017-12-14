@@ -30,11 +30,18 @@
 
 **Important Note: Make a force refresh (ctrl+f5) after upgrading HA to 0.53**
 
+#### 2017-12-14
+*   New feature: [Templates](docs/templates.md) are now processed when states are fetched, so you can now template any state or attribute, nit just in state cards. For example:
+    *   Modify group members.
+    *   Make your own translation of states.
+*   Improvements:
+    *   `confirm_controls` will now protect the whole state card and not just the toggle control. Fixes #39
+    *   Context-aware and Device-aware attributes can now be defined as regular expression. Fixes #55
+    *   [extra_badge](#add-badge-to-the-state-card) can now be a list if you want to put more than 1 badge into a state card.
+*   Bugfix: Improve detection of whether slider should be hidden in `hide-slider` mode. Fixes #15
+
 #### 2017-11-29 : Breaking Change
 *   File names changed into `state-card-custom-ui.html` and `state-card-custom-ui-es5.html`. Either update [customizer](https://github.com/andrey-git/home-assistant-customizer) or see updated instructions in [Activating](docs/activating.md) section.
-
-#### 2017-11-17
-*   Compatibility fix with HA 0.58
 
 [Full Changelog](CHANGELOG.md)
 
@@ -65,7 +72,7 @@ In HA 0.53+ is added automatically to configuration panel.
 ### Context-aware attributes
 ![context_aware](https://cloud.githubusercontent.com/assets/5478779/26284053/45fbc000-3e3b-11e7-8d4a-56ef0d5e6c60.png)
 
-You can use context-aware attributes to give different names for the same entity in different groups, views, or devices.
+You can use context-aware attributes to give different names/attributes for the same entity in different groups, views, or devices.
 See [context-aware.md](docs/context-aware.md)
 
 ### Template attributes
@@ -79,6 +86,7 @@ homeassistant:
       templates:
         state: if (state === 'on') return 'Active'; else return state;
 ```
+This is very powerful feature that can do a lot of cool things, but it could also have performance implications. 
 
 ### Badges in state cards
 ![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)
@@ -252,7 +260,7 @@ extra_data_template: ${attributes.power_consumption}W
 #### Add badge to the state card
 ![extra_badge](https://cloud.githubusercontent.com/assets/5478779/24772030/8a7cc4ea-1b18-11e7-9313-f7654ffb0c71.png)
 
-Instead of using a grey text below the entity name you can add a sensor-like badge. There are two ways to do that:
+Instead of using a gray text below the entity name you can add a sensor-like badge. There are two ways to do that:
 1) Specify a real sensor by entity ID:
 ```yaml
 extra_badge:
@@ -270,6 +278,15 @@ In both cases you can specify a blacklist of badge "states", when you don't want
 extra_badge:
   entity_id: sensor.my_sensor
   blacklist_states: 0
+```
+
+You can also provide a list of badges:
+```yaml
+extra_badge:
+  - entity_id: sensor.my_sensor1
+    blacklist_states: 0
+  - entity_id: sensor.my_sensor2
+    blacklist_states: 'z'
 ```
 
 #### Confirmable controls
@@ -299,7 +316,7 @@ If there is enough space the card will have icon+name on the left, optional slid
 | no-slider (default) | Never show the slider even if there is enough space. |
 
 #### If the slider got moved to a new line it will be 200 px wide.
-Use `stretch_slider` attribute to make it strech to all available space.
+Use `stretch_slider` attribute to make it stretch to all available space.
 
 #### The slider behavior is controlled by `slider_theme` dictionary.
 In that dictionary the following optional fields are available:

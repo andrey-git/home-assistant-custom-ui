@@ -1,24 +1,24 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171129',
+  VERSION: '20171214',
 
   SUPPORTED_SLIDER_MODES: [
-    'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'
+    'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
   ],
 
-  domHost: function (elem) {
+  domHost(elem) {
     if (elem === document) return null;
     const root = elem.getRootNode();
     return (root instanceof DocumentFragment) ? /** @type {ShadowRoot} */ (root).host : root;
   },
 
-  lightOrShadow: function (elem, selector) {
+  lightOrShadow(elem, selector) {
     return elem.shadowRoot ?
       elem.shadowRoot.querySelector(selector) :
       elem.querySelector(selector);
   },
 
-  getElementHierarchy: function (root, hierarchy) {
+  getElementHierarchy(root, hierarchy) {
     if (root === null) return null;
     const elem = hierarchy.shift();
     if (elem) {
@@ -28,7 +28,7 @@ window.customUI = window.customUI || {
     return root;
   },
 
-  getContext: function (elem) {
+  getContext(elem) {
     if (elem._context === undefined) {
       elem._context = [];
       for (let element = (elem.tagName === 'HA-ENTITIES-CARD' ? window.customUI.domHost(elem) : elem);
@@ -38,7 +38,7 @@ window.customUI = window.customUI || {
             if (element.groupEntity) {
               elem._context.push(element.groupEntity.entity_id);
             } else if (element.groupEntity === false && element.states && element.states.length) {
-              elem._context.push('group.' + window.hassUtil.computeDomain(element.states[0]));
+              elem._context.push(`group.${window.hassUtil.computeDomain(element.states[0])}`);
             }
             break;
           case 'MORE-INFO-GROUP':
@@ -57,20 +57,24 @@ window.customUI = window.customUI || {
     return elem._context;
   },
 
-  maybeChangeObjectByDevice: function (stateObj) {
+  findMatch(key, options) {
+    if (!options) return null;
+    if (options[key]) return key;
+    return Object.keys(options).find(option => key.match(`^${option}$`));
+  },
+
+  maybeChangeObjectByDevice(stateObj) {
     const name = window.customUI.getName();
     if (!name) return stateObj;
-
-    if (!stateObj.attributes.device || !stateObj.attributes.device[name]) {
-      return stateObj;
-    }
-    const attributes = Object.assign({}, stateObj.attributes.device[name]);
+    const match = this.findMatch(name, stateObj.attributes.device);
+    if (!match) return stateObj;
+    const attributes = Object.assign({}, stateObj.attributes.device[match]);
 
     if (!Object.keys(attributes).length) return stateObj;
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
-  maybeChangeObjectByGroup: function (elem, stateObj) {
+  maybeChangeObjectByGroup(elem, stateObj) {
     const context = window.customUI.getContext(elem);
     if (!context) return stateObj;
 
@@ -79,8 +83,9 @@ window.customUI = window.customUI || {
     }
     const attributes = {};
     context.forEach((c) => {
-      if (stateObj.attributes.group[c]) {
-        Object.assign(attributes, stateObj.attributes.group[c]);
+      const match = this.findMatch(c, stateObj.attributes.group);
+      if (stateObj.attributes.group[match]) {
+        Object.assign(attributes, stateObj.attributes.group[match]);
       }
     });
 
@@ -89,31 +94,88 @@ window.customUI = window.customUI || {
     return window.customUI.applyAttributes(stateObj, attributes);
   },
 
-  maybeApplyTemplates: function (elem, stateObj) {
-    if (!stateObj.attributes.templates) {
-      return stateObj;
+  _setKeep(obj, value) {
+    if (obj._cui_keep === undefined) {
+      obj._cui_keep = value;
+    } else {
+      obj._cui_keep = obj._cui_keep && value;
     }
-    const attributes = {};
-    Object.keys(stateObj.attributes.templates).forEach((key) => {
-      const template = stateObj.attributes.templates[key];
-      const value = window.customUI.computeTemplate(
-        template, elem.hass, elem.hass.states, stateObj, stateObj.attributes,
-        stateObj.attributes[key], stateObj.state);
-      attributes[key] = value;
-    });
-
-    if (!Object.keys(attributes).length) return stateObj;
-    const result = window.customUI.applyAttributes(stateObj, attributes);
-    if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
-      result.state = attributes.state;
-    }
-    if (Object.prototype.hasOwnProperty.call(attributes, '_stateDisplay')) {
-      result._stateDisplay = attributes._stateDisplay;
-    }
-    return result;
   },
 
-  applyAttributes: function (stateObj, attributes) {
+  maybeApplyTemplateAttributes(hass, states, stateObj, attributes) {
+    if (!attributes.templates) {
+      return stateObj;
+    }
+    const newAttributes = {};
+    let hasGlobal = false;
+    let hasChanges = false;
+    Object.keys(attributes.templates).forEach((key) => {
+      const template = attributes.templates[key];
+      if (template.match(/\b(entities|hass)\b/)) {
+        hasGlobal = true;
+      }
+      const value = window.customUI.computeTemplate(
+        template, hass, states, stateObj, attributes,
+        attributes[key], stateObj.state);
+      newAttributes[key] = value;
+      if (key === 'state') {
+        if (value !== stateObj.state) {
+          hasChanges = true;
+        }
+      } else if (key === '_stateDisplay') {
+        if (value !== stateObj._stateDisplay) {
+          hasChanges = true;
+        }
+      } else if (value !== attributes[key]) {
+        hasChanges = true;
+      }
+    });
+    window.customUI._setKeep(stateObj, !hasGlobal);
+    if (!hasChanges) {
+      return stateObj;
+    }
+    if (stateObj.attributes === attributes) {
+      // We are operating on real attributes. Replace them.
+      const result = window.customUI.applyAttributes(stateObj, attributes);
+      if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
+        result.state = attributes.state;
+      }
+      if (Object.prototype.hasOwnProperty.call(attributes, '_stateDisplay')) {
+        result._stateDisplay = attributes._stateDisplay;
+      }
+      window.customUI._setKeep(result, !hasGlobal);
+      return result;
+    }
+    // Operating on context-aware attributes. Return shallow copy of object.
+    return Object.assign({}, stateObj);
+  },
+
+  maybeApplyTemplates(hass, states, stateObj) {
+    const newResult = window.customUI.maybeApplyTemplateAttributes(
+      hass, states, stateObj, stateObj.attributes);
+    let hasChanges = (newResult === stateObj);
+
+    function checkAttributes(obj) {
+      if (!obj) return;
+      Object.values(obj).forEach((attributes) => {
+        const result = window.customUI.maybeApplyTemplateAttributes(
+          hass, states, newResult, attributes);
+        hasChanges |= (result !== newResult);
+      });
+      checkAttributes(obj.device);
+      checkAttributes(obj.group);
+    }
+
+    checkAttributes(stateObj.attributes.device);
+    checkAttributes(stateObj.attributes.group);
+    if (newResult !== stateObj) return newResult;
+    if (hasChanges) {
+      return Object.assign({}, stateObj);
+    }
+    return stateObj;
+  },
+
+  applyAttributes(stateObj, attributes) {
     return {
       entity_id: stateObj.entity_id,
       state: stateObj.state,
@@ -122,11 +184,12 @@ window.customUI = window.customUI || {
     };
   },
 
-  maybeChangeObject: function (elem, stateObj, inDialog, allowHidden) {
+  maybeChangeObject(elem, stateObj, inDialog, allowHidden) {
     if (inDialog) return stateObj;
     let obj = window.customUI.maybeChangeObjectByDevice(stateObj);
     obj = window.customUI.maybeChangeObjectByGroup(elem, obj);
-    obj = window.customUI.maybeApplyTemplates(elem, obj);
+    obj = window.customUI.maybeApplyTemplateAttributes(
+      elem.hass, elem.hass.states, obj, obj.attributes);
 
     if (obj !== stateObj && obj.attributes.hidden && allowHidden) {
       return null;
@@ -134,7 +197,7 @@ window.customUI = window.customUI || {
     return obj;
   },
 
-  fixGroupTitles: function () {
+  fixGroupTitles() {
     const homeAssistantMain = window.customUI.getElementHierarchy(document, [
       'home-assistant',
       'home-assistant-main']);
@@ -165,7 +228,7 @@ window.customUI = window.customUI || {
     });
   },
 
-  showVersion: function () {
+  showVersion() {
     if (window.location.pathname !== '/dev-info') return;
     const devInfo = window.customUI.getElementHierarchy(document, [
       'home-assistant',
@@ -180,11 +243,11 @@ window.customUI = window.customUI || {
     const about = window.customUI.lightOrShadow(devInfo, '.about');
     const secondP = about.querySelectorAll('p')[1];
     const version = document.createElement('p');
-    version.textContent = 'Custom UI ' + window.customUI.VERSION;
+    version.textContent = `Custom UI ${window.customUI.VERSION}`;
     about.insertBefore(version, secondP);
   },
 
-  useCustomizer: function () {
+  useCustomizer() {
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     const customizer = main.hass.states['customizer.customizer'];
     if (!customizer) return;
@@ -205,7 +268,7 @@ window.customUI = window.customUI || {
     }
   },
 
-  updateAttributes: function () {
+  updateAttributes() {
     const customUiAttributes = {
       group: undefined,
       device: undefined,
@@ -239,7 +302,7 @@ window.customUI = window.customUI || {
     }
   },
 
-  updateConfigPanel: function () {
+  updateConfigPanel() {
     if (!window.location.pathname.startsWith('/config')) return;
     const haPanelConfig = window.customUI.getElementHierarchy(document, [
       'home-assistant',
@@ -273,12 +336,37 @@ window.customUI = window.customUI || {
         domain: 'customui',
         caption: 'Custom UI',
         description: 'Set UI tweaks.',
-        loaded: true
+        loaded: true,
       });
     }
   },
 
-  init: function () {
+  customUpdateHass(originalUpdate, obj) {
+    if (obj.states) {
+      Object.keys(obj.states).forEach((key) => {
+        const entity = obj.states[key];
+        if (entity._cui_keep) return;
+        const newEntity = window.customUI.maybeApplyTemplates(this.hass, obj.states, entity);
+        if (entity !== this.hass.states[key]) {
+          // New state arrived. Put modified state in.
+          obj.states[key] = newEntity;
+        } else if (entity !== newEntity) {
+          // It's the same state but contents changed due to other state changes.
+          obj.states[key] = newEntity;
+        }
+      });
+    }
+    originalUpdate(obj);
+  },
+
+  installStatesHook() {
+    const main = window.customUI.lightOrShadow(document, 'home-assistant');
+    const originalUpdate = main._updateHass.bind(main);
+    main._updateHass = window.customUI.customUpdateHass.bind(main, originalUpdate);
+    main._updateHass({ states: main.hass.states });
+  },
+
+  init() {
     if (window.customUI.initDone) return;
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     if (!main.hass || !main.hass.states) {
@@ -290,29 +378,30 @@ window.customUI = window.customUI || {
 
     window.customUI.runHooks();
     window.customUI.useCustomizer();
+    window.customUI.installStatesHook();
     window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
     /* eslint-disable no-console */
-    console.log('Loaded CustomUI ' + window.customUI.VERSION);
+    console.log(`Loaded CustomUI ${window.customUI.VERSION}`);
     /* eslint-enable no-console */
   },
 
-  runHooks: function () {
+  runHooks() {
     window.customUI.fixGroupTitles();
     window.customUI.showVersion();
     window.customUI.updateAttributes();
     window.customUI.updateConfigPanel();
   },
 
-  getName: function () {
+  getName() {
     return window.localStorage.getItem('ha-device-name') || '';
   },
 
-  setName: function (name) {
+  setName(name) {
     window.localStorage.setItem('ha-device-name', name || '');
   },
 
-  computeTemplate: function (template, hass, entities, entity, attributes, attribute, state) {
-    const functionBody = (template.indexOf('return') >= 0) ? template : 'return `' + template + '`;';
+  computeTemplate(template, hass, entities, entity, attributes, attribute, state) {
+    const functionBody = (template.indexOf('return') >= 0) ? template : `return \`${template}\`;`;
     try {
       /* eslint-disable no-new-func */
       const func = new Function(
@@ -322,7 +411,7 @@ window.customUI = window.customUI || {
     } catch (e) {
       /* eslint-disable no-console */
       if ((e instanceof SyntaxError) || e instanceof ReferenceError) {
-        console.warn(e.name + ': ' + e.message + ' in template ' + functionBody);
+        console.warn(`${e.name}: ${e.message} in template ${functionBody}`);
         return null;
       }
       /* eslint-enable no-console */
@@ -367,7 +456,7 @@ class HaConfigCustomUi extends Polymer.Element {
       name: {
         type: String,
         observer: 'nameChanged',
-      }
+      },
     };
   }
 
@@ -411,9 +500,11 @@ customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);
 </dom-module>
 
 <script>
-Polymer({
-  is: 'ha-themed-slider',
-  ready: function () {
+class HaThemedSlider extends Polymer.Element {
+  static get is() { return 'ha-themed-slider'; }
+
+  ready() {
+    super.ready();
     // If value was above 100 it wouldn't propagate to paper-slider while that had max=100
     // Force-change the value so that paper-slider will update itself.
     this.value = this.value + 1;
@@ -421,65 +512,70 @@ Polymer({
     // Propagate the themed value upwards.
     this.disableOffWhenMin = !this._computeAttribute(this.theme, 'off_when_min', !this.disableOffWhenMin);
     this.computeEnabledThemedReportWhenNotChanged(this.theme, this.disableReportWhenNotChanged);
-  },
-  properties: {
-    min: {
-      type: Number,
-      value: 0,
-    },
-    max: {
-      type: Number,
-      value: 100,
-    },
-    pin: {
-      type: Boolean,
-      value: false,
-    },
-    isOn: {
-      type: Boolean,
-      value: false,
-    },
-    disableOffWhenMin: {
-      type: Boolean,
-      value: false,
-      notify: true,
-    },
-    disableReportWhenNotChanged: {
-      type: Boolean,
-      value: false,
-    },
+  }
 
-    theme: {
-      type: Object,
-    },
-    value: {
-      type: Number,
-      notify: true,
-    },
-    _themedMin: {
-      type: Number,
-      computed: '_computeAttribute(theme, "min", min)',
-    },
-  },
+  static get properties() {
+    return {
+      min: {
+        type: Number,
+        value: 0,
+      },
+      max: {
+        type: Number,
+        value: 100,
+      },
+      pin: {
+        type: Boolean,
+        value: false,
+      },
+      isOn: {
+        type: Boolean,
+        value: false,
+      },
+      disableOffWhenMin: {
+        type: Boolean,
+        value: false,
+        notify: true,
+      },
+      disableReportWhenNotChanged: {
+        type: Boolean,
+        value: false,
+      },
 
-  observers: ['computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged)'],
+      theme: Object,
+      value: {
+        type: Number,
+        notify: true,
+      },
+      _themedMin: {
+        type: Number,
+        computed: '_computeAttribute(theme, "min", min)',
+      },
+    };
+  }
 
-  computeEnabledThemedReportWhenNotChanged: function (theme, disableReportWhenNotChanged) {
+  static get observers() {
+    return [
+      'computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged)',
+    ];
+  }
+
+  computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged) {
     this._enabledThemedReportWhenNotChanged = this._computeAttribute(
       theme, 'report_when_not_changed', !disableReportWhenNotChanged);
-  },
+  }
 
-  _computeAttribute: function (theme, attr, def) {
+  _computeAttribute(theme, attr, def) {
     if (theme) {
       if (attr in theme) {
         return theme[attr];
       }
     }
     return def;
-  },
+  }
 
-  computeClass: function (theme, isOn, themedMin) {
-    var result = '';
+  computeClass(theme, isOn, themedMin) {
+    let result = '';
     if (isOn) {
       result += 'is-on ';
     }
@@ -487,52 +583,50 @@ Polymer({
       // If offWhenMin is enabled don't customize.
       return '';
     }
-    return result + 'disable-off-when-min';
-  },
+    return `${result}disable-off-when-min`;
+  }
 
-  valueChanged: function (ev) {
+  valueChanged(ev) {
     if (!this._enabledThemedReportWhenNotChanged && this.value === ev.target.value) {
       ev.stopPropagation();
       return;
     }
     this.value = ev.target.value;
-  },
-});
+  }
+}
+customElements.define(HaThemedSlider.is, HaThemedSlider);
 </script>
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. --><script>
-Polymer({
-  is: 'dynamic-element',
+class DynamicElement extends Polymer.Element {
+  static get is() { return 'dynamic-element'; }
 
-  properties: {
-    hass: {
-      type: Object,
-    },
+  static get properties() {
+    return {
+      hass: Object,
+      stateObj: Object,
+      elementName: String,
 
-    stateObj: {
-      type: Object,
-    },
+      inDialog: {
+        type: Boolean,
+        value: false,
+      },
+    };
+  }
 
-    elementName: {
-      type: String,
-    },
+  static get observers() {
+    return [
+      'observerFunc(hass, stateObj, elementName, inDialog)',
+    ];
+  }
 
-    inDialog: {
-      type: Boolean,
-      value: false,
-    },
-  },
-
-  observers: [
-    'observerFunc(hass, stateObj, elementName, inDialog)',
-  ],
-
-  observerFunc: function (hass, stateObj, elementName, inDialog) {
+  observerFunc(hass, stateObj, elementName, inDialog) {
     window.hassUtil.dynamicContentUpdater(
       this, elementName ? elementName.toUpperCase() : 'DIV',
-      { hass: hass, stateObj: stateObj, inDialog: inDialog });
-  },
-});
+      { hass, stateObj, inDialog });
+  }
+}
+customElements.define(DynamicElement.is, DynamicElement);
 </script>
 <dom-module id="dynamic-with-extra">
   <template>
@@ -542,8 +636,8 @@ Polymer({
         display: inline-block;
       }
       .control-wrapper {
-        margin-left: 16px;
-        position: relative;
+        margin: -4px -16px -4px 0;
+        padding: 4px 16px;
       }
       ha-state-label-badge {
         margin-left: 8px;
@@ -557,11 +651,12 @@ Polymer({
         right: 0;
         top: 0;
         bottom: 0;
-        text-align: center;;
+        text-align: right;
       }
       #lock {
         margin-top: 8px;
         opacity: 0.3;
+        margin-right: 7px;
       }
       .extra {
         margin-bottom: -16px;
@@ -578,7 +673,9 @@ Polymer({
     </style>
     <div class$="[[extraClass(extraObjVisible)]] horizontal layout">
       <template is="dom-if" if="[[extraObjVisible]]">
-        <ha-state-label-badge hass="[[hass]]" state="[[extraObj]]"></ha-state-label-badge>
+        <template is="dom-repeat" items="[[extraObj]]">
+          <ha-state-label-badge hass="[[hass]]" state="[[item]]"></ha-state-label-badge>
+        </template>
       </template>
       <template is="dom-if" if="[[_showControl(inDialog, stateObj)]]">
         <template is="dom-if" if="[[controlElement]]">
@@ -615,60 +712,52 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
       stateObj: Object,
       controlElement: String,
       extraObj: {
-        type: Object,
-        computed: 'computeExtra(hass, stateObj, inDialog)',
+        type: Array,
+        computed: 'computeExtra(hass, stateObj)',
       },
       extraObjVisible: {
         type: Boolean,
-        computed: 'computeExtraVisible(hass, stateObj, inDialog)',
+        computed: 'computeExtraVisible(extraObj, inDialog)',
       },
     };
   }
 
-  _getObject(hass, stateObj) {
-    if (!stateObj.attributes.extra_badge) return null;
-    var extraBadge = stateObj.attributes.extra_badge;
-    if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
-      return Object.assign({}, hass.states[extraBadge.entity_id]);
-    }
-    if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
-      return {
-        state: stateObj.attributes[extraBadge.attribute],
-        _domain: 'none',
-        entity_id: null,
-        attributes: { unit_of_measurement: extraBadge.unit },
-      };
-    }
-    return null;
-  }
-
   computeExtra(hass, stateObj) {
-    var result = this._getObject(hass, stateObj);
-    if (!result) {
-      return {
-        _entityDisplay: '',
-        _domain: 'none',
-        attributes: {},
-      };
+    if (!stateObj.attributes.extra_badge) return [];
+    let extraBadges = stateObj.attributes.extra_badge;
+    if (!Array.isArray(extraBadges)) {
+      extraBadges = [extraBadges];
     }
-    result._entityDisplay = '';
-    return result;
+    return extraBadges.map((extraBadge) => {
+      let result = null;
+      if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
+        result = Object.assign({}, hass.states[extraBadge.entity_id]);
+      } else if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
+        result = {
+          state: stateObj.attributes[extraBadge.attribute],
+          _domain: 'none',
+          entity_id: null,
+          attributes: { unit_of_measurement: extraBadge.unit },
+        };
+      }
+      if (!result) return null;
+      let blacklist = extraBadge.blacklist_states;
+      if (blacklist) {
+        if (!Array.isArray(blacklist)) {
+          blacklist = [blacklist];
+        }
+        if (blacklist.some(v => RegExp(v).test(result.state.toString()))) {
+          return null;
+        }
+      }
+      result._entityDisplay = '';
+      return result;
+    }).filter(extraBadge => extraBadge != null);
   }
 
-  computeExtraVisible(hass, stateObj, inDialog) {
-    if (inDialog) return false;
-    var result = this._getObject(hass, stateObj);
-    if (!result) return false;
-    var blacklist = stateObj.attributes.extra_badge.blacklist_states;
-    if (blacklist) {
-      if (!Array.isArray(blacklist)) {
-        blacklist = [blacklist];
-      }
-      if (blacklist.some(v => RegExp(v).test(result.state.toString()))) {
-        return false;
-      }
-    }
-    return true;
+  computeExtraVisible(extraObj, inDialog) {
+    if (inDialog || !extraObj) return false;
+    return extraObj.length !== 0;
   }
 
   extraClass(extraObjVisible) {
@@ -715,6 +804,9 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
     <style>
+      #container {
+        position: relative;
+      }
       .second-line, .state-and-toggle, .state-info {
         max-width: 100%;
       }
@@ -763,7 +855,7 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
           <dynamic-with-extra hass="[[hass]]" state-obj="[[stateObj]]" control-element="[[controlElement]]" in-dialog="[[inDialog]]"></dynamic-with-extra>
         </template>
       </div>
-      <template is="dom-if" if="[[showSlider]]">
+      <template is="dom-if" if="[[showSlider]]" restamp="">
         <div class="horizontal layout flex-auto end-justified second-line">
           <ha-themed-slider id="slider" max="[[max]]" min="[[min]]" theme="[[stateObj.attributes.slider_theme]]" is-on="[[isOn(stateObj, nameOn)]]" value="{{sliderValue}}" disable-off-when-min="{{disableOffWhenMin}}" on-change="sliderChanged" on-tap="stopPropagation">
           </ha-themed-slider>
@@ -777,221 +869,238 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
 </dom-module>
 
 <script>
-var DEFAULT_MODE = 'no-slider';
-Polymer({
-  is: 'state-card-with-slider',
+{
+  const DEFAULT_MODE = 'no-slider';
+  const BRIGHTNESS_SUPPORTED = 1;
+  class StateCardWithSlider extends Polymer.mixinBehaviors(
+    [Polymer.IronResizableBehavior], Polymer.Element) {
+    static get is() { return 'state-card-with-slider'; }
 
-  attached: function () {
-    this.async(() => {
-      this.readyToCompute = true;
-      this._onIronResize();
-    }, 1);
-  },
+    static get properties() {
+      return {
+        hass: Object,
+        inDialog: {
+          type: Boolean,
+          value: false,
+        },
+        stateObj: Object,
+        controlElement: String,
+        domain: String,
+        serviceMin: String,
+        serviceMax: String,
+        valueName: { type: String, value: '___' },
+        setValueName: String,
+        nameOn: { type: String, value: 'on' },
+        min: { type: Number, value: 0 },
+        max: { type: Number, value: 255 },
 
-  behaviors: [
-    Polymer.IronResizableBehavior
-  ],
-
-  properties: {
-    hass: {
-      type: Object,
-    },
-    inDialog: {
-      type: Boolean,
-      value: false,
-    },
-    stateObj: {
-      type: Object,
-    },
-    controlElement: {
-      type: String,
-    },
-    domain: { type: String },
-    serviceMin: { type: String },
-    serviceMax: { type: String },
-    valueName: { type: String, value: '___' },
-    setValueName: { type: String },
-    nameOn: { type: String, value: 'on' },
-    min: { type: Number, value: 0 },
-    max: { type: Number, value: 255 },
-
-    sliderValue: {
-      type: Number,
-      value: 0,
-    },
-    disableOffWhenMin: {
-      type: Boolean,
-    },
-    mode: {
-      type: String,
-    },
-    stretchSlider: {
-      type: Boolean,
-      value: false,
-    },
-    breakSlider: {
-      type: Boolean,
-      value: false,
-    },
-    hideSlider: {
-      type: Boolean,
-      value: false,
-    },
-    lineTooLong: {
-      type: Boolean,
-      value: false,
-    },
-    minLineBreak: {
-      type: Number,
-      value: 0,
-    },
-    maxLineBreak: {
-      type: Number,
-      value: 999,
-    },
-    showSlider: {
-      type: Number,
-      computed: '_showSlider(inDialog, stateObj, hideSlider)',
-    },
-    extra: {
-      type: String,
-      computed: 'computeExtra(hass, stateObj)',
-    },
-  },
-
-  observers: [
-    'stateObjChanged(stateObj, nameOn, valueName)',
-  ],
-
-  listeners: {
-    'iron-resize': '_onIronResize'
-  },
-
-  _onIronResize: function () {
-    if (!this.readyToCompute) return;
-    if (this.mode === 'no-slider') {
-      this.hideSlider = true;
-      this.breakSlider = true;
-      return;
+        sliderValue: {
+          type: Number,
+          value: 0,
+        },
+        disableOffWhenMin: Boolean,
+        mode: String,
+        stretchSlider: {
+          type: Boolean,
+          value: false,
+        },
+        breakSlider: {
+          type: Boolean,
+          value: false,
+        },
+        hideSlider: {
+          type: Boolean,
+          value: false,
+        },
+        lineTooLong: {
+          type: Boolean,
+          value: false,
+        },
+        minLineBreak: Number,
+        maxLineBreak: Number,
+        showSlider: {
+          type: Number,
+          computed: '_showSlider(inDialog, stateObj, hideSlider)',
+        },
+        extra: {
+          type: String,
+          computed: 'computeExtra(hass, stateObj)',
+        },
+      };
     }
-    var prevBreakSlider = this.breakSlider;
-    this.lineTooLong = false;
-    this.hideSlider = false;
-    this.breakSlider = false;
-    var container = this.$.container;
-    var containerWidth = container.clientWidth;
-    if (containerWidth <= this.minLineBreak) {
-      this.lineTooLong = true;
-    } else if (containerWidth >= this.maxLineBreak) {
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.addEventListener('iron-resize', () => this._onIronResize());
+      this._waitForLayout();
+    }
+
+    static get observers() {
+      return [
+        'stateObjChanged(stateObj, nameOn, valueName)',
+      ];
+    }
+
+    _waitForLayout() {
+      this._setMode();
+      if (this._frameId) return;
+      this.readyToCompute = false;
+      this._frameId = window.requestAnimationFrame(() => {
+        this._frameId = null;
+        this.readyToCompute = true;
+        this._onIronResize();
+      });
+    }
+
+    _setMode() {
+      this.hideSlider = this.mode === 'hide-slider' && this.lineTooLong;
+      this.breakSlider =
+          (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
+          this.lineTooLong;
+      if (!this.showSlider) {
+        this.breakSlider = true;
+      }
+    }
+
+    _onIronResize() {
+      if (!this.readyToCompute) return;
+      if (!this.stateObj ||
+          !(this.stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED)) {
+        return;
+      }
+      if (this.mode === 'no-slider') {
+        this.hideSlider = true;
+        this.breakSlider = true;
+        return;
+      }
+      const prevBreakSlider = this.breakSlider;
+      const prevHideSlider = this.hideSlider;
       this.lineTooLong = false;
-    } else {
-      var containerHeight = container.clientHeight;
-      var stateHeight = this.$$('.state-info').clientHeight;
-      this.lineTooLong = containerHeight > stateHeight * 1.5;
-      if (this.lineTooLong) {
-        this.minLineBreak = containerWidth;
-      } else if (!prevBreakSlider) {
-        this.maxLineBreak = containerWidth;
-      }
-    }
-    this.hideSlider =
-        this.mode === 'hide-slider' && this.lineTooLong;
-    this.breakSlider =
-        (this.mode === 'break-slider' || this.mode === 'hide-slider') && this.lineTooLong;
-    if (!this.showSlider) {
-      this.breakSlider = true;
-    }
-  },
-
-  _computeWrapClass: function (mode, stretchSlider, lineTooLong, inDialog) {
-    if (inDialog) {
-      return '';
-    }
-    if (mode === 'single-line') {
-      return 'nowrap';
-    }
-    if (stretchSlider && lineTooLong) {
-      return 'stretch wrap';
-    }
-    return 'wrap';
-  },
-
-  _showSlider: function (inDialog, stateObj, hideSlider) {
-    var BRIGHTNESS_SUPPORTED = 1;
-    if (inDialog || hideSlider) {
-      return false;
-    }
-    return stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED;
-  },
-
-  sliderChanged: function (ev) {
-    var value = parseInt(ev.target.value, 10);
-    var param = { entity_id: this.stateObj.entity_id };
-    if (Number.isNaN(value)) return;
-    var target = this.$$('#slider');
-    if (ev.target !== target) {
-      // No Shadow DOM - we have access to original target.
-      target = ev.target;
-    } else if (ev.path) {
-      target = ev.path[0];
-    } else if (ev.composedPath) {
-      target = ev.composedPath()[0];
-    }
-    if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
-      this.hass.callService(this.domain, this.serviceMin, param);
-    } else {
-      param[this.setValueName || this.valueName] = value;
-      this.hass.callService(this.domain, this.serviceMax, param);
-    }
-  },
-
-  stateObjChanged: function (stateObj, nameOn, valueName) {
-    if (this.isOn(stateObj, nameOn)) {
-      this.sliderValue = stateObj.attributes[valueName];
-    } else {
-      this.sliderValue = 0;
-    }
-    if (stateObj) {
-      if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(
-        stateObj.attributes.state_card_mode) !== -1) {
-        this.mode = stateObj.attributes.state_card_mode;
+      this.hideSlider = false;
+      this.breakSlider = false;
+      const { container } = this.$;
+      const containerWidth = container.clientWidth;
+      if (containerWidth === 0) return;
+      if (containerWidth <= this.minLineBreak) {
+        this.lineTooLong = true;
+      } else if (containerWidth >= this.maxLineBreak) {
+        this.lineTooLong = false;
       } else {
-        this.mode = DEFAULT_MODE;
+        if (prevHideSlider && this.mode === 'hide-slider') {
+          // We need to unhide the slider in order to recalculate height.
+          this._waitForLayout();
+          return;
+        }
+        const containerHeight = container.clientHeight;
+        const stateHeight = this.$$('.state-info').clientHeight;
+        this.lineTooLong = containerHeight > stateHeight * 1.5;
+        if (this.lineTooLong) {
+          this.minLineBreak = containerWidth;
+        } else if (!prevBreakSlider) {
+          this.maxLineBreak = containerWidth;
+        }
       }
-      if (stateObj.attributes.stretch_slider) {
-        this.stretchSlider = true;
+      this._setMode();
+    }
+
+    _computeWrapClass(mode, stretchSlider, lineTooLong, inDialog) {
+      if (inDialog) {
+        return '';
+      }
+      if (mode === 'single-line') {
+        return 'nowrap';
+      }
+      if (stretchSlider && lineTooLong) {
+        return 'stretch wrap';
+      }
+      return 'wrap';
+    }
+
+    _showSlider(inDialog, stateObj, hideSlider) {
+      if (inDialog || hideSlider) {
+        return false;
+      }
+      return stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED;
+    }
+
+    sliderChanged(ev) {
+      const value = parseInt(ev.target.value, 10);
+      const param = { entity_id: this.stateObj.entity_id };
+      if (Number.isNaN(value)) return;
+      let target = this.$$('#slider');
+      if (ev.target !== target) {
+        // No Shadow DOM - we have access to original target.
+        ({ target } = ev);
+      } else if (ev.path) {
+        [target] = ev.path;
+      } else if (ev.composedPath) {
+        [target] = ev.composedPath();
+      }
+      if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
+        this.hass.callService(this.domain, this.serviceMin, param);
+      } else {
+        param[this.setValueName || this.valueName] = value;
+        this.hass.callService(this.domain, this.serviceMax, param);
       }
     }
-  },
 
-  isOn: function (stateObj, nameOn) {
-    return stateObj && stateObj.state === nameOn;
-  },
-
-  stopPropagation: function (ev) {
-    ev.stopPropagation();
-  },
-
-  computeExtra: function (hass, stateObj) {
-    if (stateObj.attributes.extra_data_template) {
-      return window.customUI.computeTemplate(
-        stateObj.attributes.extra_data_template,
-        hass,
-        hass.states,
-        stateObj,
-        stateObj.attributes,
-        /* attribute= */ undefined,
-        stateObj.state);
+    stateObjChanged(stateObj, nameOn, valueName) {
+      if (this.isOn(stateObj, nameOn)) {
+        this.sliderValue = stateObj.attributes[valueName];
+      } else {
+        this.sliderValue = 0;
+      }
+      if (stateObj) {
+        this.setProperties({
+          minLineBreak: 0,
+          maxLineBreak: 999,
+          hideSlider: false,
+          breakSlider: false,
+          lineTooLong: false,
+        });
+        if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(
+          stateObj.attributes.state_card_mode) !== -1) {
+          this.mode = stateObj.attributes.state_card_mode;
+        } else {
+          this.mode = DEFAULT_MODE;
+        }
+        if (stateObj.attributes.stretch_slider) {
+          this.stretchSlider = true;
+        }
+        this._waitForLayout();
+      }
     }
-    return null;
-  },
 
-  showLastChanged: function (stateObj, inDialog, extra) {
-    if (inDialog) return true;
-    if (extra) return false;
-    return !!stateObj.attributes.show_last_changed;
-  },
-});
+    isOn(stateObj, nameOn) {
+      return stateObj && stateObj.state === nameOn;
+    }
+
+    stopPropagation(ev) {
+      ev.stopPropagation();
+    }
+
+    computeExtra(hass, stateObj) {
+      if (stateObj.attributes.extra_data_template) {
+        return window.customUI.computeTemplate(
+          stateObj.attributes.extra_data_template,
+          hass,
+          hass.states,
+          stateObj,
+          stateObj.attributes,
+          /* attribute= */ undefined,
+          stateObj.state);
+      }
+      return null;
+    }
+
+    showLastChanged(stateObj, inDialog, extra) {
+      if (inDialog) return true;
+      if (extra) return false;
+      return !!stateObj.attributes.show_last_changed;
+    }
+  }
+  customElements.define(StateCardWithSlider.is, StateCardWithSlider);
+}
 </script>
 <script>
 const SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
@@ -1059,7 +1168,7 @@ class StateCardCustomUi extends Polymer.Element {
         const state = hass.states[id];
         if (!state) {
           /* eslint-disable no-console */
-          console.warn('Unknown ID ' + id + ' in group ' + stateObj.entity_id);
+          console.warn(`Unknown ID ${id} in group ${stateObj.entity_id}`);
           /* eslint-enable no-console */
           return;
         }
@@ -1083,7 +1192,7 @@ class StateCardCustomUi extends Polymer.Element {
     window.hassUtil.dynamicContentUpdater(
       this,
       'HA-BADGES-CARD',
-      { hass: hass, states: states });
+      { hass, states });
     // Since this variable only affects badges mode - no need to clean it up.
     this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
   }
@@ -1141,9 +1250,9 @@ class StateCardCustomUi extends Polymer.Element {
     this.cleanBadgeStyle();
 
     const params = {
-      hass: hass,
+      hass,
       stateObj: modifiedObj,
-      inDialog: inDialog,
+      inDialog,
     };
     let stateCardType = window.hassUtil.stateCardType(hass, stateObj);
     const secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
@@ -1181,7 +1290,7 @@ class StateCardCustomUi extends Polymer.Element {
         stateCardType === 'display')) {
       stateCardType = 'with-slider';
       Object.assign(params, {
-        domain: domain,
+        domain,
       });
       if (stateObj.state === 'unavailable') {
         Object.assign(params, {
@@ -1195,7 +1304,7 @@ class StateCardCustomUi extends Polymer.Element {
 
     window.hassUtil.dynamicContentUpdater(
       this,
-      secondaryStateCardType || ('STATE-CARD-' + stateCardType.toUpperCase()),
+      secondaryStateCardType || (`STATE-CARD-${stateCardType.toUpperCase()}`),
       params);
   }
 }

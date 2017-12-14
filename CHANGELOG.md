@@ -2,6 +2,16 @@
 
 *Note: Update to at least 20171129 required for HA 0.59+*
 
+#### 2017-12-14
+*   New feature: [Templates](docs/templates.md) are now processed when states are fetched, so you can now template any state or attribute, nit just in state cards. For example:
+    *   Modify group members.
+    *   Make your own translation of states.
+*   Improvements:
+    *   `confirm_controls` will now protect the whole state card and not just the toggle control. Fixes #39
+    *   Context-aware and Device-aware attributes can now be defined as regular expression. Fixes #55
+    *   [extra_badge](README.md#add-badge-to-the-state-card) can now be a list if you want to put more than 1 badge into a state card.
+*   Bugfix: Improve detection of whether slider should be hidden in `hide-slider` mode. Fixes #15
+
 #### 2017-11-29 : Breaking Change
 *   File names changed into `state-card-custom-ui.html` and `state-card-custom-ui-es5.html`. Either update [customizer](https://github.com/andrey-git/home-assistant-customizer) or see updated instructions in [Activating](docs/activating.md) section.
 
