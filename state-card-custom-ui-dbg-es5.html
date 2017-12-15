@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171214',
+  VERSION: '20171215',
 
   SUPPORTED_SLIDER_MODES: ['single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'],
 
@@ -94,6 +94,7 @@ window.customUI = window.customUI || {
   },
   maybeApplyTemplateAttributes: function maybeApplyTemplateAttributes(hass, states, stateObj, attributes) {
     if (!attributes.templates) {
+      window.customUI._setKeep(stateObj, true);
       return stateObj;
     }
     var newAttributes = {};
@@ -139,7 +140,7 @@ window.customUI = window.customUI || {
   },
   maybeApplyTemplates: function maybeApplyTemplates(hass, states, stateObj) {
     var newResult = window.customUI.maybeApplyTemplateAttributes(hass, states, stateObj, stateObj.attributes);
-    var hasChanges = newResult === stateObj;
+    var hasChanges = newResult !== stateObj;
 
     function checkAttributes(obj) {
       if (!obj) return;
