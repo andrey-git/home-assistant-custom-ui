@@ -137,12 +137,12 @@ window.customUI = window.customUI || {
     }
     if (stateObj.attributes === attributes) {
       // We are operating on real attributes. Replace them.
-      const result = window.customUI.applyAttributes(stateObj, attributes);
-      if (Object.prototype.hasOwnProperty.call(attributes, 'state')) {
-        result.state = attributes.state;
+      const result = window.customUI.applyAttributes(stateObj, newAttributes);
+      if (Object.prototype.hasOwnProperty.call(newAttributes, 'state')) {
+        result.state = newAttributes.state;
       }
-      if (Object.prototype.hasOwnProperty.call(attributes, '_stateDisplay')) {
-        result._stateDisplay = attributes._stateDisplay;
+      if (Object.prototype.hasOwnProperty.call(newAttributes, '_stateDisplay')) {
+        result._stateDisplay = newAttributes._stateDisplay;
       }
       window.customUI._setKeep(result, !hasGlobal);
       return result;
