@@ -30,7 +30,10 @@
 
 **Important Note: Make a force refresh (ctrl+f5) after upgrading HA to 0.53**
 
-#### 2017-12-14
+#### 2017-12-15
+*   Fix bug in template computation.
+
+#### 2017-12-14 : Broken release
 *   New feature: [Templates](docs/templates.md) are now processed when states are fetched, so you can now template any state or attribute, nit just in state cards. For example:
     *   Modify group members.
     *   Make your own translation of states.
@@ -86,7 +89,7 @@ homeassistant:
       templates:
         state: if (state === 'on') return 'Active'; else return state;
 ```
-This is very powerful feature that can do a lot of cool things, but it could also have performance implications. 
+This is very powerful feature that can do a lot of cool things, but it could also have performance implications.
 
 ### Badges in state cards
 ![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)

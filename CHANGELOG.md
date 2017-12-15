@@ -1,8 +1,10 @@
 ## Changelog
 
 *Note: Update to at least 20171129 required for HA 0.59+*
+#### 2017-12-15
+*   Fix bug in template computation.
 
-#### 2017-12-14
+#### 2017-12-14 : Broken release
 *   New feature: [Templates](docs/templates.md) are now processed when states are fetched, so you can now template any state or attribute, nit just in state cards. For example:
     *   Modify group members.
     *   Make your own translation of states.
