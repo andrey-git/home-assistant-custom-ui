@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171215',
+  VERSION: '20171224',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
@@ -774,7 +774,8 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
     if (window.hassUtil.computeStateState) {
       return window.hassUtil.computeStateState(stateObj);
     }
-    return super.computeStateDisplay(this.haLocalize, stateObj);
+    // haLocalize removed in 0.61
+    return super.computeStateDisplay(this.haLocalize || this.localize, stateObj);
   }
 
   isConfirmControls(stateObj) {

@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171215',
+  VERSION: '20171224',
 
   SUPPORTED_SLIDER_MODES: ['single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'],
 
@@ -808,7 +808,8 @@ var DynamicWithExtra = function (_ref) {
       if (window.hassUtil.computeStateState) {
         return window.hassUtil.computeStateState(stateObj);
       }
-      return _get(DynamicWithExtra.prototype.__proto__ || Object.getPrototypeOf(DynamicWithExtra.prototype), 'computeStateDisplay', this).call(this, this.haLocalize, stateObj);
+      // haLocalize removed in 0.61
+      return _get(DynamicWithExtra.prototype.__proto__ || Object.getPrototypeOf(DynamicWithExtra.prototype), 'computeStateDisplay', this).call(this, this.haLocalize || this.localize, stateObj);
     }
   }, {
     key: 'isConfirmControls',
