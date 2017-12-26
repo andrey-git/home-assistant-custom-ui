@@ -73,7 +73,7 @@ class StateCardCustomUi extends Polymer.Element {
           return;
         }
         if (!stateObj.attributes.badges_list ||
-            stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
+            stateObj.attributes.badges_list.includes(state.entity_id)) {
           states.push(window.customUI.maybeChangeObject(
             this, state, false /* inDialog */, false /* allowHidden */));
         }
@@ -93,13 +93,25 @@ class StateCardCustomUi extends Polymer.Element {
       this,
       'HA-BADGES-CARD',
       { hass, states });
+    if (this._container) {
+      this._container.updateStyles({
+        width: 'var(--ha-badges-card-width, initial)',
+        'text-align': 'var(--ha-badges-card-text-align, initial)',
+      });
+    }
+    this.lastChild.style.fontSize = '85%';
+
     // Since this variable only affects badges mode - no need to clean it up.
     this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
   }
 
   cleanBadgeStyle() {
     if (this._container) {
-      this._container.style.display = '';
+      this._container.updateStyles({
+        display: '',
+        width: '',
+        'text-align': '',
+      });
     }
     this.updateStyles({ display: '', margin: '' });
   }
