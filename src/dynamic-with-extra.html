@@ -31,6 +31,10 @@
         opacity: 0.3;
         margin-right: 7px;
       }
+      #lock.ha-cover-controls {
+        margin-right: 52px;
+        background-color: white;
+      }
       .extra {
         margin-bottom: -16px;
         --ha-label-badge-size: 36px;
@@ -57,7 +61,7 @@
             <template is='dom-if' if='[[isConfirmControls(stateObj)]]'>
               <div id="overlay" on-tap='tapHandler'>
                 <template is='dom-if' if='[[stateObj.attributes.confirm_controls_show_lock]]'>
-                  <iron-icon id="lock" icon="mdi:lock-outline"></iron-icon>
+                  <iron-icon id="lock" class$="[[controlElement]]" icon="mdi:lock-outline"></iron-icon>
                 </template>
               </div>
             </template>
