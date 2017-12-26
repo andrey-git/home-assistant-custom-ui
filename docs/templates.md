@@ -1,10 +1,10 @@
 # Templates
 
-The `templates` attributes allow you to inject your own expressions and code using JavaScript template literals in order to override entity attributes and state. Within these template literals, you have full access to the entity's state object, which allows you to access other properties such as last_changed, attributes.friendly_name, etc. The full set of objects available to your template literals is shown below.
+The `templates` attributes allow you to inject your own expressions and code using JavaScript code or template literals in order to override entity attributes and state. Within the code / template literals, you have full access to the entity's state object, which allows you to access other properties such as last_changed, attributes.friendly_name, etc. The full set of objects available is shown below.
 
 Additionally, `extra_data_template` attribute is always evaluated as a template without using `templates` attributes for it.
 
-In order for a template to return "nothing", for example so that `extra_data_template` won't take space or allow showing `show_last_changed` - return `null` from your template.
+In order for a template to return "nothing", for example so that `extra_data_template` won't take space or allow showing `show_last_changed` - return `null` from your template. Note that `null` can only be returned using code format, as template literal format always returns a string.
 
 **Note that those are JavaScript templates evaluated in your browser, not Jinja2 templates which are evaluated server-side and use a different syntax.**
 
@@ -31,10 +31,10 @@ There are two special template attributes:
 *   `state` will override the entity state. Note that logic that applies visual state still applies. For example non-`off` motion sensor is displayed as `detected`. Changing the `state` template wouldn't prevent this logic from running.
 *   `_stateDisplay` sets the final display string and prevents any visual state logic from running.
 
-### Template formats
-You can provide the template in two slightly different formats.
+### Formats
+You can provide the template in two different formats.
 *   If the template contains the word `return` it will be treated as raw JavaScript code.
-*   Otherwise it will be treated as JavaScript template literal.
+*   Otherwise it will be treated as JavaScript template literal that returns a string.
 
 ### Examples
 
@@ -47,7 +47,7 @@ homeassistant:
         theme: >
           if (attributes.power_consumption > 10) return 'red'; else return 'default';
       extra_data_template: >
-        ${attributes.power_consumption !== 0 ? (attributes.power_consumption + 'W') : ''}
+        "${attributes.power_consumption !== 0 ? (attributes.power_consumption + 'W') : ''}"
     light.kitchen:
       templates:
         # Uses global variable - might be slow.

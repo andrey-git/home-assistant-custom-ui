@@ -340,7 +340,7 @@ homeassistant:
       custom_ui_state_card: state-card-custom-ui
       state_card_mode: break-slider
       stretch_slider: true
-      extra_data_template: ${attributes.power_consumption !== 0 ? (attributes.power_consumption + 'W') : null}
+      extra_data_template: "${attributes.power_consumption !== 0 ? (attributes.power_consumption + 'W') : ''}"
       hide_control: false
       show_last_changed: false
       theme: happy
