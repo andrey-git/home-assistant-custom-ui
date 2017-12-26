@@ -50,9 +50,9 @@
 
     <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
-        <state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog, extra)]]' secondary-line$='[[extra]]' class='flex-auto'>
-          <template is='dom-if' if='[[extra]]'>
-            <span>[[extra]]</span>
+        <state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog, extra)]]' secondary-line$='[[extra.length]]' class='flex-auto'>
+          <template is='dom-repeat' items='[[extra]]'>
+            <div>[[item]]</div>
           </template>
         </state-info>
         <template is='dom-if' if='[[breakSlider]]' class='hidden'>
@@ -136,7 +136,7 @@
           computed: '_showSlider(inDialog, stateObj, hideSlider)',
         },
         extra: {
-          type: String,
+          type: Array,
           computed: 'computeExtra(hass, stateObj)',
         },
       };
@@ -293,22 +293,27 @@
     }
 
     computeExtra(hass, stateObj) {
-      if (stateObj.attributes.extra_data_template) {
-        return window.customUI.computeTemplate(
-          stateObj.attributes.extra_data_template,
+      let extras = stateObj.attributes.extra_data_template;
+      if (extras) {
+        if (!Array.isArray(extras)) {
+          extras = [extras];
+        }
+        return extras.map(extra => window.customUI.computeTemplate(
+          extra,
           hass,
           hass.states,
           stateObj,
           stateObj.attributes,
           /* attribute= */ undefined,
-          stateObj.state);
+          stateObj.state,
+        )).filter(result => result !== null);
       }
-      return null;
+      return [];
     }
 
     showLastChanged(stateObj, inDialog, extra) {
       if (inDialog) return true;
-      if (extra) return false;
+      if (extra.length) return false;
       return !!stateObj.attributes.show_last_changed;
     }
   }
