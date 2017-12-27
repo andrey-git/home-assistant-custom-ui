@@ -26,9 +26,17 @@
 
 ## Changelog
 
-**Important Note: Update to at least 20171129 for HA 0.59+. Update to at least 20171117 required for HA 0.58**
+**Important Note:**
+*   **Update to at least 20171227 for HA 0.61+**
+*   **Update to at least 20171129 for HA 0.59-0.60**
+*   **Update to at least 20171117 for HA 0.58**
 
-**Important Note: Make a force refresh (ctrl+f5) after upgrading HA to 0.53**
+#### 2017-12-27
+*   Hotfix for HA 0.61
+*   Change size of badges in state card to 85% to match the badges in the top section.
+*   Added --ha-badges-card-width and --ha-badges-card-text-align variables to allow theming badges in state card.
+*   `extra_data_template` can now be an array to display several rows of data.
+*   Align lock icon better for cover domain.
 
 #### 2017-12-15
 *   Fix bug in template computation.
@@ -258,6 +266,12 @@ Use `extra_data_template` to add extra data below the entity name. The format is
 For example to show power consumption from the `power_consumption` attribute use:
 ```yaml
 extra_data_template: ${attributes.power_consumption}W
+```
+Use can add several lines by using an array:
+```yaml
+extra_data_template:
+  - ${attributes.power_consumption}W
+  - ${attributes.temperature}C
 ```
 
 #### Add badge to the state card

@@ -1,6 +1,13 @@
 ## Changelog
 
-*Note: Update to at least 20171129 required for HA 0.59+*
+*Note: Update to at least 20171227 required for HA 0.61+*
+#### 2017-12-27
+*   Hotfix for HA 0.61
+*   Change size of badges in state card to 85% to match the badges in the top section.
+*   Added --ha-badges-card-width and --ha-badges-card-text-align variables to allow theming badges in state card.
+*   `extra_data_template` can now be an array to display several rows of data.
+*   Align lock icon better for cover domain.
+
 #### 2017-12-15
 *   Fix bug in template computation.
 

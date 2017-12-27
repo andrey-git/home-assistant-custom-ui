@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171224',
+  VERSION: '20171227',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
@@ -659,6 +659,10 @@ customElements.define(DynamicElement.is, DynamicElement);
         opacity: 0.3;
         margin-right: 7px;
       }
+      #lock.ha-cover-controls {
+        margin-right: 52px;
+        background-color: white;
+      }
       .extra {
         margin-bottom: -16px;
         --ha-label-badge-size: 36px;
@@ -685,7 +689,7 @@ customElements.define(DynamicElement.is, DynamicElement);
             <template is="dom-if" if="[[isConfirmControls(stateObj)]]">
               <div id="overlay" on-tap="tapHandler">
                 <template is="dom-if" if="[[stateObj.attributes.confirm_controls_show_lock]]">
-                  <iron-icon id="lock" icon="mdi:lock-outline"></iron-icon>
+                  <iron-icon id="lock" class$="[[controlElement]]" icon="mdi:lock-outline"></iron-icon>
                 </template>
               </div>
             </template>
@@ -848,9 +852,9 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
 
     <div id="container" class$="horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]">
       <div class="horizontal layout justified flex-auto state-and-toggle">
-        <state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[extra]]">
-          <template is="dom-if" if="[[extra]]">
-            <span>[[extra]]</span>
+        <state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[extra.length]]">
+          <template is="dom-repeat" items="[[extra]]">
+            <div>[[item]]</div>
           </template>
         </state-info>
         <template is="dom-if" if="[[breakSlider]]" class="hidden">
@@ -925,7 +929,7 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
           computed: '_showSlider(inDialog, stateObj, hideSlider)',
         },
         extra: {
-          type: String,
+          type: Array,
           computed: 'computeExtra(hass, stateObj)',
         },
       };
@@ -1082,22 +1086,27 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
     }
 
     computeExtra(hass, stateObj) {
-      if (stateObj.attributes.extra_data_template) {
-        return window.customUI.computeTemplate(
-          stateObj.attributes.extra_data_template,
+      let extras = stateObj.attributes.extra_data_template;
+      if (extras) {
+        if (!Array.isArray(extras)) {
+          extras = [extras];
+        }
+        return extras.map(extra => window.customUI.computeTemplate(
+          extra,
           hass,
           hass.states,
           stateObj,
           stateObj.attributes,
           /* attribute= */ undefined,
-          stateObj.state);
+          stateObj.state,
+        )).filter(result => result !== null);
       }
-      return null;
+      return [];
     }
 
     showLastChanged(stateObj, inDialog, extra) {
       if (inDialog) return true;
-      if (extra) return false;
+      if (extra.length) return false;
       return !!stateObj.attributes.show_last_changed;
     }
   }
@@ -1175,7 +1184,7 @@ class StateCardCustomUi extends Polymer.Element {
           return;
         }
         if (!stateObj.attributes.badges_list ||
-            stateObj.attributes.badges_list.indexOf(state.entity_id) >= 0) {
+            stateObj.attributes.badges_list.includes(state.entity_id)) {
           states.push(window.customUI.maybeChangeObject(
             this, state, false /* inDialog */, false /* allowHidden */));
         }
@@ -1195,13 +1204,25 @@ class StateCardCustomUi extends Polymer.Element {
       this,
       'HA-BADGES-CARD',
       { hass, states });
+    if (this._container) {
+      this._container.updateStyles({
+        width: 'var(--ha-badges-card-width, initial)',
+        'text-align': 'var(--ha-badges-card-text-align, initial)',
+      });
+    }
+    this.lastChild.style.fontSize = '85%';
+
     // Since this variable only affects badges mode - no need to clean it up.
     this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
   }
 
   cleanBadgeStyle() {
     if (this._container) {
-      this._container.style.display = '';
+      this._container.updateStyles({
+        display: '',
+        width: '',
+        'text-align': '',
+      });
     }
     this.updateStyles({ display: '', margin: '' });
   }
