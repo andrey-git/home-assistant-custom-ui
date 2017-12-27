@@ -852,7 +852,7 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
 
     <div id="container" class$="horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]">
       <div class="horizontal layout justified flex-auto state-and-toggle">
-        <state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[extra.length]]">
+        <state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[hasExtra(extra)]]">
           <template is="dom-repeat" items="[[extra]]">
             <div>[[item]]</div>
           </template>
@@ -1108,6 +1108,10 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
       if (inDialog) return true;
       if (extra.length) return false;
       return !!stateObj.attributes.show_last_changed;
+    }
+
+    hasExtra(extra) {
+      return extra.length > 0;
     }
   }
   customElements.define(StateCardWithSlider.is, StateCardWithSlider);

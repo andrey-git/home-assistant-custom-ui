@@ -918,7 +918,7 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);</script>
 
     <div id="container" class$="horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]">
       <div class="horizontal layout justified flex-auto state-and-toggle">
-        <state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[extra.length]]">
+        <state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[hasExtra(extra)]]">
           <template is="dom-repeat" items="[[extra]]">
             <div>[[item]]</div>
           </template>
@@ -1151,6 +1151,11 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
         if (inDialog) return true;
         if (extra.length) return false;
         return !!stateObj.attributes.show_last_changed;
+      }
+    }, {
+      key: 'hasExtra',
+      value: function hasExtra(extra) {
+        return extra.length > 0;
       }
     }], [{
       key: 'is',
