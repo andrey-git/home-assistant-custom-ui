@@ -1,6 +1,9 @@
 <dom-module id='ha-themed-slider'>
   <template>
     <style>
+      :host {
+        margin: var(--ha-themed-slider-margin, initial);
+      }
       .disable-off-when-min {
         --paper-slider-pin-start-color:  var(--paper-slider-pin-color);
       }
