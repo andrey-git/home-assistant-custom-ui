@@ -248,10 +248,36 @@ window.customUI = window.customUI || {
     about.insertBefore(version, secondP);
   },
 
+  controlColumns(columns) {
+    const partialCards = window.customUI.getElementHierarchy(document, [
+      'home-assistant',
+      'home-assistant-main',
+      'partial-cards']);
+    if (partialCards === null) {
+      // DOM not ready. Wait 1 second.
+      window.setTimeout(
+        window.customUI.controlColumns.bind(null, columns),
+        1000);
+      return;
+    }
+    partialCards.mqls.forEach((mql) => {
+      mql.removeListener(partialCards.handleWindowChange);
+    });
+    partialCards.mqls = columns.map((width) => {
+      const mql = window.matchMedia(`(min-width: ${width}px)`);
+      mql.addListener(partialCards.handleWindowChange);
+      return mql;
+    });
+    partialCards.handleWindowChange();
+  },
+
   useCustomizer() {
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     const customizer = main.hass.states['customizer.customizer'];
     if (!customizer) return;
+    if (customizer.attributes.columns) {
+      window.customUI.controlColumns(customizer.attributes.columns);
+    }
 
     if (customizer.attributes.hide_attributes) {
       if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
