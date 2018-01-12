@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171227',
+  VERSION: '20180112',
 
   SUPPORTED_SLIDER_MODES: ['single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'],
 
@@ -33,6 +33,7 @@ window.customUI = window.customUI || {
             }
             break;
           case 'MORE-INFO-GROUP':
+          case 'STATE-CARD-CONTENT':
             if (element.stateObj) {
               elem._context.push(element.stateObj.entity_id);
             }
@@ -216,10 +217,30 @@ window.customUI = window.customUI || {
     version.textContent = 'Custom UI ' + window.customUI.VERSION;
     about.insertBefore(version, secondP);
   },
+  controlColumns: function controlColumns(columns) {
+    var partialCards = window.customUI.getElementHierarchy(document, ['home-assistant', 'home-assistant-main', 'partial-cards']);
+    if (partialCards === null) {
+      // DOM not ready. Wait 1 second.
+      window.setTimeout(window.customUI.controlColumns.bind(null, columns), 1000);
+      return;
+    }
+    partialCards.mqls.forEach(function (mql) {
+      mql.removeListener(partialCards.handleWindowChange);
+    });
+    partialCards.mqls = columns.map(function (width) {
+      var mql = window.matchMedia('(min-width: ' + width + 'px)');
+      mql.addListener(partialCards.handleWindowChange);
+      return mql;
+    });
+    partialCards.handleWindowChange();
+  },
   useCustomizer: function useCustomizer() {
     var main = window.customUI.lightOrShadow(document, 'home-assistant');
     var customizer = main.hass.states['customizer.customizer'];
     if (!customizer) return;
+    if (customizer.attributes.columns) {
+      window.customUI.controlColumns(customizer.attributes.columns);
+    }
 
     if (customizer.attributes.hide_attributes) {
       if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
@@ -459,6 +480,9 @@ customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);</script>
 <dom-module id="ha-themed-slider">
   <template>
     <style>
+      :host {
+        margin: var(--ha-themed-slider-margin, initial);
+      }
       .disable-off-when-min {
         --paper-slider-pin-start-color:  var(--paper-slider-pin-color);
       }
@@ -707,7 +731,7 @@ customElements.define(DynamicElement.is, DynamicElement);</script>
     </style>
     <div class$="[[extraClass(extraObjVisible)]] horizontal layout">
       <template is="dom-if" if="[[extraObjVisible]]">
-        <template is="dom-repeat" items="[[extraObj]]">
+        <template is="dom-repeat" items="[[extraObj]]" on-dom-change="extraDomChanged">
           <ha-state-label-badge hass="[[hass]]" state="[[item]]"></ha-state-label-badge>
         </template>
       </template>
@@ -752,9 +776,23 @@ var DynamicWithExtra = function (_ref) {
   }
 
   _createClass(DynamicWithExtra, [{
+    key: 'connectedCallback',
+    value: function connectedCallback() {
+      _get(DynamicWithExtra.prototype.__proto__ || Object.getPrototypeOf(DynamicWithExtra.prototype), 'connectedCallback', this).call(this);
+      this._attached = true;
+    }
+  }, {
+    key: 'disconnectedCallback',
+    value: function disconnectedCallback() {
+      this._isAttached = false;
+      _get(DynamicWithExtra.prototype.__proto__ || Object.getPrototypeOf(DynamicWithExtra.prototype), 'disconnectedCallback', this).call(this);
+    }
+  }, {
     key: 'computeExtra',
-    value: function computeExtra(hass, stateObj) {
-      if (!stateObj.attributes.extra_badge) return [];
+    value: function computeExtra(hass, stateObj, attached) {
+      var _this2 = this;
+
+      if (!stateObj.attributes.extra_badge || !attached) return [];
       var extraBadges = stateObj.attributes.extra_badge;
       if (!Array.isArray(extraBadges)) {
         extraBadges = [extraBadges];
@@ -762,10 +800,11 @@ var DynamicWithExtra = function (_ref) {
       return extraBadges.map(function (extraBadge) {
         var result = null;
         if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
-          result = Object.assign({}, hass.states[extraBadge.entity_id]);
-        } else if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
+          result = Object.assign({}, window.customUI.maybeChangeObject(_this2, hass.states[extraBadge.entity_id], _this2.inDialog,
+          /* allowHidden= */false));
+        } else if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute] !== undefined) {
           result = {
-            state: stateObj.attributes[extraBadge.attribute],
+            state: String(stateObj.attributes[extraBadge.attribute]),
             _domain: 'none',
             entity_id: null,
             attributes: { unit_of_measurement: extraBadge.unit }
@@ -823,7 +862,7 @@ var DynamicWithExtra = function (_ref) {
   }, {
     key: 'tapHandler',
     value: function tapHandler(e) {
-      var _this2 = this;
+      var _this3 = this;
 
       this.$$('#overlay').style.pointerEvents = 'none';
       var lock = this.$$('#lock');
@@ -832,13 +871,28 @@ var DynamicWithExtra = function (_ref) {
         lock.style.opacity = '0.1';
       }
       window.setTimeout(function () {
-        _this2.$$('#overlay').style.pointerEvents = '';
+        _this3.$$('#overlay').style.pointerEvents = '';
         if (lock) {
           lock.icon = 'mdi:lock-outline';
           lock.style.opacity = '';
         }
       }, 5000);
       e.stopPropagation();
+    }
+  }, {
+    key: 'applyThemes',
+    value: function applyThemes(hass, element, stateObj) {
+      var themeName = stateObj.attributes.theme || 'default';
+      window.hassUtil.applyThemesOnElement(element, hass.themes || { default_theme: 'default', themes: {} }, themeName);
+    }
+  }, {
+    key: 'extraDomChanged',
+    value: function extraDomChanged() {
+      var _this4 = this;
+
+      this.root.querySelectorAll('ha-state-label-badge').forEach(function (elem) {
+        _this4.applyThemes(_this4.hass, elem, elem.state);
+      });
     }
   }], [{
     key: 'is',
@@ -858,8 +912,9 @@ var DynamicWithExtra = function (_ref) {
         controlElement: String,
         extraObj: {
           type: Array,
-          computed: 'computeExtra(hass, stateObj)'
+          computed: 'computeExtra(hass, stateObj, _attached)'
         },
+        _attached: Boolean,
         extraObjVisible: {
           type: Boolean,
           computed: 'computeExtraVisible(extraObj, inDialog)'
@@ -993,11 +1048,14 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
     }, {
       key: '_setMode',
       value: function _setMode() {
-        this.hideSlider = this.mode === 'hide-slider' && this.lineTooLong;
-        this.breakSlider = (this.mode === 'break-slider' || this.mode === 'hide-slider') && this.lineTooLong;
+        var obj = {
+          hideSlider: this.mode === 'hide-slider' && this.lineTooLong,
+          breakSlider: (this.mode === 'break-slider' || this.mode === 'hide-slider') && this.lineTooLong
+        };
         if (!this.showSlider) {
-          this.breakSlider = true;
+          obj.breakSlider = true;
         }
+        this.setProperties(obj);
       }
     }, {
       key: '_onIronResize',
@@ -1007,15 +1065,19 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
           return;
         }
         if (this.mode === 'no-slider') {
-          this.hideSlider = true;
-          this.breakSlider = true;
+          this.setProperties({
+            hideSlider: true,
+            breakSlider: true
+          });
           return;
         }
         var prevBreakSlider = this.breakSlider;
         var prevHideSlider = this.hideSlider;
-        this.lineTooLong = false;
-        this.hideSlider = false;
-        this.breakSlider = false;
+        this.setProperties({
+          lineTooLong: false,
+          hideSlider: false,
+          breakSlider: false
+        });
         var container = this.$.container;
 
         var containerWidth = container.clientWidth;
@@ -1100,21 +1162,22 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
           this.sliderValue = 0;
         }
         if (stateObj) {
-          this.setProperties({
+          var obj = {
             minLineBreak: 0,
             maxLineBreak: 999,
             hideSlider: false,
             breakSlider: false,
             lineTooLong: false
-          });
-          if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(stateObj.attributes.state_card_mode) !== -1) {
-            this.mode = stateObj.attributes.state_card_mode;
+          };
+          if (window.customUI.SUPPORTED_SLIDER_MODES.includes(stateObj.attributes.state_card_mode)) {
+            obj.mode = stateObj.attributes.state_card_mode;
           } else {
-            this.mode = DEFAULT_MODE;
+            obj.mode = DEFAULT_MODE;
           }
           if (stateObj.attributes.stretch_slider) {
-            this.stretchSlider = true;
+            obj.stretchSlider = true;
           }
+          this.setProperties(obj);
           this._waitForLayout();
         }
       }
@@ -1308,7 +1371,7 @@ var StateCardCustomUi = function (_Polymer$Element) {
           this._container.style.display = 'inline-block';
           var params = { display: 'inline-block' };
           if (this._container.classList.contains('state')) {
-            params.margin = '0 -6px';
+            params.margin = 'var(--ha-badges-card-margin, 0 -6px)';
           }
           this.updateStyles(params);
         }

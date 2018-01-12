@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20171227',
+  VERSION: '20180112',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
@@ -42,6 +42,7 @@ window.customUI = window.customUI || {
             }
             break;
           case 'MORE-INFO-GROUP':
+          case 'STATE-CARD-CONTENT':
             if (element.stateObj) {
               elem._context.push(element.stateObj.entity_id);
             }
@@ -248,10 +249,36 @@ window.customUI = window.customUI || {
     about.insertBefore(version, secondP);
   },
 
+  controlColumns(columns) {
+    const partialCards = window.customUI.getElementHierarchy(document, [
+      'home-assistant',
+      'home-assistant-main',
+      'partial-cards']);
+    if (partialCards === null) {
+      // DOM not ready. Wait 1 second.
+      window.setTimeout(
+        window.customUI.controlColumns.bind(null, columns),
+        1000);
+      return;
+    }
+    partialCards.mqls.forEach((mql) => {
+      mql.removeListener(partialCards.handleWindowChange);
+    });
+    partialCards.mqls = columns.map((width) => {
+      const mql = window.matchMedia(`(min-width: ${width}px)`);
+      mql.addListener(partialCards.handleWindowChange);
+      return mql;
+    });
+    partialCards.handleWindowChange();
+  },
+
   useCustomizer() {
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     const customizer = main.hass.states['customizer.customizer'];
     if (!customizer) return;
+    if (customizer.attributes.columns) {
+      window.customUI.controlColumns(customizer.attributes.columns);
+    }
 
     if (customizer.attributes.hide_attributes) {
       if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
@@ -479,6 +506,9 @@ customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);
 <dom-module id="ha-themed-slider">
   <template>
     <style>
+      :host {
+        margin: var(--ha-themed-slider-margin, initial);
+      }
       .disable-off-when-min {
         --paper-slider-pin-start-color:  var(--paper-slider-pin-color);
       }
@@ -678,7 +708,7 @@ customElements.define(DynamicElement.is, DynamicElement);
     </style>
     <div class$="[[extraClass(extraObjVisible)]] horizontal layout">
       <template is="dom-if" if="[[extraObjVisible]]">
-        <template is="dom-repeat" items="[[extraObj]]">
+        <template is="dom-repeat" items="[[extraObj]]" on-dom-change="extraDomChanged">
           <ha-state-label-badge hass="[[hass]]" state="[[item]]"></ha-state-label-badge>
         </template>
       </template>
@@ -718,8 +748,9 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
       controlElement: String,
       extraObj: {
         type: Array,
-        computed: 'computeExtra(hass, stateObj)',
+        computed: 'computeExtra(hass, stateObj, _attached)',
       },
+      _attached: Boolean,
       extraObjVisible: {
         type: Boolean,
         computed: 'computeExtraVisible(extraObj, inDialog)',
@@ -727,8 +758,18 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
     };
   }
 
-  computeExtra(hass, stateObj) {
-    if (!stateObj.attributes.extra_badge) return [];
+  connectedCallback() {
+    super.connectedCallback();
+    this._attached = true;
+  }
+
+  disconnectedCallback() {
+    this._isAttached = false;
+    super.disconnectedCallback();
+  }
+
+  computeExtra(hass, stateObj, attached) {
+    if (!stateObj.attributes.extra_badge || !attached) return [];
     let extraBadges = stateObj.attributes.extra_badge;
     if (!Array.isArray(extraBadges)) {
       extraBadges = [extraBadges];
@@ -736,10 +777,13 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
     return extraBadges.map((extraBadge) => {
       let result = null;
       if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
-        result = Object.assign({}, hass.states[extraBadge.entity_id]);
-      } else if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
+        result = Object.assign({}, window.customUI.maybeChangeObject(
+          this, hass.states[extraBadge.entity_id], this.inDialog,
+          /* allowHidden= */false));
+      } else if (extraBadge.attribute &&
+                 stateObj.attributes[extraBadge.attribute] !== undefined) {
         result = {
-          state: stateObj.attributes[extraBadge.attribute],
+          state: String(stateObj.attributes[extraBadge.attribute]),
           _domain: 'none',
           entity_id: null,
           attributes: { unit_of_measurement: extraBadge.unit },
@@ -802,6 +846,19 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
       }
     }, 5000);
     e.stopPropagation();
+  }
+
+  applyThemes(hass, element, stateObj) {
+    const themeName = stateObj.attributes.theme || 'default';
+    window.hassUtil.applyThemesOnElement(
+      element, hass.themes || { default_theme: 'default', themes: {} }, themeName);
+  }
+
+  extraDomChanged() {
+    this.root.querySelectorAll('ha-state-label-badge')
+      .forEach((elem) => {
+        this.applyThemes(this.hass, elem, elem.state);
+      });
   }
 }
 customElements.define(DynamicWithExtra.is, DynamicWithExtra);
@@ -959,13 +1016,16 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
     }
 
     _setMode() {
-      this.hideSlider = this.mode === 'hide-slider' && this.lineTooLong;
-      this.breakSlider =
-          (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
-          this.lineTooLong;
+      const obj = {
+        hideSlider: this.mode === 'hide-slider' && this.lineTooLong,
+        breakSlider:
+             (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
+             this.lineTooLong,
+      };
       if (!this.showSlider) {
-        this.breakSlider = true;
+        obj.breakSlider = true;
       }
+      this.setProperties(obj);
     }
 
     _onIronResize() {
@@ -975,15 +1035,19 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
         return;
       }
       if (this.mode === 'no-slider') {
-        this.hideSlider = true;
-        this.breakSlider = true;
+        this.setProperties({
+          hideSlider: true,
+          breakSlider: true,
+        });
         return;
       }
       const prevBreakSlider = this.breakSlider;
       const prevHideSlider = this.hideSlider;
-      this.lineTooLong = false;
-      this.hideSlider = false;
-      this.breakSlider = false;
+      this.setProperties({
+        lineTooLong: false,
+        hideSlider: false,
+        breakSlider: false,
+      });
       const { container } = this.$;
       const containerWidth = container.clientWidth;
       if (containerWidth === 0) return;
@@ -1057,22 +1121,23 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
         this.sliderValue = 0;
       }
       if (stateObj) {
-        this.setProperties({
+        const obj = {
           minLineBreak: 0,
           maxLineBreak: 999,
           hideSlider: false,
           breakSlider: false,
           lineTooLong: false,
-        });
-        if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(
-          stateObj.attributes.state_card_mode) !== -1) {
-          this.mode = stateObj.attributes.state_card_mode;
+        };
+        if (window.customUI.SUPPORTED_SLIDER_MODES.includes(
+          stateObj.attributes.state_card_mode)) {
+          obj.mode = stateObj.attributes.state_card_mode;
         } else {
-          this.mode = DEFAULT_MODE;
+          obj.mode = DEFAULT_MODE;
         }
         if (stateObj.attributes.stretch_slider) {
-          this.stretchSlider = true;
+          obj.stretchSlider = true;
         }
+        this.setProperties(obj);
         this._waitForLayout();
       }
     }
@@ -1199,7 +1264,7 @@ class StateCardCustomUi extends Polymer.Element {
         this._container.style.display = 'inline-block';
         const params = { display: 'inline-block' };
         if (this._container.classList.contains('state')) {
-          params.margin = '0 -6px';
+          params.margin = 'var(--ha-badges-card-margin, 0 -6px)';
         }
         this.updateStyles(params);
       }

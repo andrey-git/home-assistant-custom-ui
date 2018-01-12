@@ -31,6 +31,12 @@
 *   **Update to at least 20171129 for HA 0.59-0.60**
 *   **Update to at least 20171117 for HA 0.58**
 
+#### 2018-01-12
+*   Allow setting margin on slider via `--ha-themed-slider-margin`.
+*   Allow changing state-card badge margins via `--ha-badges-card-margin`.
+*   `extra_badge`s can now be individually themed.
+*   Allow changing the size and number of UI columns (requires [customizer](https://github.com/andrey-git/home-assistant-customizer))
+
 #### 2017-12-27
 *   Hotfix for HA 0.61
 *   Change size of badges in state card to 85% to match the badges in the top section.
@@ -63,13 +69,14 @@ See [installing](docs/installing.md)
 See [activating](docs/activating.md)
 
 ## Customizer component
-See instruction in dedicated repo: [https://github.com/andrey-git/home-assistant-customizer](https://github.com/andrey-git/home-assistant-customizer/)
+See instruction in a dedicated repository: [https://github.com/andrey-git/home-assistant-customizer](https://github.com/andrey-git/home-assistant-customizer/)
 Provides the following features:
 *   Load CustomUI files (HA 0.53+)
 *   Register CustomUI panel (HA 0.52 and below).
 *   Hide CustomUI attributes in `more-info` (HA 0.50 - 0.52)
 *   Hide arbitrary attributes in `more-info` (Requires HA 0.50+)
 *   Dynamic customization.
+*   Set the width and number of UI columns (Requires CustomUI 20180112+)
 
 
 ## CustomUI panel
@@ -289,6 +296,9 @@ extra_badge:
   attribute: power_consumption
   unit: W
 ```
+
+If you use the first format, i.e. a real sensor, you can use context-aware theming
+on it.
 
 In both cases you can specify a blacklist of badge "states", when you don't want to see the badge.
 ```yaml

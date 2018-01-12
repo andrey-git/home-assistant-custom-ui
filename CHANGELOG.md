@@ -1,6 +1,13 @@
 ## Changelog
 
 *Note: Update to at least 20171227 required for HA 0.61+*
+
+#### 2018-01-12
+*   Allow setting margin on slider via `--ha-themed-slider-margin`.
+*   Allow changing state-card badge margins via `--ha-badges-card-margin`.
+*   `extra_badge`s can now be individually themed.
+*   Allow changing the size and number of UI columns (requires `customizer`)
+
 #### 2017-12-27
 *   Hotfix for HA 0.61
 *   Change size of badges in state card to 85% to match the badges in the top section.
