@@ -166,13 +166,16 @@
     }
 
     _setMode() {
-      this.hideSlider = this.mode === 'hide-slider' && this.lineTooLong;
-      this.breakSlider =
-          (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
-          this.lineTooLong;
+      const obj = {
+        hideSlider: this.mode === 'hide-slider' && this.lineTooLong,
+        breakSlider:
+             (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
+             this.lineTooLong,
+      };
       if (!this.showSlider) {
-        this.breakSlider = true;
+        obj.breakSlider = true;
       }
+      this.setProperties(obj);
     }
 
     _onIronResize() {
@@ -182,15 +185,21 @@
         return;
       }
       if (this.mode === 'no-slider') {
-        this.hideSlider = true;
-        this.breakSlider = true;
+        this.setProperties({
+          hideSlider: true,
+          breakSlider: true,
+        });
         return;
       }
+      /* eslint-disable no-console */
+      console.log(`resize ${this.stateObj.entity_id}`);
       const prevBreakSlider = this.breakSlider;
       const prevHideSlider = this.hideSlider;
-      this.lineTooLong = false;
-      this.hideSlider = false;
-      this.breakSlider = false;
+      this.setProperties({
+        lineTooLong: false,
+        hideSlider: false,
+        breakSlider: false,
+      });
       const { container } = this.$;
       const containerWidth = container.clientWidth;
       if (containerWidth === 0) return;
@@ -264,22 +273,23 @@
         this.sliderValue = 0;
       }
       if (stateObj) {
-        this.setProperties({
+        const obj = {
           minLineBreak: 0,
           maxLineBreak: 999,
           hideSlider: false,
           breakSlider: false,
           lineTooLong: false,
-        });
-        if (window.customUI.SUPPORTED_SLIDER_MODES.indexOf(
-          stateObj.attributes.state_card_mode) !== -1) {
-          this.mode = stateObj.attributes.state_card_mode;
+        };
+        if (window.customUI.SUPPORTED_SLIDER_MODES.includes(
+          stateObj.attributes.state_card_mode)) {
+          obj.mode = stateObj.attributes.state_card_mode;
         } else {
-          this.mode = DEFAULT_MODE;
+          obj.mode = DEFAULT_MODE;
         }
         if (stateObj.attributes.stretch_slider) {
-          this.stretchSlider = true;
+          obj.stretchSlider = true;
         }
+        this.setProperties(obj);
         this._waitForLayout();
       }
     }
