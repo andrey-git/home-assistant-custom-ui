@@ -50,7 +50,9 @@
     </style>
     <div class$='[[extraClass(extraObjVisible)]] horizontal layout'>
       <template is='dom-if' if='[[extraObjVisible]]'>
-        <template is='dom-repeat' items='[[extraObj]]'>
+        <template is='dom-repeat'
+                  items='[[extraObj]]'
+                  on-dom-change='extraDomChanged'>
           <ha-state-label-badge hass='[[hass]]' state='[[item]]'></ha-state-label-badge>
         </template>
       </template>
@@ -90,8 +92,9 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
       controlElement: String,
       extraObj: {
         type: Array,
-        computed: 'computeExtra(hass, stateObj)',
+        computed: 'computeExtra(hass, stateObj, _attached)',
       },
+      _attached: Boolean,
       extraObjVisible: {
         type: Boolean,
         computed: 'computeExtraVisible(extraObj, inDialog)',
@@ -99,8 +102,18 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
     };
   }
 
-  computeExtra(hass, stateObj) {
-    if (!stateObj.attributes.extra_badge) return [];
+  connectedCallback() {
+    super.connectedCallback();
+    this._attached = true;
+  }
+
+  disconnectedCallback() {
+    this._isAttached = false;
+    super.disconnectedCallback();
+  }
+
+  computeExtra(hass, stateObj, attached) {
+    if (!stateObj.attributes.extra_badge || !attached) return [];
     let extraBadges = stateObj.attributes.extra_badge;
     if (!Array.isArray(extraBadges)) {
       extraBadges = [extraBadges];
@@ -108,10 +121,13 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
     return extraBadges.map((extraBadge) => {
       let result = null;
       if (extraBadge.entity_id && hass.states[extraBadge.entity_id]) {
-        result = Object.assign({}, hass.states[extraBadge.entity_id]);
-      } else if (extraBadge.attribute && stateObj.attributes[extraBadge.attribute]) {
+        result = Object.assign({}, window.customUI.maybeChangeObject(
+          this, hass.states[extraBadge.entity_id], this.inDialog,
+          /* allowHidden= */false));
+      } else if (extraBadge.attribute &&
+                 stateObj.attributes[extraBadge.attribute] !== undefined) {
         result = {
-          state: stateObj.attributes[extraBadge.attribute],
+          state: String(stateObj.attributes[extraBadge.attribute]),
           _domain: 'none',
           entity_id: null,
           attributes: { unit_of_measurement: extraBadge.unit },
@@ -174,6 +190,19 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
       }
     }, 5000);
     e.stopPropagation();
+  }
+
+  applyThemes(hass, element, stateObj) {
+    const themeName = stateObj.attributes.theme || 'default';
+    window.hassUtil.applyThemesOnElement(
+      element, hass.themes || { default_theme: 'default', themes: {} }, themeName);
+  }
+
+  extraDomChanged() {
+    this.root.querySelectorAll('ha-state-label-badge')
+      .forEach((elem) => {
+        this.applyThemes(this.hass, elem, elem.state);
+      });
   }
 }
 customElements.define(DynamicWithExtra.is, DynamicWithExtra);
