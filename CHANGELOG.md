@@ -2,6 +2,9 @@
 
 *Note: Update to at least 20171227 required for HA 0.61+*
 
+#### 2018-01-14
+*   Support hiding groups/entities from the default view
+
 #### 2018-01-12
 *   Allow setting margin on slider via `--ha-themed-slider-margin`.
 *   Allow changing state-card badge margins via `--ha-badges-card-margin`. Fixes #78

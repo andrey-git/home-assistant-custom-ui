@@ -10,8 +10,6 @@ Please fill the [usage poll](https://docs.google.com/forms/d/e/1FAIpQLSdjgb4iu5a
 
 *Update to at least 20171129 for HA 0.59-0.60*
 
-*Update to at least 20171117 for HA 0.58*
-
 ## Installing
 See [installing](docs/installing.md)
 
@@ -22,6 +20,9 @@ See [activating](docs/activating.md)
 See [features](docs/features.md)
 
 ## Changelog
+
+#### 2018-01-14
+*   Support hiding groups/entities from the default view.
 
 #### 2018-01-12
 *   Allow setting margin on slider via `--ha-themed-slider-margin`.

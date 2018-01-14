@@ -8,6 +8,7 @@
     +   [Badges in state cards](#badges-in-state-cards)
     +   [Per entity theming (Requires HA 0.50+)](#per-entity-theming)
     +   [Secondary custom UI](#secondary-customui)
+    +   [Hiding entities from default view tab (HA 0.62+)](#hiding-entities-from-default-view-tab)
 *   [Features available for almost all domains](#features-available-for-almost-all-domains)
     +   [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
 *   [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
@@ -38,7 +39,6 @@ Provides the following features:
 Use it to set device name.
 
 In HA 0.53+ is added automatically to configuration panel.
-
 ## Features available for all domains
 
 ### Context-aware attributes
@@ -169,7 +169,7 @@ group:
 ```
 
 ### Per entity theming
-Required HA 0.50+
+Requires HA 0.50+
 
 ![entity_themed](https://user-images.githubusercontent.com/5478779/28746280-0839b3f2-74c4-11e7-9478-bb197f9fd005.png)
 
@@ -195,6 +195,13 @@ homeassistant:
     alarm_control_panel.alarm:
       state_card_custom_ui_secondary: state-card-custom_alarm
 ```
+
+### Hiding entities from default view tab
+Requires HA 0.62+
+
+If you don't have a `default_view` view defined you still hide some entities from the Home tab by setting `hide_in_default_view: true` attribute.
+
+If applied to a View (a group with `view: true`) `hide_in_default_view` will hide everything under that view (not just the view group itself).
 
 ## Features available for almost all domains.
 
