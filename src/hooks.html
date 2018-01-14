@@ -320,6 +320,7 @@ window.customUI = window.customUI || {
       theme: { type: 'string' },
       confirm_controls: { type: 'boolean' },
       confirm_controls_show_lock: { type: 'boolean' },
+      hide_in_default_view: { type: 'boolean' },
     };
     if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
       Array.prototype.push.apply(
@@ -369,29 +370,32 @@ window.customUI = window.customUI || {
     }
   },
 
-  customUpdateHass(originalUpdate, obj) {
-    if (obj.states) {
-      Object.keys(obj.states).forEach((key) => {
-        const entity = obj.states[key];
-        if (entity._cui_keep) return;
-        const newEntity = window.customUI.maybeApplyTemplates(this.hass, obj.states, entity);
-        if (entity !== this.hass.states[key]) {
-          // New state arrived. Put modified state in.
-          obj.states[key] = newEntity;
-        } else if (entity !== newEntity) {
-          // It's the same state but contents changed due to other state changes.
-          obj.states[key] = newEntity;
-        }
-      });
-    }
-    originalUpdate(obj);
-  },
-
   installStatesHook() {
+    const homeAssistant = customElements.get('home-assistant');
+    if (!homeAssistant || !homeAssistant.prototype._updateHass) return;
+    const originalUpdate = homeAssistant.prototype._updateHass;
+    homeAssistant.prototype._updateHass = function update(obj) {
+      // Use named function to preserve 'this'.
+      if (obj.states) {
+        Object.keys(obj.states).forEach((key) => {
+          const entity = obj.states[key];
+          if (entity._cui_keep) return;
+          const newEntity = window.customUI.maybeApplyTemplates(this.hass, obj.states, entity);
+          if (entity !== this.hass.states[key]) {
+            // New state arrived. Put modified state in.
+            obj.states[key] = newEntity;
+          } else if (entity !== newEntity) {
+            // It's the same state but contents changed due to other state changes.
+            obj.states[key] = newEntity;
+          }
+        });
+      }
+      originalUpdate.call(this, obj);
+    };
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
-    const originalUpdate = main._updateHass.bind(main);
-    main._updateHass = window.customUI.customUpdateHass.bind(main, originalUpdate);
-    main._updateHass({ states: main.hass.states });
+    if (main.hass && main.hass.states) {
+      main._updateHass({ states: main.hass.states });
+    }
   },
 
   installPartialCards() {
@@ -419,6 +423,7 @@ window.customUI = window.customUI || {
     if (window.customUI.classInitDone) return;
     window.customUI.classInitDone = true;
     window.customUI.installPartialCards();
+    window.customUI.installStatesHook();
   },
 
   init() {
@@ -433,7 +438,6 @@ window.customUI = window.customUI || {
     window.customUI.initDone = true;
 
     window.customUI.useCustomizer();
-    window.customUI.installStatesHook();
 
     window.customUI.runHooks();
     window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
