@@ -25,7 +25,7 @@
 *   Improvements:
     *   `confirm_controls` will now protect the whole state card and not just the toggle control. Fixes #39
     *   Context-aware and Device-aware attributes can now be defined as regular expression. Fixes #55
-    *   [extra_badge](README.md#add-badge-to-the-state-card) can now be a list if you want to put more than 1 badge into a state card.
+    *   [extra_badge](docs/features.md#add-badge-to-the-state-card) can now be a list if you want to put more than 1 badge into a state card.
 *   Bugfix: Improve detection of whether slider should be hidden in `hide-slider` mode. Fixes #15
 
 #### 2017-11-29 : Breaking Change
