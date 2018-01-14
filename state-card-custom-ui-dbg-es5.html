@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20180112',
+  VERSION: '20180114',
 
   SUPPORTED_SLIDER_MODES: ['single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'],
 
@@ -278,7 +278,8 @@ window.customUI = window.customUI || {
       slider_theme: { type: 'json' },
       theme: { type: 'string' },
       confirm_controls: { type: 'boolean' },
-      confirm_controls_show_lock: { type: 'boolean' }
+      confirm_controls_show_lock: { type: 'boolean' },
+      hide_in_default_view: { type: 'boolean' }
     };
     if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
       Array.prototype.push.apply(window.hassUtil.LOGIC_STATE_ATTRIBUTES, Object.keys(customUiAttributes));
@@ -321,33 +322,63 @@ window.customUI = window.customUI || {
       });
     }
   },
-  customUpdateHass: function customUpdateHass(originalUpdate, obj) {
-    var _this2 = this;
+  installStatesHook: function installStatesHook() {
+    var homeAssistant = customElements.get('home-assistant');
+    if (!homeAssistant || !homeAssistant.prototype._updateHass) return;
+    var originalUpdate = homeAssistant.prototype._updateHass;
+    homeAssistant.prototype._updateHass = function update(obj) {
+      var _this2 = this;
 
-    if (obj.states) {
-      Object.keys(obj.states).forEach(function (key) {
-        var entity = obj.states[key];
-        if (entity._cui_keep) return;
-        var newEntity = window.customUI.maybeApplyTemplates(_this2.hass, obj.states, entity);
-        if (entity !== _this2.hass.states[key]) {
-          // New state arrived. Put modified state in.
-          obj.states[key] = newEntity;
-        } else if (entity !== newEntity) {
-          // It's the same state but contents changed due to other state changes.
-          obj.states[key] = newEntity;
+      // Use named function to preserve 'this'.
+      if (obj.states) {
+        Object.keys(obj.states).forEach(function (key) {
+          var entity = obj.states[key];
+          if (entity._cui_keep) return;
+          var newEntity = window.customUI.maybeApplyTemplates(_this2.hass, obj.states, entity);
+          if (entity !== _this2.hass.states[key]) {
+            // New state arrived. Put modified state in.
+            obj.states[key] = newEntity;
+          } else if (entity !== newEntity) {
+            // It's the same state but contents changed due to other state changes.
+            obj.states[key] = newEntity;
+          }
+        });
+      }
+      originalUpdate.call(this, obj);
+    };
+    var main = window.customUI.lightOrShadow(document, 'home-assistant');
+    if (main.hass && main.hass.states) {
+      main._updateHass({ states: main.hass.states });
+    }
+  },
+  installPartialCards: function installPartialCards() {
+    var partialCards = customElements.get('partial-cards');
+    if (!partialCards || !partialCards.prototype._defaultViewFilter) return;
+    partialCards.prototype._defaultViewFilter = function (hass, entityId) {
+      if (hass.states[entityId].attributes.hidden) return false;
+      var excludes = {};
+      Object.values(hass.states).forEach(function (entity) {
+        if (entity.attributes && entity.attributes.hide_in_default_view) {
+          var excludeEntityId = entity.entity_id;
+          if (excludes[excludeEntityId]) return;
+          excludes[excludeEntityId] = entity;
+          if (entity.attributes.view) {
+            Object.assign(excludes, window.HAWS.getViewEntities(hass.states, entity));
+          }
         }
       });
-    }
-    originalUpdate(obj);
+      return !excludes[entityId];
+    };
   },
-  installStatesHook: function installStatesHook() {
-    var main = window.customUI.lightOrShadow(document, 'home-assistant');
-    var originalUpdate = main._updateHass.bind(main);
-    main._updateHass = window.customUI.customUpdateHass.bind(main, originalUpdate);
-    main._updateHass({ states: main.hass.states });
+  installClassHooks: function installClassHooks() {
+    if (window.customUI.classInitDone) return;
+    window.customUI.classInitDone = true;
+    window.customUI.installPartialCards();
+    window.customUI.installStatesHook();
   },
   init: function init() {
     if (window.customUI.initDone) return;
+    window.customUI.installClassHooks();
     var main = window.customUI.lightOrShadow(document, 'home-assistant');
     if (!main.hass || !main.hass.states) {
       // Connection wasn't made yet. Try in 1 second.
@@ -356,9 +387,9 @@ window.customUI = window.customUI || {
     }
     window.customUI.initDone = true;
 
-    window.customUI.runHooks();
     window.customUI.useCustomizer();
-    window.customUI.installStatesHook();
+
+    window.customUI.runHooks();
     window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
     /* eslint-disable no-console */
     console.log('Loaded CustomUI ' + window.customUI.VERSION);
