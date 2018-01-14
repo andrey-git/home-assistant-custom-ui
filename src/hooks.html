@@ -394,8 +394,36 @@ window.customUI = window.customUI || {
     main._updateHass({ states: main.hass.states });
   },
 
+  installPartialCards() {
+    const partialCards = customElements.get('partial-cards');
+    if (!partialCards || !partialCards.prototype._defaultViewFilter) return;
+    partialCards.prototype._defaultViewFilter = (hass, entityId) => {
+      if (hass.states[entityId].attributes.hidden) return false;
+      const excludes = {};
+      Object.values(hass.states).forEach((entity) => {
+        if (entity.attributes && entity.attributes.hide_in_default_view) {
+          const excludeEntityId = entity.entity_id;
+          if (excludes[excludeEntityId]) return;
+          excludes[excludeEntityId] = entity;
+          if (entity.attributes.view) {
+            Object.assign(
+              excludes, window.HAWS.getViewEntities(hass.states, entity));
+          }
+        }
+      });
+      return !excludes[entityId];
+    };
+  },
+
+  installClassHooks() {
+    if (window.customUI.classInitDone) return;
+    window.customUI.classInitDone = true;
+    window.customUI.installPartialCards();
+  },
+
   init() {
     if (window.customUI.initDone) return;
+    window.customUI.installClassHooks();
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     if (!main.hass || !main.hass.states) {
       // Connection wasn't made yet. Try in 1 second.
@@ -404,9 +432,10 @@ window.customUI = window.customUI || {
     }
     window.customUI.initDone = true;
 
-    window.customUI.runHooks();
     window.customUI.useCustomizer();
     window.customUI.installStatesHook();
+
+    window.customUI.runHooks();
     window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
     /* eslint-disable no-console */
     console.log(`Loaded CustomUI ${window.customUI.VERSION}`);
