@@ -21,7 +21,10 @@ See [features](docs/features.md)
 
 ## Changelog
 
-#### 2018-01-14
+#### 2018-01-17
+*   Fix race condition that could prevent HA from starting. Issues #83 #84
+
+#### 2018-01-14 : Broken release
 *   Support hiding groups/entities from the default view.
 
 #### 2018-01-12

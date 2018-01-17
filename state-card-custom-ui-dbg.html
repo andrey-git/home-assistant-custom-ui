@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20180114',
+  VERSION: '20180117',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
@@ -376,12 +376,13 @@ window.customUI = window.customUI || {
     const originalUpdate = homeAssistant.prototype._updateHass;
     homeAssistant.prototype._updateHass = function update(obj) {
       // Use named function to preserve 'this'.
+      const { hass } = this;
       if (obj.states) {
         Object.keys(obj.states).forEach((key) => {
           const entity = obj.states[key];
           if (entity._cui_keep) return;
-          const newEntity = window.customUI.maybeApplyTemplates(this.hass, obj.states, entity);
-          if (entity !== this.hass.states[key]) {
+          const newEntity = window.customUI.maybeApplyTemplates(hass, obj.states, entity);
+          if (hass.states && entity !== hass.states[key]) {
             // New state arrived. Put modified state in.
             obj.states[key] = newEntity;
           } else if (entity !== newEntity) {
