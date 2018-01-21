@@ -1,7 +1,6 @@
-<link rel="import" href="ha-themed-slider.html" async>
-
-<!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
+<link rel="import" href="cui-base-element.html">
 <link rel="import" href="dynamic-with-extra.html">
+<link rel="import" href="ha-themed-slider.html">
 <link rel="import" href="hooks.html">
 
 <dom-module id="state-card-with-slider">
@@ -82,253 +81,208 @@
 </dom-module>
 
 <script>
-{
-  const DEFAULT_MODE = 'no-slider';
-  const BRIGHTNESS_SUPPORTED = 1;
-  class StateCardWithSlider extends Polymer.mixinBehaviors(
-    [Polymer.IronResizableBehavior], Polymer.Element) {
-    static get is() { return 'state-card-with-slider'; }
+class StateCardWithSlider extends Polymer.mixinBehaviors(
+  [Polymer.IronResizableBehavior], CuiBaseElement) {
+  static get is() { return 'state-card-with-slider'; }
 
-    static get properties() {
-      return {
-        hass: Object,
-        inDialog: {
-          type: Boolean,
-          value: false,
-        },
-        stateObj: Object,
-        controlElement: String,
-        domain: String,
-        serviceMin: String,
-        serviceMax: String,
-        valueName: { type: String, value: '___' },
-        setValueName: String,
-        nameOn: { type: String, value: 'on' },
-        min: { type: Number, value: 0 },
-        max: { type: Number, value: 255 },
+  static get properties() {
+    return {
+      domain: String,
+      serviceMin: String,
+      serviceMax: String,
+      valueName: String,
+      setValueName: String,
+      nameOn: { type: String, value: 'on' },
+      min: { type: Number, value: 0 },
+      max: { type: Number, value: 255 },
 
-        sliderValue: {
-          type: Number,
-          value: 0,
-        },
-        disableOffWhenMin: Boolean,
-        mode: String,
-        stretchSlider: {
-          type: Boolean,
-          value: false,
-        },
-        breakSlider: {
-          type: Boolean,
-          value: false,
-        },
-        hideSlider: {
-          type: Boolean,
-          value: false,
-        },
-        lineTooLong: {
-          type: Boolean,
-          value: false,
-        },
-        minLineBreak: Number,
-        maxLineBreak: Number,
-        showSlider: {
-          type: Number,
-          computed: '_showSlider(inDialog, stateObj, hideSlider)',
-        },
-        extra: {
-          type: Array,
-          computed: 'computeExtra(hass, stateObj)',
-        },
-      };
+      sliderValue: {
+        type: Number,
+        value: 0,
+      },
+      disableOffWhenMin: Boolean,
+      mode: String,
+      stretchSlider: {
+        type: Boolean,
+        value: false,
+      },
+      breakSlider: {
+        type: Boolean,
+        value: false,
+      },
+      hideSlider: {
+        type: Boolean,
+        value: false,
+      },
+      lineTooLong: {
+        type: Boolean,
+        value: false,
+      },
+      minLineBreak: Number,
+      maxLineBreak: Number,
+      showSlider: {
+        type: Number,
+        computed: '_showSlider(inDialog, stateObj, hideSlider)',
+      },
+    };
+  }
+
+  ready() {
+    super.ready();
+    this._onIronResize = this._onIronResize.bind(this);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener('iron-resize', this._onIronResize);
+    this._waitForLayout();
+  }
+
+  disconnectedCallback() {
+    this.removeEventListener('iron-resize', this._onIronResize);
+    super.disconnectedCallback();
+  }
+
+  static get observers() {
+    return [
+      'stateObjChanged(stateObj, nameOn, valueName)',
+    ];
+  }
+
+  _waitForLayout() {
+    this._setMode();
+    if (this._frameId) return;
+    this.readyToCompute = false;
+    this._frameId = window.requestAnimationFrame(() => {
+      this._frameId = null;
+      this.readyToCompute = true;
+      this._onIronResize();
+    });
+  }
+
+  _setMode() {
+    const obj = {
+      hideSlider: this.mode === 'hide-slider' && this.lineTooLong,
+      breakSlider:
+           (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
+           this.lineTooLong,
+    };
+    if (!this.showSlider) {
+      obj.breakSlider = true;
     }
+    this.setProperties(obj);
+  }
 
-    connectedCallback() {
-      super.connectedCallback();
-      this.addEventListener('iron-resize', () => this._onIronResize());
-      this._waitForLayout();
-    }
-
-    static get observers() {
-      return [
-        'stateObjChanged(stateObj, nameOn, valueName)',
-      ];
-    }
-
-    _waitForLayout() {
-      this._setMode();
-      if (this._frameId) return;
-      this.readyToCompute = false;
-      this._frameId = window.requestAnimationFrame(() => {
-        this._frameId = null;
-        this.readyToCompute = true;
-        this._onIronResize();
-      });
-    }
-
-    _setMode() {
-      const obj = {
-        hideSlider: this.mode === 'hide-slider' && this.lineTooLong,
-        breakSlider:
-             (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
-             this.lineTooLong,
-      };
-      if (!this.showSlider) {
-        obj.breakSlider = true;
-      }
-      this.setProperties(obj);
-    }
-
-    _onIronResize() {
-      if (!this.readyToCompute) return;
-      if (!this.stateObj ||
-          !(this.stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED)) {
-        return;
-      }
-      if (this.mode === 'no-slider') {
-        this.setProperties({
-          hideSlider: true,
-          breakSlider: true,
-        });
-        return;
-      }
-      const prevBreakSlider = this.breakSlider;
-      const prevHideSlider = this.hideSlider;
+  _onIronResize() {
+    if (!this.readyToCompute) return;
+    if (this.mode === 'no-slider') {
       this.setProperties({
-        lineTooLong: false,
-        hideSlider: false,
-        breakSlider: false,
+        hideSlider: true,
+        breakSlider: true,
       });
-      const { container } = this.$;
-      const containerWidth = container.clientWidth;
-      if (containerWidth === 0) return;
-      if (containerWidth <= this.minLineBreak) {
-        this.lineTooLong = true;
-      } else if (containerWidth >= this.maxLineBreak) {
-        this.lineTooLong = false;
-      } else {
-        if (prevHideSlider && this.mode === 'hide-slider') {
-          // We need to unhide the slider in order to recalculate height.
-          this._waitForLayout();
-          return;
-        }
-        const containerHeight = container.clientHeight;
-        const stateHeight = this.$$('.state-info').clientHeight;
-        this.lineTooLong = containerHeight > stateHeight * 1.5;
-        if (this.lineTooLong) {
-          this.minLineBreak = containerWidth;
-        } else if (!prevBreakSlider) {
-          this.maxLineBreak = containerWidth;
-        }
-      }
-      this._setMode();
+      return;
     }
-
-    _computeWrapClass(mode, stretchSlider, lineTooLong, inDialog) {
-      if (inDialog) {
-        return '';
-      }
-      if (mode === 'single-line') {
-        return 'nowrap';
-      }
-      if (stretchSlider && lineTooLong) {
-        return 'stretch wrap';
-      }
-      return 'wrap';
-    }
-
-    _showSlider(inDialog, stateObj, hideSlider) {
-      if (inDialog || hideSlider) {
-        return false;
-      }
-      return stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED;
-    }
-
-    sliderChanged(ev) {
-      const value = parseInt(ev.target.value, 10);
-      const param = { entity_id: this.stateObj.entity_id };
-      if (Number.isNaN(value)) return;
-      let target = this.$$('#slider');
-      if (ev.target !== target) {
-        // No Shadow DOM - we have access to original target.
-        ({ target } = ev);
-      } else if (ev.path) {
-        [target] = ev.path;
-      } else if (ev.composedPath) {
-        [target] = ev.composedPath();
-      }
-      if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
-        this.hass.callService(this.domain, this.serviceMin, param);
-      } else {
-        param[this.setValueName || this.valueName] = value;
-        this.hass.callService(this.domain, this.serviceMax, param);
-      }
-    }
-
-    stateObjChanged(stateObj, nameOn, valueName) {
-      if (this.isOn(stateObj, nameOn)) {
-        this.sliderValue = stateObj.attributes[valueName];
-      } else {
-        this.sliderValue = 0;
-      }
-      if (stateObj) {
-        const obj = {
-          minLineBreak: 0,
-          maxLineBreak: 999,
-          hideSlider: false,
-          breakSlider: false,
-          lineTooLong: false,
-        };
-        if (window.customUI.SUPPORTED_SLIDER_MODES.includes(
-          stateObj.attributes.state_card_mode)) {
-          obj.mode = stateObj.attributes.state_card_mode;
-        } else {
-          obj.mode = DEFAULT_MODE;
-        }
-        if (stateObj.attributes.stretch_slider) {
-          obj.stretchSlider = true;
-        }
-        this.setProperties(obj);
+    const prevBreakSlider = this.breakSlider;
+    const prevHideSlider = this.hideSlider;
+    this.setProperties({
+      lineTooLong: false,
+      hideSlider: false,
+      breakSlider: false,
+    });
+    const { container } = this.$;
+    const containerWidth = container.clientWidth;
+    if (containerWidth === 0) return;
+    if (containerWidth <= this.minLineBreak) {
+      this.lineTooLong = true;
+    } else if (containerWidth >= this.maxLineBreak) {
+      this.lineTooLong = false;
+    } else {
+      if (prevHideSlider && this.mode === 'hide-slider') {
+        // We need to unhide the slider in order to recalculate height.
         this._waitForLayout();
+        return;
+      }
+      const containerHeight = container.clientHeight;
+      const stateHeight = this.$$('.state-info').clientHeight;
+      this.lineTooLong = containerHeight > stateHeight * 1.5;
+      if (this.lineTooLong) {
+        this.minLineBreak = containerWidth;
+      } else if (!prevBreakSlider) {
+        this.maxLineBreak = containerWidth;
       }
     }
+    this._setMode();
+  }
 
-    isOn(stateObj, nameOn) {
-      return stateObj && stateObj.state === nameOn;
+  _computeWrapClass(mode, stretchSlider, lineTooLong, inDialog) {
+    if (inDialog) {
+      return '';
     }
-
-    stopPropagation(ev) {
-      ev.stopPropagation();
+    if (mode === 'single-line') {
+      return 'nowrap';
     }
-
-    computeExtra(hass, stateObj) {
-      let extras = stateObj.attributes.extra_data_template;
-      if (extras) {
-        if (!Array.isArray(extras)) {
-          extras = [extras];
-        }
-        return extras.map(extra => window.customUI.computeTemplate(
-          extra,
-          hass,
-          hass.states,
-          stateObj,
-          stateObj.attributes,
-          /* attribute= */ undefined,
-          stateObj.state,
-        )).filter(result => result !== null);
-      }
-      return [];
+    if (stretchSlider && lineTooLong) {
+      return 'stretch wrap';
     }
+    return 'wrap';
+  }
 
-    showLastChanged(stateObj, inDialog, extra) {
-      if (inDialog) return true;
-      if (extra.length) return false;
-      return !!stateObj.attributes.show_last_changed;
+  _showSlider(inDialog, stateObj, hideSlider) {
+    if (inDialog || hideSlider) {
+      return false;
     }
+    return true;
+  }
 
-    hasExtra(extra) {
-      return extra.length > 0;
+  sliderChanged(ev) {
+    const value = parseInt(ev.target.value, 10);
+    const param = { entity_id: this.stateObj.entity_id };
+    if (Number.isNaN(value)) return;
+    let target = this.$$('#slider');
+    if (ev.target !== target) {
+      // No Shadow DOM - we have access to original target.
+      ({ target } = ev);
+    } else if (ev.path) {
+      [target] = ev.path;
+    } else if (ev.composedPath) {
+      [target] = ev.composedPath();
+    }
+    if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
+      this.hass.callService(this.domain, this.serviceMin, param);
+    } else {
+      param[this.setValueName || this.valueName] = value;
+      this.hass.callService(this.domain, this.serviceMax, param);
     }
   }
-  customElements.define(StateCardWithSlider.is, StateCardWithSlider);
+
+  stateObjChanged(stateObj, nameOn, valueName) {
+    if (this.isOn(stateObj, nameOn)) {
+      this.sliderValue = stateObj.attributes[valueName];
+    } else {
+      this.sliderValue = 0;
+    }
+    if (stateObj) {
+      const obj = {
+        minLineBreak: 0,
+        maxLineBreak: 999,
+        hideSlider: false,
+        breakSlider: false,
+        lineTooLong: false,
+        mode: stateObj.attributes.state_card_mode,
+        stretchSlider: !!stateObj.attributes.stretch_slider,
+      };
+      this.setProperties(obj);
+      this._waitForLayout();
+    }
+  }
+
+  isOn(stateObj, nameOn) {
+    return stateObj && stateObj.state === nameOn;
+  }
+
+  stopPropagation(ev) {
+    ev.stopPropagation();
+  }
 }
+customElements.define(StateCardWithSlider.is, StateCardWithSlider);
 </script>

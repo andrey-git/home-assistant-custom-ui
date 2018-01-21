@@ -5,7 +5,7 @@
     "__DEMO__": false,
     "Polymer": true,
     "StateCardDisplay": true,
-    "webkitSpeechRecognition": false,
+    "CuiBaseElement": true,
   },
   "env": {
     "browser": true
