@@ -213,7 +213,7 @@ window.customUI = window.customUI || {
       'partial-cards',
       'ha-cards[view-visible]']);
     if (haCards === null) return;
-    const main = window.customUI.lightOrShadow(haCards, '.main');
+    const main = window.customUI.lightOrShadow(haCards, '.main') || haCards.$.main;
     const cards = main.querySelectorAll('ha-entities-card');
     cards.forEach((card) => {
       if (card.groupEntity) {
