@@ -9,6 +9,7 @@
   const DOMAIN_TO_SLIDER_SUPPORT = {
     light: 1, // SUPPORT_BRIGHTNESS
     cover: 4, // SUPPORT_SET_POSITION
+    climate: 1, // SUPPORT_TARGET_TEMPERATURE
   };
   const TYPE_TO_CONTROL = {
     toggle: 'ha-entity-toggle',
@@ -206,6 +207,18 @@
           setValueName: 'position',
           valueName: 'current_position',
           nameOn: 'open',
+          domain,
+        });
+        customStateCardType = 'state-card-with-slider';
+      } else if (domain === 'climate' && this.sliderEligible_(domain, modifiedObj, inDialog)) {
+        Object.assign(params, {
+          controlElement: 'ha-climate-state',
+          min: modifiedObj.attributes.min_temp || -100,
+          max: modifiedObj.attributes.max_temp || 200,
+          serviceMin: 'set_temperature',
+          serviceMax: 'set_temperature',
+          valueName: 'temperature',
+          nameOn: '',
           domain,
         });
         customStateCardType = 'state-card-with-slider';
