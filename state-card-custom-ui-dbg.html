@@ -1,6 +1,6 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20180117',
+  VERSION: '20180126',
 
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
@@ -213,7 +213,7 @@ window.customUI = window.customUI || {
       'partial-cards',
       'ha-cards[view-visible]']);
     if (haCards === null) return;
-    const main = window.customUI.lightOrShadow(haCards, '.main');
+    const main = window.customUI.lightOrShadow(haCards, '.main') || haCards.$.main;
     const cards = main.querySelectorAll('ha-entities-card');
     cards.forEach((card) => {
       if (card.groupEntity) {
@@ -420,11 +420,30 @@ window.customUI = window.customUI || {
     };
   },
 
+  installHaStateLabelBadge() {
+    const haStateLabelBadge = customElements.get('ha-state-label-badge');
+    if (!haStateLabelBadge || !haStateLabelBadge.prototype.stateChanged) return;
+    // Use named function to preserve 'this'.
+    haStateLabelBadge.prototype.stateChanged = function update(stateObj) {
+      // TODO: Call window.customUI.maybeChangeObject
+      window.hassUtil.applyThemesOnElement(
+        this,
+        this.hass.themes || { default_theme: 'default', themes: {} },
+        stateObj.attributes.theme || 'default');
+      this.updateStyles();
+      if (this.startInterval) {
+        // Added on 19.1.18
+        this.startInterval(stateObj);
+      }
+    };
+  },
+
   installClassHooks() {
     if (window.customUI.classInitDone) return;
     window.customUI.classInitDone = true;
     window.customUI.installPartialCards();
     window.customUI.installStatesHook();
+    window.customUI.installHaStateLabelBadge();
   },
 
   init() {
@@ -537,131 +556,55 @@ class HaConfigCustomUi extends Polymer.Element {
 }
 customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);
 </script>
-<dom-module id="ha-themed-slider">
-  <template>
-    <style>
-      :host {
-        margin: var(--ha-themed-slider-margin, initial);
-      }
-      .disable-off-when-min {
-        --paper-slider-pin-start-color:  var(--paper-slider-pin-color);
-      }
-
-      .disable-off-when-min.is-on {
-        --paper-slider-knob-start-color: var(--paper-slider-knob-color);
-        --paper-slider-knob-start-border-color: var(--paper-slider-knob-color);
-      }
-      paper-slider {
-        margin: 4px 0;
-        max-width: 100%;
-        min-width: 100px;
-        width: var(--ha-paper-slider-width, 200px);
-      }
-    </style>
-
-    <paper-slider min="[[_themedMin]]" max="[[_computeAttribute(theme, &quot;max&quot;, max)]]" pin="[[_computeAttribute(theme, &quot;pin&quot;, pin)]]" class$="[[computeClass(theme, isOn, _themedMin)]]" value="[[value]]" on-change="valueChanged">
-    </paper-slider>
-  </template>
-</dom-module>
-
 <script>
-class HaThemedSlider extends Polymer.Element {
-  static get is() { return 'ha-themed-slider'; }
-
-  ready() {
-    super.ready();
-    // If value was above 100 it wouldn't propagate to paper-slider while that had max=100
-    // Force-change the value so that paper-slider will update itself.
-    this.value = this.value + 1;
-    this.value = this.value - 1;
-    // Propagate the themed value upwards.
-    this.disableOffWhenMin = !this._computeAttribute(this.theme, 'off_when_min', !this.disableOffWhenMin);
-    this.computeEnabledThemedReportWhenNotChanged(this.theme, this.disableReportWhenNotChanged);
-  }
-
+/* eslint no-unused-vars: 0 */
+class CuiBaseElement extends Polymer.Element {
   static get properties() {
     return {
-      min: {
-        type: Number,
-        value: 0,
-      },
-      max: {
-        type: Number,
-        value: 100,
-      },
-      pin: {
+      hass: Object,
+      inDialog: {
         type: Boolean,
         value: false,
       },
-      isOn: {
-        type: Boolean,
-        value: false,
-      },
-      disableOffWhenMin: {
-        type: Boolean,
-        value: false,
-        notify: true,
-      },
-      disableReportWhenNotChanged: {
-        type: Boolean,
-        value: false,
-      },
-
-      theme: Object,
-      value: {
-        type: Number,
-        notify: true,
-      },
-      _themedMin: {
-        type: Number,
-        computed: '_computeAttribute(theme, "min", min)',
+      stateObj: Object,
+      controlElement: String,
+      extra: {
+        type: Array,
+        computed: 'computeExtra(hass, stateObj)',
       },
     };
   }
 
-  static get observers() {
-    return [
-      'computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged)',
-    ];
-  }
-
-  computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged) {
-    this._enabledThemedReportWhenNotChanged = this._computeAttribute(
-      theme, 'report_when_not_changed', !disableReportWhenNotChanged);
-  }
-
-  _computeAttribute(theme, attr, def) {
-    if (theme) {
-      if (attr in theme) {
-        return theme[attr];
+  computeExtra(hass, stateObj) {
+    let extras = stateObj.attributes.extra_data_template;
+    if (extras) {
+      if (!Array.isArray(extras)) {
+        extras = [extras];
       }
+      return extras.map(extra => window.customUI.computeTemplate(
+        extra,
+        hass,
+        hass.states,
+        stateObj,
+        stateObj.attributes,
+        /* attribute= */ undefined,
+        stateObj.state,
+      )).filter(result => result !== null);
     }
-    return def;
+    return [];
   }
 
-  computeClass(theme, isOn, themedMin) {
-    let result = '';
-    if (isOn) {
-      result += 'is-on ';
-    }
-    if (this._computeAttribute(theme, 'off_when_min', !this.disableOffWhenMin) || themedMin === 0) {
-      // If offWhenMin is enabled don't customize.
-      return '';
-    }
-    return `${result}disable-off-when-min`;
+  showLastChanged(stateObj, inDialog, extra) {
+    if (inDialog) return true;
+    if (extra.length) return false;
+    return !!stateObj.attributes.show_last_changed;
   }
 
-  valueChanged(ev) {
-    if (!this._enabledThemedReportWhenNotChanged && this.value === ev.target.value) {
-      ev.stopPropagation();
-      return;
-    }
-    this.value = ev.target.value;
+  hasExtra(extra) {
+    return extra.length > 0;
   }
 }
-customElements.define(HaThemedSlider.is, HaThemedSlider);
 </script>
-<!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
 <!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. --><script>
 class DynamicElement extends Polymer.Element {
   static get is() { return 'dynamic-element'; }
@@ -709,6 +652,7 @@ customElements.define(DynamicElement.is, DynamicElement);
       }
       dynamic-element {
         display: block;
+        text-align: right;
       }
       #overlay {
         position: absolute;
@@ -897,6 +841,130 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
 }
 customElements.define(DynamicWithExtra.is, DynamicWithExtra);
 </script>
+<dom-module id="ha-themed-slider">
+  <template>
+    <style>
+      :host {
+        margin: var(--ha-themed-slider-margin, initial);
+      }
+      .disable-off-when-min {
+        --paper-slider-pin-start-color:  var(--paper-slider-pin-color);
+      }
+
+      .disable-off-when-min.is-on {
+        --paper-slider-knob-start-color: var(--paper-slider-knob-color);
+        --paper-slider-knob-start-border-color: var(--paper-slider-knob-color);
+      }
+      paper-slider {
+        margin: 4px 0;
+        max-width: 100%;
+        min-width: 100px;
+        width: var(--ha-paper-slider-width, 200px);
+      }
+    </style>
+
+    <paper-slider min="[[_themedMin]]" max="[[_computeAttribute(theme, &quot;max&quot;, max)]]" pin="[[_computeAttribute(theme, &quot;pin&quot;, pin)]]" class$="[[computeClass(theme, isOn, _themedMin)]]" value="[[value]]" on-change="valueChanged">
+    </paper-slider>
+  </template>
+</dom-module>
+
+<script>
+class HaThemedSlider extends Polymer.Element {
+  static get is() { return 'ha-themed-slider'; }
+
+  ready() {
+    super.ready();
+    // If value was above 100 it wouldn't propagate to paper-slider while that had max=100
+    // Force-change the value so that paper-slider will update itself.
+    this.value = this.value + 1;
+    this.value = this.value - 1;
+    // Propagate the themed value upwards.
+    this.disableOffWhenMin = !this._computeAttribute(this.theme, 'off_when_min', !this.disableOffWhenMin);
+    this.computeEnabledThemedReportWhenNotChanged(this.theme, this.disableReportWhenNotChanged);
+  }
+
+  static get properties() {
+    return {
+      min: {
+        type: Number,
+        value: 0,
+      },
+      max: {
+        type: Number,
+        value: 100,
+      },
+      pin: {
+        type: Boolean,
+        value: false,
+      },
+      isOn: {
+        type: Boolean,
+        value: false,
+      },
+      disableOffWhenMin: {
+        type: Boolean,
+        value: false,
+        notify: true,
+      },
+      disableReportWhenNotChanged: {
+        type: Boolean,
+        value: false,
+      },
+
+      theme: Object,
+      value: {
+        type: Number,
+        notify: true,
+      },
+      _themedMin: {
+        type: Number,
+        computed: '_computeAttribute(theme, "min", min)',
+      },
+    };
+  }
+
+  static get observers() {
+    return [
+      'computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged)',
+    ];
+  }
+
+  computeEnabledThemedReportWhenNotChanged(theme, disableReportWhenNotChanged) {
+    this._enabledThemedReportWhenNotChanged = this._computeAttribute(
+      theme, 'report_when_not_changed', !disableReportWhenNotChanged);
+  }
+
+  _computeAttribute(theme, attr, def) {
+    if (theme) {
+      if (attr in theme) {
+        return theme[attr];
+      }
+    }
+    return def;
+  }
+
+  computeClass(theme, isOn, themedMin) {
+    let result = '';
+    if (isOn) {
+      result += 'is-on ';
+    }
+    if (this._computeAttribute(theme, 'off_when_min', !this.disableOffWhenMin) || themedMin === 0) {
+      // If offWhenMin is enabled don't customize.
+      return '';
+    }
+    return `${result}disable-off-when-min`;
+  }
+
+  valueChanged(ev) {
+    if (!this._enabledThemedReportWhenNotChanged && this.value === ev.target.value) {
+      ev.stopPropagation();
+      return;
+    }
+    this.value = ev.target.value;
+  }
+}
+customElements.define(HaThemedSlider.is, HaThemedSlider);
+</script>
 <dom-module id="state-card-with-slider">
   <template>
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
@@ -966,473 +1034,474 @@ customElements.define(DynamicWithExtra.is, DynamicWithExtra);
 </dom-module>
 
 <script>
-{
-  const DEFAULT_MODE = 'no-slider';
-  const BRIGHTNESS_SUPPORTED = 1;
-  class StateCardWithSlider extends Polymer.mixinBehaviors(
-    [Polymer.IronResizableBehavior], Polymer.Element) {
-    static get is() { return 'state-card-with-slider'; }
-
-    static get properties() {
-      return {
-        hass: Object,
-        inDialog: {
-          type: Boolean,
-          value: false,
-        },
-        stateObj: Object,
-        controlElement: String,
-        domain: String,
-        serviceMin: String,
-        serviceMax: String,
-        valueName: { type: String, value: '___' },
-        setValueName: String,
-        nameOn: { type: String, value: 'on' },
-        min: { type: Number, value: 0 },
-        max: { type: Number, value: 255 },
-
-        sliderValue: {
-          type: Number,
-          value: 0,
-        },
-        disableOffWhenMin: Boolean,
-        mode: String,
-        stretchSlider: {
-          type: Boolean,
-          value: false,
-        },
-        breakSlider: {
-          type: Boolean,
-          value: false,
-        },
-        hideSlider: {
-          type: Boolean,
-          value: false,
-        },
-        lineTooLong: {
-          type: Boolean,
-          value: false,
-        },
-        minLineBreak: Number,
-        maxLineBreak: Number,
-        showSlider: {
-          type: Number,
-          computed: '_showSlider(inDialog, stateObj, hideSlider)',
-        },
-        extra: {
-          type: Array,
-          computed: 'computeExtra(hass, stateObj)',
-        },
-      };
-    }
-
-    connectedCallback() {
-      super.connectedCallback();
-      this.addEventListener('iron-resize', () => this._onIronResize());
-      this._waitForLayout();
-    }
-
-    static get observers() {
-      return [
-        'stateObjChanged(stateObj, nameOn, valueName)',
-      ];
-    }
-
-    _waitForLayout() {
-      this._setMode();
-      if (this._frameId) return;
-      this.readyToCompute = false;
-      this._frameId = window.requestAnimationFrame(() => {
-        this._frameId = null;
-        this.readyToCompute = true;
-        this._onIronResize();
-      });
-    }
-
-    _setMode() {
-      const obj = {
-        hideSlider: this.mode === 'hide-slider' && this.lineTooLong,
-        breakSlider:
-             (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
-             this.lineTooLong,
-      };
-      if (!this.showSlider) {
-        obj.breakSlider = true;
-      }
-      this.setProperties(obj);
-    }
-
-    _onIronResize() {
-      if (!this.readyToCompute) return;
-      if (!this.stateObj ||
-          !(this.stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED)) {
-        return;
-      }
-      if (this.mode === 'no-slider') {
-        this.setProperties({
-          hideSlider: true,
-          breakSlider: true,
-        });
-        return;
-      }
-      const prevBreakSlider = this.breakSlider;
-      const prevHideSlider = this.hideSlider;
-      this.setProperties({
-        lineTooLong: false,
-        hideSlider: false,
-        breakSlider: false,
-      });
-      const { container } = this.$;
-      const containerWidth = container.clientWidth;
-      if (containerWidth === 0) return;
-      if (containerWidth <= this.minLineBreak) {
-        this.lineTooLong = true;
-      } else if (containerWidth >= this.maxLineBreak) {
-        this.lineTooLong = false;
-      } else {
-        if (prevHideSlider && this.mode === 'hide-slider') {
-          // We need to unhide the slider in order to recalculate height.
-          this._waitForLayout();
-          return;
-        }
-        const containerHeight = container.clientHeight;
-        const stateHeight = this.$$('.state-info').clientHeight;
-        this.lineTooLong = containerHeight > stateHeight * 1.5;
-        if (this.lineTooLong) {
-          this.minLineBreak = containerWidth;
-        } else if (!prevBreakSlider) {
-          this.maxLineBreak = containerWidth;
-        }
-      }
-      this._setMode();
-    }
-
-    _computeWrapClass(mode, stretchSlider, lineTooLong, inDialog) {
-      if (inDialog) {
-        return '';
-      }
-      if (mode === 'single-line') {
-        return 'nowrap';
-      }
-      if (stretchSlider && lineTooLong) {
-        return 'stretch wrap';
-      }
-      return 'wrap';
-    }
-
-    _showSlider(inDialog, stateObj, hideSlider) {
-      if (inDialog || hideSlider) {
-        return false;
-      }
-      return stateObj.attributes.supported_features & BRIGHTNESS_SUPPORTED;
-    }
-
-    sliderChanged(ev) {
-      const value = parseInt(ev.target.value, 10);
-      const param = { entity_id: this.stateObj.entity_id };
-      if (Number.isNaN(value)) return;
-      let target = this.$$('#slider');
-      if (ev.target !== target) {
-        // No Shadow DOM - we have access to original target.
-        ({ target } = ev);
-      } else if (ev.path) {
-        [target] = ev.path;
-      } else if (ev.composedPath) {
-        [target] = ev.composedPath();
-      }
-      if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
-        this.hass.callService(this.domain, this.serviceMin, param);
-      } else {
-        param[this.setValueName || this.valueName] = value;
-        this.hass.callService(this.domain, this.serviceMax, param);
-      }
-    }
-
-    stateObjChanged(stateObj, nameOn, valueName) {
-      if (this.isOn(stateObj, nameOn)) {
-        this.sliderValue = stateObj.attributes[valueName];
-      } else {
-        this.sliderValue = 0;
-      }
-      if (stateObj) {
-        const obj = {
-          minLineBreak: 0,
-          maxLineBreak: 999,
-          hideSlider: false,
-          breakSlider: false,
-          lineTooLong: false,
-        };
-        if (window.customUI.SUPPORTED_SLIDER_MODES.includes(
-          stateObj.attributes.state_card_mode)) {
-          obj.mode = stateObj.attributes.state_card_mode;
-        } else {
-          obj.mode = DEFAULT_MODE;
-        }
-        if (stateObj.attributes.stretch_slider) {
-          obj.stretchSlider = true;
-        }
-        this.setProperties(obj);
-        this._waitForLayout();
-      }
-    }
-
-    isOn(stateObj, nameOn) {
-      return stateObj && stateObj.state === nameOn;
-    }
-
-    stopPropagation(ev) {
-      ev.stopPropagation();
-    }
-
-    computeExtra(hass, stateObj) {
-      let extras = stateObj.attributes.extra_data_template;
-      if (extras) {
-        if (!Array.isArray(extras)) {
-          extras = [extras];
-        }
-        return extras.map(extra => window.customUI.computeTemplate(
-          extra,
-          hass,
-          hass.states,
-          stateObj,
-          stateObj.attributes,
-          /* attribute= */ undefined,
-          stateObj.state,
-        )).filter(result => result !== null);
-      }
-      return [];
-    }
-
-    showLastChanged(stateObj, inDialog, extra) {
-      if (inDialog) return true;
-      if (extra.length) return false;
-      return !!stateObj.attributes.show_last_changed;
-    }
-
-    hasExtra(extra) {
-      return extra.length > 0;
-    }
-  }
-  customElements.define(StateCardWithSlider.is, StateCardWithSlider);
-}
-</script>
-<script>
-const SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
-class StateCardCustomUi extends Polymer.Element {
-  static get is() { return 'state-card-custom-ui'; }
+class StateCardWithSlider extends Polymer.mixinBehaviors(
+  [Polymer.IronResizableBehavior], CuiBaseElement) {
+  static get is() { return 'state-card-with-slider'; }
 
   static get properties() {
     return {
-      hass: Object,
+      domain: String,
+      serviceMin: String,
+      serviceMax: String,
+      valueName: String,
+      setValueName: String,
+      nameOn: { type: String, value: 'on' },
+      min: { type: Number, value: 0 },
+      max: { type: Number, value: 255 },
 
-      inDialog: {
+      sliderValue: {
+        type: Number,
+        value: 0,
+      },
+      disableOffWhenMin: Boolean,
+      mode: String,
+      stretchSlider: {
         type: Boolean,
         value: false,
       },
-
-      stateObj: Object,
+      breakSlider: {
+        type: Boolean,
+        value: false,
+      },
+      hideSlider: {
+        type: Boolean,
+        value: false,
+      },
+      lineTooLong: {
+        type: Boolean,
+        value: false,
+      },
+      minLineBreak: Number,
+      maxLineBreak: Number,
+      showSlider: {
+        type: Number,
+        computed: '_showSlider(inDialog, stateObj, hideSlider)',
+      },
     };
   }
 
-  static get observers() {
-    return [
-      'inputChanged(hass, inDialog, stateObj)',
-    ];
+  ready() {
+    super.ready();
+    this._onIronResize = this._onIronResize.bind(this);
   }
 
   connectedCallback() {
     super.connectedCallback();
-    const container = this.parentNode.parentNode;
-    if (container.tagName === 'DIV' &&
-        (container.classList.contains('state') || container.classList.contains('child-card'))) {
-      this._container = container;
-
-      // Since this doesn't actually change the background - no need to clear it.
-      container.style.setProperty(
-        'background-color', 'var(--paper-card-background-color, inherit)');
-
-      // Polyfill 'updateStyles'.
-      if (!container.updateStyles) {
-        container.updateStyles = (styles) => {
-          Object.keys(styles).forEach((key) => {
-            container.style.setProperty(key, styles[key]);
-          });
-        };
-      }
-    }
-    this._isAttached = true;
-    this.inputChanged(this.hass, this.inDialog, this.stateObj);
+    this.addEventListener('iron-resize', this._onIronResize);
+    this._waitForLayout();
   }
 
   disconnectedCallback() {
-    this._isAttached = false;
-    if (this._container) {
-      this._container.updateStyles({ display: '', margin: '', padding: '' });
-      window.hassUtil.applyThemesOnElement(
-        this._container, this.hass.themes || { default_theme: 'default', themes: {} }, 'default');
-      this._container = null;
-    }
+    this.removeEventListener('iron-resize', this._onIronResize);
     super.disconnectedCallback();
   }
 
-  badgeMode(hass, stateObj, domain) {
-    const states = [];
-    if (domain === 'group') {
-      stateObj.attributes.entity_id.forEach((id) => {
-        const state = hass.states[id];
-        if (!state) {
-          /* eslint-disable no-console */
-          console.warn(`Unknown ID ${id} in group ${stateObj.entity_id}`);
-          /* eslint-enable no-console */
-          return;
-        }
-        if (!stateObj.attributes.badges_list ||
-            stateObj.attributes.badges_list.includes(state.entity_id)) {
-          states.push(window.customUI.maybeChangeObject(
-            this, state, false /* inDialog */, false /* allowHidden */));
-        }
+  static get observers() {
+    return [
+      'stateObjChanged(stateObj, nameOn, valueName)',
+    ];
+  }
+
+  _waitForLayout() {
+    this._setMode();
+    if (this._frameId) return;
+    this.readyToCompute = false;
+    this._frameId = window.requestAnimationFrame(() => {
+      this._frameId = null;
+      this.readyToCompute = true;
+      this._onIronResize();
+    });
+  }
+
+  _setMode() {
+    const obj = {
+      hideSlider: this.mode === 'hide-slider' && this.lineTooLong,
+      breakSlider:
+           (this.mode === 'break-slider' || this.mode === 'hide-slider') &&
+           this.lineTooLong,
+    };
+    if (!this.showSlider) {
+      obj.breakSlider = true;
+    }
+    this.setProperties(obj);
+  }
+
+  _onIronResize() {
+    if (!this.readyToCompute) return;
+    if (this.mode === 'no-slider') {
+      this.setProperties({
+        hideSlider: true,
+        breakSlider: true,
       });
-    } else {
-      states.push(stateObj);
-      if (this._container) {
-        this._container.style.display = 'inline-block';
-        const params = { display: 'inline-block' };
-        if (this._container.classList.contains('state')) {
-          params.margin = 'var(--ha-badges-card-margin, 0 -6px)';
-        }
-        this.updateStyles(params);
-      }
-    }
-    window.hassUtil.dynamicContentUpdater(
-      this,
-      'HA-BADGES-CARD',
-      { hass, states });
-    if (this._container) {
-      this._container.updateStyles({
-        width: 'var(--ha-badges-card-width, initial)',
-        'text-align': 'var(--ha-badges-card-text-align, initial)',
-      });
-    }
-    this.lastChild.style.fontSize = '85%';
-
-    // Since this variable only affects badges mode - no need to clean it up.
-    this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
-  }
-
-  cleanBadgeStyle() {
-    if (this._container) {
-      this._container.updateStyles({
-        display: '',
-        width: '',
-        'text-align': '',
-      });
-    }
-    this.updateStyles({ display: '', margin: '' });
-  }
-
-  applyThemes(hass, modifiedObj) {
-    let themeTarget = this;
-    let themeName = 'default';
-    if (this._container) {
-      themeTarget = this._container;
-    }
-    if (modifiedObj.attributes.theme) {
-      themeName = modifiedObj.attributes.theme;
-    }
-    window.hassUtil.applyThemesOnElement(
-      themeTarget, hass.themes || { default_theme: 'default', themes: {} }, themeName);
-  }
-
-  maybeHideEntity(modifiedObj) {
-    if (!modifiedObj) {
-      if (this.lastChild) {
-        this.removeChild(this.lastChild);
-      }
-      if (this._container) {
-        this._container.updateStyles({ margin: '0', padding: '0' });
-      }
-      return true;
-    }
-    if (this._container) {
-      this._container.updateStyles({ margin: '', padding: '' });
-    }
-    return false;
-  }
-
-  inputChanged(hass, inDialog, stateObj) {
-    if (!stateObj || !hass || !this._isAttached) return;
-    const domain = window.hassUtil.computeDomain(stateObj);
-    const modifiedObj = window.customUI.maybeChangeObject(
-      this, stateObj, inDialog, true /* allowHidden */);
-
-    if (this.maybeHideEntity(modifiedObj)) return;
-
-    this.applyThemes(hass, modifiedObj);
-
-    if (!inDialog && modifiedObj.attributes.state_card_mode === 'badges') {
-      this.badgeMode(hass, modifiedObj, domain);
       return;
     }
-    this.cleanBadgeStyle();
-
-    const params = {
-      hass,
-      stateObj: modifiedObj,
-      inDialog,
-    };
-    let stateCardType = window.hassUtil.stateCardType(hass, stateObj);
-    const secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
-
-    if (domain === 'light') {
-      Object.assign(params, {
-        controlElement: 'ha-entity-toggle',
-        serviceMin: 'turn_off',
-        serviceMax: 'turn_on',
-        valueName: 'brightness',
-      });
-    } else if (domain === 'cover') {
-      Object.assign(params, {
-        controlElement: 'ha-cover-controls',
-        max: 100,
-        serviceMin: 'close_cover',
-        serviceMax: 'set_cover_position',
-        setValueName: 'position',
-        valueName: 'current_position',
-        nameOn: 'open',
-      });
-    } else if (stateCardType === 'toggle') {
-      Object.assign(params, {
-        controlElement: 'ha-entity-toggle',
-      });
-    } else if (stateCardType === 'display') {
-      Object.assign(params, {
-        controlElement: '',
-      });
-    }
-    if (!secondaryStateCardType &&
-       (domain === 'light' ||
-        domain === 'cover' ||
-        stateCardType === 'toggle' ||
-        stateCardType === 'display')) {
-      stateCardType = 'with-slider';
-      Object.assign(params, {
-        domain,
-      });
-      if (stateObj.state === 'unavailable') {
-        Object.assign(params, {
-          controlElement: '',
-        });
+    const prevBreakSlider = this.breakSlider;
+    const prevHideSlider = this.hideSlider;
+    this.setProperties({
+      lineTooLong: false,
+      hideSlider: false,
+      breakSlider: false,
+    });
+    const { container } = this.$;
+    const containerWidth = container.clientWidth;
+    if (containerWidth === 0) return;
+    if (containerWidth <= this.minLineBreak) {
+      this.lineTooLong = true;
+    } else if (containerWidth >= this.maxLineBreak) {
+      this.lineTooLong = false;
+    } else {
+      if (prevHideSlider && this.mode === 'hide-slider') {
+        // We need to unhide the slider in order to recalculate height.
+        this._waitForLayout();
+        return;
       }
-    } else if (modifiedObj.attributes.show_last_changed &&
-               SHOW_LAST_CHANGED_BLACKLISTED_CARDS.indexOf(stateCardType) === -1) {
-      params.inDialog = true;
+      const containerHeight = container.clientHeight;
+      const stateHeight = this.$$('.state-info').clientHeight;
+      this.lineTooLong = containerHeight > stateHeight * 1.5;
+      if (this.lineTooLong) {
+        this.minLineBreak = containerWidth;
+      } else if (!prevBreakSlider) {
+        this.maxLineBreak = containerWidth;
+      }
     }
+    this._setMode();
+  }
 
-    window.hassUtil.dynamicContentUpdater(
-      this,
-      secondaryStateCardType || (`STATE-CARD-${stateCardType.toUpperCase()}`),
-      params);
+  _computeWrapClass(mode, stretchSlider, lineTooLong, inDialog) {
+    if (inDialog) {
+      return '';
+    }
+    if (mode === 'single-line') {
+      return 'nowrap';
+    }
+    if (stretchSlider && lineTooLong) {
+      return 'stretch wrap';
+    }
+    return 'wrap';
+  }
+
+  _showSlider(inDialog, stateObj, hideSlider) {
+    if (inDialog || hideSlider) {
+      return false;
+    }
+    return true;
+  }
+
+  sliderChanged(ev) {
+    const value = parseInt(ev.target.value, 10);
+    const param = { entity_id: this.stateObj.entity_id };
+    if (Number.isNaN(value)) return;
+    let target = this.$$('#slider');
+    if (ev.target !== target) {
+      // No Shadow DOM - we have access to original target.
+      ({ target } = ev);
+    } else if (ev.path) {
+      [target] = ev.path;
+    } else if (ev.composedPath) {
+      [target] = ev.composedPath();
+    }
+    if (value === 0 || (value <= target.min && !this.disableOffWhenMin)) {
+      this.hass.callService(this.domain, this.serviceMin, param);
+    } else {
+      param[this.setValueName || this.valueName] = value;
+      this.hass.callService(this.domain, this.serviceMax, param);
+    }
+  }
+
+  stateObjChanged(stateObj, nameOn, valueName) {
+    if (this.isOn(stateObj, nameOn)) {
+      this.sliderValue = stateObj.attributes[valueName];
+    } else {
+      this.sliderValue = 0;
+    }
+    if (stateObj) {
+      const obj = {
+        minLineBreak: 0,
+        maxLineBreak: 999,
+        hideSlider: false,
+        breakSlider: false,
+        lineTooLong: false,
+        mode: stateObj.attributes.state_card_mode,
+        stretchSlider: !!stateObj.attributes.stretch_slider,
+      };
+      this.setProperties(obj);
+      this._waitForLayout();
+    }
+  }
+
+  isOn(stateObj, nameOn) {
+    return stateObj && (!nameOn || stateObj.state === nameOn);
+  }
+
+  stopPropagation(ev) {
+    ev.stopPropagation();
   }
 }
-customElements.define(StateCardCustomUi.is, StateCardCustomUi);
+customElements.define(StateCardWithSlider.is, StateCardWithSlider);
+</script>
+<dom-module id="state-card-without-slider">
+  <template>
+    <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
+    <style>
+      #container {
+        position: relative;
+      }
+    </style>
+
+    <div id="container" class="horizontal layout justified">
+      <state-info class="state-info" state-obj="[[stateObj]]" in-dialog="[[showLastChanged(stateObj, inDialog, extra)]]" secondary-line$="[[hasExtra(extra)]]">
+        <template is="dom-repeat" items="[[extra]]">
+          <div>[[item]]</div>
+        </template>
+      </state-info>
+      <dynamic-with-extra hass="[[hass]]" state-obj="[[stateObj]]" control-element="[[controlElement]]" in-dialog="[[inDialog]]">
+      </dynamic-with-extra>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+class StateCardWithoutSlider extends CuiBaseElement {
+  static get is() { return 'state-card-without-slider'; }
+}
+customElements.define(StateCardWithoutSlider.is, StateCardWithoutSlider);
+</script>
+<script>
+{
+  const SHOW_LAST_CHANGED_BLACKLISTED_CARDS = ['configurator'];
+  const DOMAIN_TO_SLIDER_SUPPORT = {
+    light: 1, // SUPPORT_BRIGHTNESS
+    cover: 4, // SUPPORT_SET_POSITION
+    climate: 1, // SUPPORT_TARGET_TEMPERATURE
+  };
+  const TYPE_TO_CONTROL = {
+    toggle: 'ha-entity-toggle',
+    display: '',
+    cover: 'ha-cover-controls',
+  };
+  class StateCardCustomUi extends Polymer.Element {
+    static get is() { return 'state-card-custom-ui'; }
+
+    static get properties() {
+      return {
+        hass: Object,
+
+        inDialog: {
+          type: Boolean,
+          value: false,
+        },
+
+        stateObj: Object,
+      };
+    }
+
+    static get observers() {
+      return [
+        'inputChanged(hass, inDialog, stateObj)',
+      ];
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      const container = this.parentNode.parentNode;
+      if (container.tagName === 'DIV' &&
+          (container.classList.contains('state') || container.classList.contains('child-card'))) {
+        this._container = container;
+
+        // Since this doesn't actually change the background - no need to clear it.
+        container.style.setProperty(
+          'background-color', 'var(--paper-card-background-color, inherit)');
+
+        // Polyfill 'updateStyles'.
+        if (!container.updateStyles) {
+          container.updateStyles = (styles) => {
+            Object.keys(styles).forEach((key) => {
+              container.style.setProperty(key, styles[key]);
+            });
+          };
+        }
+      }
+      this._isAttached = true;
+      this.inputChanged(this.hass, this.inDialog, this.stateObj);
+    }
+
+    disconnectedCallback() {
+      this._isAttached = false;
+      if (this._container) {
+        this._container.updateStyles({ display: '', margin: '', padding: '' });
+        window.hassUtil.applyThemesOnElement(
+          this._container, this.hass.themes || { default_theme: 'default', themes: {} }, 'default');
+        this._container = null;
+      }
+      super.disconnectedCallback();
+    }
+
+    badgeMode(hass, stateObj, domain) {
+      const states = [];
+      if (domain === 'group') {
+        stateObj.attributes.entity_id.forEach((id) => {
+          const state = hass.states[id];
+          if (!state) {
+            /* eslint-disable no-console */
+            console.warn(`Unknown ID ${id} in group ${stateObj.entity_id}`);
+            /* eslint-enable no-console */
+            return;
+          }
+          if (!stateObj.attributes.badges_list ||
+              stateObj.attributes.badges_list.includes(state.entity_id)) {
+            states.push(window.customUI.maybeChangeObject(
+              this, state, false /* inDialog */, false /* allowHidden */));
+          }
+        });
+      } else {
+        states.push(stateObj);
+        if (this._container) {
+          this._container.style.display = 'inline-block';
+          const params = { display: 'inline-block' };
+          if (this._container.classList.contains('state')) {
+            params.margin = 'var(--ha-badges-card-margin, 0 -6px)';
+          }
+          this.updateStyles(params);
+        }
+      }
+      window.hassUtil.dynamicContentUpdater(
+        this,
+        'HA-BADGES-CARD',
+        { hass, states });
+      if (this._container) {
+        this._container.updateStyles({
+          width: 'var(--ha-badges-card-width, initial)',
+          'text-align': 'var(--ha-badges-card-text-align, initial)',
+        });
+      }
+      this.lastChild.style.fontSize = '85%';
+
+      // Since this variable only affects badges mode - no need to clean it up.
+      this.style.setProperty('--ha-state-label-badge-margin-bottom', '0');
+    }
+
+    cleanBadgeStyle() {
+      if (this._container) {
+        this._container.updateStyles({
+          display: '',
+          width: '',
+          'text-align': '',
+        });
+      }
+      this.updateStyles({ display: '', margin: '' });
+    }
+
+    applyThemes(hass, modifiedObj) {
+      let themeTarget = this;
+      let themeName = 'default';
+      if (this._container) {
+        themeTarget = this._container;
+      }
+      if (modifiedObj.attributes.theme) {
+        themeName = modifiedObj.attributes.theme;
+      }
+      window.hassUtil.applyThemesOnElement(
+        themeTarget, hass.themes || { default_theme: 'default', themes: {} }, themeName);
+    }
+
+    maybeHideEntity(modifiedObj) {
+      if (!modifiedObj) {
+        if (this.lastChild) {
+          this.removeChild(this.lastChild);
+        }
+        if (this._container) {
+          this._container.updateStyles({ margin: '0', padding: '0' });
+        }
+        return true;
+      }
+      if (this._container) {
+        this._container.updateStyles({ margin: '', padding: '' });
+      }
+      return false;
+    }
+
+    sliderEligible_(domain, obj, inDialog) {
+      if (inDialog) return false;
+      return DOMAIN_TO_SLIDER_SUPPORT[domain] &&
+        (DOMAIN_TO_SLIDER_SUPPORT[domain] & obj.attributes.supported_features) &&
+        obj.attributes.state_card_mode && obj.attributes.state_card_mode !== 'no-slider';
+    }
+
+    inputChanged(hass, inDialog, stateObj) {
+      if (!stateObj || !hass || !this._isAttached) return;
+      const domain = window.hassUtil.computeDomain(stateObj);
+      const modifiedObj = window.customUI.maybeChangeObject(
+        this, stateObj, inDialog, true /* allowHidden */);
+
+      if (this.maybeHideEntity(modifiedObj)) return;
+
+      this.applyThemes(hass, modifiedObj);
+
+      if (!inDialog && modifiedObj.attributes.state_card_mode === 'badges') {
+        this.badgeMode(hass, modifiedObj, domain);
+        return;
+      }
+      this.cleanBadgeStyle();
+
+      const params = {
+        hass,
+        stateObj: modifiedObj,
+        inDialog,
+      };
+      const stateCardType = window.hassUtil.stateCardType(hass, stateObj);
+      let customStateCardType;
+      const secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
+
+      if (domain === 'light' && this.sliderEligible_(domain, modifiedObj, inDialog)) {
+        Object.assign(params, {
+          controlElement: 'ha-entity-toggle',
+          serviceMin: 'turn_off',
+          serviceMax: 'turn_on',
+          valueName: 'brightness',
+          domain,
+        });
+        customStateCardType = 'state-card-with-slider';
+      } else if (domain === 'cover' && this.sliderEligible_(domain, modifiedObj, inDialog)) {
+        Object.assign(params, {
+          controlElement: 'ha-cover-controls',
+          max: 100,
+          serviceMin: 'close_cover',
+          serviceMax: 'set_cover_position',
+          setValueName: 'position',
+          valueName: 'current_position',
+          nameOn: 'open',
+          domain,
+        });
+        customStateCardType = 'state-card-with-slider';
+      } else if (domain === 'climate' && this.sliderEligible_(domain, modifiedObj, inDialog)) {
+        Object.assign(params, {
+          controlElement: 'ha-climate-state',
+          min: modifiedObj.attributes.min_temp || -100,
+          max: modifiedObj.attributes.max_temp || 200,
+          serviceMin: 'set_temperature',
+          serviceMax: 'set_temperature',
+          valueName: 'temperature',
+          nameOn: '',
+          domain,
+        });
+        customStateCardType = 'state-card-with-slider';
+      } else if (TYPE_TO_CONTROL[stateCardType] !== undefined) {
+        params.controlElement = TYPE_TO_CONTROL[stateCardType];
+        customStateCardType = 'state-card-without-slider';
+      } else if (modifiedObj.attributes.show_last_changed &&
+                 !SHOW_LAST_CHANGED_BLACKLISTED_CARDS.includes(stateCardType)) {
+        params.inDialog = true;
+      }
+      if (modifiedObj.state === 'unavailable') {
+        params.controlElement = '';
+      }
+
+      window.hassUtil.dynamicContentUpdater(
+        this,
+        (secondaryStateCardType || customStateCardType || `STATE-CARD-${stateCardType}`).toUpperCase(),
+        params);
+    }
+  }
+  customElements.define(StateCardCustomUi.is, StateCardCustomUi);
+}
 </script></div>

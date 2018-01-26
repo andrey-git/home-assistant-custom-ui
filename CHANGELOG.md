@@ -1,6 +1,12 @@
 ## Changelog
 
-*Note: Update to at least 20171227 required for HA 0.61+*
+*Note: Update to at least 20180126 required for HA 0.62+*
+*Note: Update to at least 20171227 required for HA 0.61*
+
+#### 2018-01-26
+*   Support for theming top-of-the-page badges.
+*   Climate state-card can now get a temperature-controlling slide like light and cover cards.
+*   Hotfix for HA 0.62
 
 #### 2018-01-17
 *   Fix race condition that could prevent HA from starting
