@@ -420,11 +420,30 @@ window.customUI = window.customUI || {
     };
   },
 
+  installHaStateLabelBadge() {
+    const haStateLabelBadge = customElements.get('ha-state-label-badge');
+    if (!haStateLabelBadge || !haStateLabelBadge.prototype.stateChanged) return;
+    // Use named function to preserve 'this'.
+    haStateLabelBadge.prototype.stateChanged = function update(stateObj) {
+      // TODO: Call window.customUI.maybeChangeObject
+      window.hassUtil.applyThemesOnElement(
+        this,
+        this.hass.themes || { default_theme: 'default', themes: {} },
+        stateObj.attributes.theme || 'default');
+      this.updateStyles();
+      if (this.startInterval) {
+        // Added on 19.1.18
+        this.startInterval(stateObj);
+      }
+    };
+  },
+
   installClassHooks() {
     if (window.customUI.classInitDone) return;
     window.customUI.classInitDone = true;
     window.customUI.installPartialCards();
     window.customUI.installStatesHook();
+    window.customUI.installHaStateLabelBadge();
   },
 
   init() {
