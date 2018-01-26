@@ -1,7 +1,5 @@
 <script>
 window.customUI = window.customUI || {
-  VERSION: '20180126',
-
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
   ],
@@ -140,7 +138,9 @@ window.customUI = window.customUI || {
       // We are operating on real attributes. Replace them.
       const result = window.customUI.applyAttributes(stateObj, newAttributes);
       if (Object.prototype.hasOwnProperty.call(newAttributes, 'state')) {
-        result.state = newAttributes.state;
+        if (newAttributes.state !== null) {
+          result.state = String(newAttributes.state);
+        }
       }
       if (Object.prototype.hasOwnProperty.call(newAttributes, '_stateDisplay')) {
         result._stateDisplay = newAttributes._stateDisplay;
@@ -500,6 +500,8 @@ window.customUI = window.customUI || {
     }
   },
 };
-
+</script>
+<link rel="import" href="version.html">
+<script>
 window.customUI.init();
 </script>
