@@ -392,6 +392,10 @@ window.customUI = window.customUI || {
         });
       }
       originalUpdate.call(this, obj);
+      if (obj.themes && hass._themeWaiters) {
+        hass._themeWaiters.forEach(waiter => waiter.stateChanged(waiter.state));
+        hass._themeWaiters = undefined;
+      }
     };
     const main = window.customUI.lightOrShadow(document, 'home-assistant');
     if (main.hass && main.hass.states) {
@@ -426,10 +430,17 @@ window.customUI = window.customUI || {
     // Use named function to preserve 'this'.
     haStateLabelBadge.prototype.stateChanged = function update(stateObj) {
       // TODO: Call window.customUI.maybeChangeObject
-      window.hassUtil.applyThemesOnElement(
-        this,
-        this.hass.themes || { default_theme: 'default', themes: {} },
-        stateObj.attributes.theme || 'default');
+      if (stateObj.attributes.theme) {
+        if (this.hass.themes === null) {
+          this.hass._themeWaiters = this.hass._themeWaiters || [];
+          this.hass._themeWaiters.push(this);
+        } else {
+          window.hassUtil.applyThemesOnElement(
+            this,
+            this.hass.themes || { default_theme: 'default', themes: {} },
+            stateObj.attributes.theme || 'default');
+        }
+      }
       this.updateStyles();
       if (this.startInterval) {
         // Added on 19.1.18
