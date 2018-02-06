@@ -136,7 +136,7 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
       }
       if (!result) return null;
       let blacklist = extraBadge.blacklist_states;
-      if (blacklist) {
+      if (blacklist !== undefined) {
         if (!Array.isArray(blacklist)) {
           blacklist = [blacklist];
         }

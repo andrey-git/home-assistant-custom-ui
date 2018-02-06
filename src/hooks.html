@@ -117,6 +117,8 @@ window.customUI = window.customUI || {
       const value = window.customUI.computeTemplate(
         template, hass, states, stateObj, attributes,
         attributes[key], stateObj.state);
+      // In case of null don't set the value.
+      if (value === null) return;
       newAttributes[key] = value;
       if (key === 'state') {
         if (value !== stateObj.state) {
