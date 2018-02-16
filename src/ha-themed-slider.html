@@ -36,11 +36,6 @@ class HaThemedSlider extends Polymer.Element {
 
   ready() {
     super.ready();
-    // If value was above 100 it wouldn't propagate to paper-slider while that had max=100
-    // Force-change the value so that paper-slider will update itself.
-    this.value = this.value + 1;
-    this.value = this.value - 1;
-    // Propagate the themed value upwards.
     this.disableOffWhenMin = !this._computeAttribute(this.theme, 'off_when_min', !this.disableOffWhenMin);
     this.computeEnabledThemedReportWhenNotChanged(this.theme, this.disableReportWhenNotChanged);
   }

@@ -256,13 +256,11 @@ class StateCardWithSlider extends Polymer.mixinBehaviors(
   }
 
   stateObjChanged(stateObj, nameOn, valueName) {
-    if (this.isOn(stateObj, nameOn)) {
-      this.sliderValue = stateObj.attributes[valueName];
-    } else {
-      this.sliderValue = 0;
-    }
+    const obj = {
+      sliderValue: this.isOn(stateObj, nameOn) ? stateObj.attributes[valueName] : 0,
+    };
     if (stateObj) {
-      const obj = {
+      Object.assign(obj, {
         minLineBreak: 0,
         maxLineBreak: 999,
         hideSlider: false,
@@ -270,8 +268,10 @@ class StateCardWithSlider extends Polymer.mixinBehaviors(
         lineTooLong: false,
         mode: stateObj.attributes.state_card_mode,
         stretchSlider: !!stateObj.attributes.stretch_slider,
-      };
-      this.setProperties(obj);
+      });
+    }
+    this.setProperties(obj);
+    if (stateObj) {
       this._waitForLayout();
     }
   }
