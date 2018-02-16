@@ -3,6 +3,13 @@
 *Note: Update to at least 20180126 required for HA 0.62+*
 *Note: Update to at least 20171227 required for HA 0.61*
 
+#### 2018-02-16
+Bugfixes:
+*   On Firefox badges sometimes didn't use themes.
+*   Update badges-in-state-card default margin to 0.
+*   `blacklist_states` didn't work with values like 0, empty string.
+*   Slider multiplied the value of template light by 10.
+
 #### 2018-01-26
 *   Support for theming top-of-the-page badges.
 *   Climate state-card can now get a temperature-controlling slide like light and cover cards.

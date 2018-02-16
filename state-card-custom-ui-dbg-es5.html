@@ -1,7 +1,5 @@
 <div hidden="" by-polymer-bundler=""><script>
 window.customUI = window.customUI || {
-  VERSION: '20180126',
-
   SUPPORTED_SLIDER_MODES: ['single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider'],
 
   domHost: function domHost(elem) {
@@ -107,6 +105,8 @@ window.customUI = window.customUI || {
         hasGlobal = true;
       }
       var value = window.customUI.computeTemplate(template, hass, states, stateObj, attributes, attributes[key], stateObj.state);
+      // In case of null don't set the value.
+      if (value === null) return;
       newAttributes[key] = value;
       if (key === 'state') {
         if (value !== stateObj.state) {
@@ -128,7 +128,9 @@ window.customUI = window.customUI || {
       // We are operating on real attributes. Replace them.
       var result = window.customUI.applyAttributes(stateObj, newAttributes);
       if (Object.prototype.hasOwnProperty.call(newAttributes, 'state')) {
-        result.state = newAttributes.state;
+        if (newAttributes.state !== null) {
+          result.state = String(newAttributes.state);
+        }
       }
       if (Object.prototype.hasOwnProperty.call(newAttributes, '_stateDisplay')) {
         result._stateDisplay = newAttributes._stateDisplay;
@@ -345,6 +347,12 @@ window.customUI = window.customUI || {
         });
       }
       originalUpdate.call(this, obj);
+      if (obj.themes && hass._themeWaiters) {
+        hass._themeWaiters.forEach(function (waiter) {
+          return waiter.stateChanged(waiter.state);
+        });
+        hass._themeWaiters = undefined;
+      }
     };
     var main = window.customUI.lightOrShadow(document, 'home-assistant');
     if (main.hass && main.hass.states) {
@@ -376,7 +384,14 @@ window.customUI = window.customUI || {
     // Use named function to preserve 'this'.
     haStateLabelBadge.prototype.stateChanged = function update(stateObj) {
       // TODO: Call window.customUI.maybeChangeObject
-      window.hassUtil.applyThemesOnElement(this, this.hass.themes || { default_theme: 'default', themes: {} }, stateObj.attributes.theme || 'default');
+      if (stateObj.attributes.theme) {
+        if (this.hass.themes === null) {
+          this.hass._themeWaiters = this.hass._themeWaiters || [];
+          this.hass._themeWaiters.push(this);
+        } else {
+          window.hassUtil.applyThemesOnElement(this, this.hass.themes || { default_theme: 'default', themes: {} }, stateObj.attributes.theme || 'default');
+        }
+      }
       this.updateStyles();
       if (this.startInterval) {
         // Added on 19.1.18
@@ -439,8 +454,10 @@ window.customUI = window.customUI || {
       throw e;
     }
   }
-};
-
+};</script>
+<script>
+window.customUI.VERSION = '20180216';</script>
+<script>
 window.customUI.init();</script>
 <dom-module id="ha-config-custom-ui">
   <template>
@@ -774,7 +791,7 @@ var DynamicWithExtra = function (_ref) {
         }
         if (!result) return null;
         var blacklist = extraBadge.blacklist_states;
-        if (blacklist) {
+        if (blacklist !== undefined) {
           if (!Array.isArray(blacklist)) {
             blacklist = [blacklist];
           }
@@ -939,11 +956,6 @@ var HaThemedSlider = function (_Polymer$Element) {
     key: 'ready',
     value: function ready() {
       _get(HaThemedSlider.prototype.__proto__ || Object.getPrototypeOf(HaThemedSlider.prototype), 'ready', this).call(this);
-      // If value was above 100 it wouldn't propagate to paper-slider while that had max=100
-      // Force-change the value so that paper-slider will update itself.
-      this.value = this.value + 1;
-      this.value = this.value - 1;
-      // Propagate the themed value upwards.
       this.disableOffWhenMin = !this._computeAttribute(this.theme, 'off_when_min', !this.disableOffWhenMin);
       this.computeEnabledThemedReportWhenNotChanged(this.theme, this.disableReportWhenNotChanged);
     }
@@ -1271,13 +1283,11 @@ var StateCardWithSlider = function (_Polymer$mixinBehavio) {
   }, {
     key: 'stateObjChanged',
     value: function stateObjChanged(stateObj, nameOn, valueName) {
-      if (this.isOn(stateObj, nameOn)) {
-        this.sliderValue = stateObj.attributes[valueName];
-      } else {
-        this.sliderValue = 0;
-      }
+      var obj = {
+        sliderValue: this.isOn(stateObj, nameOn) ? stateObj.attributes[valueName] : 0
+      };
       if (stateObj) {
-        var obj = {
+        Object.assign(obj, {
           minLineBreak: 0,
           maxLineBreak: 999,
           hideSlider: false,
@@ -1285,8 +1295,10 @@ var StateCardWithSlider = function (_Polymer$mixinBehavio) {
           lineTooLong: false,
           mode: stateObj.attributes.state_card_mode,
           stretchSlider: !!stateObj.attributes.stretch_slider
-        };
-        this.setProperties(obj);
+        });
+      }
+      this.setProperties(obj);
+      if (stateObj) {
         this._waitForLayout();
       }
     }
@@ -1499,7 +1511,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
             this._container.style.display = 'inline-block';
             var params = { display: 'inline-block' };
             if (this._container.classList.contains('state')) {
-              params.margin = 'var(--ha-badges-card-margin, 0 -6px)';
+              params.margin = 'var(--ha-badges-card-margin, 0)';
             }
             this.updateStyles(params);
           }
