@@ -244,6 +244,11 @@ window.customUI = window.customUI || {
       window.setTimeout(window.customUI.showVersion, 1000);
       return;
     }
+    if (hass && hass.config && hass.config.core && hass.config.core.version &&
+        hass.config.core.version.split('.')[1] > 65) {
+      // 0.66 introduced proper display if customui versions.
+      return;
+    }
     const about = window.customUI.lightOrShadow(devInfo, '.about');
     const secondP = about.querySelectorAll('p')[1];
     const version = document.createElement('p');
@@ -505,6 +510,14 @@ window.customUI = window.customUI || {
     /* eslint-disable no-console */
     console.log(`Loaded CustomUI ${window.customUI.VERSION}`);
     /* eslint-enable no-console */
+    if (!window.CUSTOM_UI_LIST) {
+      window.CUSTOM_UI_LIST = [];
+    }
+    window.CUSTOM_UI_LIST.push({
+      name: 'CustomUI',
+      version: window.customUI.VERSION,
+      url: 'https://github.com/andrey-git/home-assistant-custom-ui',
+    });
   },
 
   runHooks() {
