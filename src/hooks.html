@@ -341,34 +341,62 @@ window.customUI = window.customUI || {
       'partial-panel-resolver',
       'ha-panel-config']);
     if (!haPanelConfig) {
-      // DOM not ready. Wait 1 second.
-      window.setTimeout(window.customUI.updateConfigPanel, 1000);
+      // DOM not ready. Wait 100ms.
+      window.setTimeout(window.customUI.updateConfigPanel, 100);
       return;
     }
-    const ironPages = window.customUI.lightOrShadow(haPanelConfig, 'iron-pages');
-    if (!ironPages) return;
     const haConfigNavigation = window.customUI.getElementHierarchy(haPanelConfig, [
       'ha-config-dashboard',
       'ha-config-navigation']);
-    if (!haConfigNavigation) return;
-    if (ironPages.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
-      const haConfigCustomUi = document.createElement('ha-config-custom-ui');
-      haConfigCustomUi.isWide = window.customUI.domHost(ironPages).isWide;
-      haConfigCustomUi.setAttribute('page-name', 'customui');
-      ironPages.appendChild(haConfigCustomUi);
-      ironPages.addEventListener('iron-items-changed', () => {
-        if (window.location.pathname.startsWith('/config/customui')) {
-          ironPages.select('customui');
-        }
-      });
+    if (haConfigNavigation) {
+      // HaConfigNavigation started using localize on 21.01.2018
+      if (haConfigNavigation.localize && !haConfigNavigation.cuiPatch) {
+        haConfigNavigation.cuiPatch = true;
+        haConfigNavigation._originalComputeLoaded = haConfigNavigation._computeLoaded;
+        haConfigNavigation._originalComputeCaption = haConfigNavigation._computeCaption;
+        haConfigNavigation._originalComputeDescription = haConfigNavigation._computeDescription;
+        haConfigNavigation._computeLoaded = (hass, page) =>
+          page === 'customui' || haConfigNavigation._originalComputeLoaded(hass, page);
+        haConfigNavigation._computeCaption = (page, localize) =>
+          (page === 'customui' ? 'Custom UI' : haConfigNavigation._originalComputeCaption(page, localize));
+        haConfigNavigation._computeDescription = (page, localize) =>
+          (page === 'customui' ? 'SetUI tweaks' : haConfigNavigation._originalComputeDescription(page, localize));
+      }
+      if (!haConfigNavigation.pages.some(conf => conf === 'customui' || conf.domain === 'customui')) {
+        haConfigNavigation.push('pages', haConfigNavigation.localize ? 'customui' : {
+          domain: 'customui',
+          caption: 'Custom UI',
+          description: 'Set UI tweaks.',
+          loaded: true,
+        });
+      }
     }
-    if (!haConfigNavigation.pages.some(conf => conf.domain === 'customui')) {
-      haConfigNavigation.push('pages', {
-        domain: 'customui',
-        caption: 'Custom UI',
-        description: 'Set UI tweaks.',
-        loaded: true,
-      });
+    const getHaConfigCustomUi = () => {
+      const haConfigCustomUi = document.createElement('ha-config-custom-ui');
+      haConfigCustomUi.isWide = haPanelConfig.isWide;
+      haConfigCustomUi.setAttribute('page-name', 'customui');
+      return haConfigCustomUi;
+    };
+
+    const ironPages = window.customUI.lightOrShadow(haPanelConfig, 'iron-pages');
+    if (ironPages) {
+      if (ironPages.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
+        const haConfigCustomUi = getHaConfigCustomUi();
+        ironPages.appendChild(haConfigCustomUi);
+        ironPages.addEventListener('iron-items-changed', () => {
+          if (window.location.pathname.startsWith('/config/customui')) {
+            ironPages.select('customui');
+          }
+        });
+      }
+    } else {
+      const root = haPanelConfig.shadowRoot || haPanelConfig;
+      if (root.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
+        const haConfigCustomUi = getHaConfigCustomUi();
+        root.appendChild(haConfigCustomUi);
+      }
+      const visible = window.location.pathname.startsWith('/config/customui');
+      root.lastElementChild.style.display = visible ? '' : 'none';
     }
   },
 

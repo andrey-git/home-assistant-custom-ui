@@ -30,7 +30,7 @@
 </dom-module>
 
 <script>
-class HaConfigCustomUi extends Polymer.Element {
+class HaConfigCustomUi extends window.hassMixins.EventsMixin(Polymer.Element) {
   static get is() { return 'ha-config-custom-ui'; }
 
   static get properties() {
@@ -55,6 +55,7 @@ class HaConfigCustomUi extends Polymer.Element {
 
   _backTapped() {
     window.history.back();
+    this.fire('location-changed');
   }
 }
 customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);
