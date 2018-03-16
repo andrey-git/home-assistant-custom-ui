@@ -244,8 +244,9 @@ window.customUI = window.customUI || {
       window.setTimeout(window.customUI.showVersion, 1000);
       return;
     }
-    if (hass && hass.config && hass.config.core && hass.config.core.version &&
-        hass.config.core.version.split('.')[1] > 65) {
+    if (devInfo.hass && devInfo.hass.config && devInfo.hass.config.core &&
+        devInfo.hass.config.core.version &&
+        devInfo.hass.config.core.version.split('.')[1] > 65) {
       // 0.66 introduced proper display if customui versions.
       return;
     }
