@@ -116,7 +116,9 @@ window.customUI = window.customUI || {
       }
       const value = window.customUI.computeTemplate(
         template, hass, states, stateObj, attributes,
-        attributes[key], stateObj.state);
+        (stateObj.untemplated_attributes && stateObj.untemplated_attributes[key]) ||
+            attributes[key],
+        stateObj.untemplated_state || stateObj.state);
       // In case of null don't set the value.
       if (value === null) return;
       newAttributes[key] = value;
@@ -142,10 +144,12 @@ window.customUI = window.customUI || {
       if (Object.prototype.hasOwnProperty.call(newAttributes, 'state')) {
         if (newAttributes.state !== null) {
           result.state = String(newAttributes.state);
+          result.untemplated_state = stateObj.state;
         }
       }
       if (Object.prototype.hasOwnProperty.call(newAttributes, '_stateDisplay')) {
         result._stateDisplay = newAttributes._stateDisplay;
+        result.untemplated_stateDisplay = stateObj._stateDisplay;
       }
       window.customUI._setKeep(result, !hasGlobal);
       return result;
@@ -184,6 +188,7 @@ window.customUI = window.customUI || {
       entity_id: stateObj.entity_id,
       state: stateObj.state,
       attributes: Object.assign({}, stateObj.attributes, attributes),
+      untemplated_attributes: stateObj.attributes,
       last_changed: stateObj.last_changed,
     };
   },
