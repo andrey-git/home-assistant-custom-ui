@@ -1,7 +1,9 @@
 ## Changelog
 
-*Note: Update to at least 20180126 required for HA 0.62+*
-*Note: Update to at least 20171227 required for HA 0.61*
+#### 2018-03-30
+*   Prevent template from being applied twice. Fixes #110
+*   Use new system to display version info.
+*   Fix customui config panel. Fixes #122
 
 #### 2018-02-16
 Bugfixes:
