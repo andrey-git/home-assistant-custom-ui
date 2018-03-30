@@ -573,7 +573,7 @@ window.customUI.init();
     <app-header-layout has-scrolling-region="">
       <app-header slot="header" fixed="">
         <app-toolbar>
-          <paper-icon-button icon="mdi:arrow-left" on-tap="_backTapped"></paper-icon-button>
+          <paper-icon-button icon="mdi:arrow-left" on-click="_backHandler"></paper-icon-button>
           <div main-title="">Custom UI settings</div>
         </app-toolbar>
       </app-header>
@@ -614,7 +614,7 @@ class HaConfigCustomUi extends window.hassMixins.EventsMixin(Polymer.Element) {
     window.customUI.setName(name);
   }
 
-  _backTapped() {
+  _backHandler() {
     window.history.back();
     this.fire('location-changed');
   }
@@ -760,7 +760,7 @@ customElements.define(DynamicElement.is, DynamicElement);
           <div class="control-wrapper">
             <dynamic-element class="flex" state-obj="[[stateObj]]" hass="[[hass]]" element-name="[[controlElement]]"></dynamic-element>
             <template is="dom-if" if="[[isConfirmControls(stateObj)]]">
-              <div id="overlay" on-tap="tapHandler">
+              <div id="overlay" on-click="clickHandler">
                 <template is="dom-if" if="[[stateObj.attributes.confirm_controls_show_lock]]">
                   <iron-icon id="lock" class$="[[controlElement]]" icon="mdi:lock-outline"></iron-icon>
                 </template>
@@ -874,7 +874,7 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
         stateObj.attributes.confirm_controls_show_lock;
   }
 
-  tapHandler(e) {
+  clickHandler(e) {
     this.$$('#overlay').style.pointerEvents = 'none';
     const lock = this.$$('#lock');
     if (lock) {
@@ -1082,7 +1082,7 @@ customElements.define(HaThemedSlider.is, HaThemedSlider);
       </div>
       <template is="dom-if" if="[[showSlider]]" restamp="">
         <div class="horizontal layout flex-auto end-justified second-line">
-          <ha-themed-slider id="slider" max="[[max]]" min="[[min]]" theme="[[stateObj.attributes.slider_theme]]" is-on="[[isOn(stateObj, nameOn)]]" value="{{sliderValue}}" disable-off-when-min="{{disableOffWhenMin}}" on-change="sliderChanged" on-tap="stopPropagation">
+          <ha-themed-slider id="slider" max="[[max]]" min="[[min]]" theme="[[stateObj.attributes.slider_theme]]" is-on="[[isOn(stateObj, nameOn)]]" value="{{sliderValue}}" disable-off-when-min="{{disableOffWhenMin}}" on-change="sliderChanged" on-click="stopPropagation">
           </ha-themed-slider>
           <template is="dom-if" if="[[!breakSlider]]">
             <dynamic-with-extra hass="[[hass]]" state-obj="[[stateObj]]" control-element="[[controlElement]]" in-dialog="[[inDialog]]"></dynamic-with-extra>

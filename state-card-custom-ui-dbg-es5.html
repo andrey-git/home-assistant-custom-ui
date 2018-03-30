@@ -511,7 +511,7 @@ window.customUI.init();</script>
     <app-header-layout has-scrolling-region="">
       <app-header slot="header" fixed="">
         <app-toolbar>
-          <paper-icon-button icon="mdi:arrow-left" on-tap="_backTapped"></paper-icon-button>
+          <paper-icon-button icon="mdi:arrow-left" on-click="_backHandler"></paper-icon-button>
           <div main-title="">Custom UI settings</div>
         </app-toolbar>
       </app-header>
@@ -559,8 +559,8 @@ var HaConfigCustomUi = function (_window$hassMixins$Ev) {
       window.customUI.setName(name);
     }
   }, {
-    key: '_backTapped',
-    value: function _backTapped() {
+    key: '_backHandler',
+    value: function _backHandler() {
       window.history.back();
       this.fire('location-changed');
     }
@@ -766,7 +766,7 @@ customElements.define(DynamicElement.is, DynamicElement);</script>
           <div class="control-wrapper">
             <dynamic-element class="flex" state-obj="[[stateObj]]" hass="[[hass]]" element-name="[[controlElement]]"></dynamic-element>
             <template is="dom-if" if="[[isConfirmControls(stateObj)]]">
-              <div id="overlay" on-tap="tapHandler">
+              <div id="overlay" on-click="clickHandler">
                 <template is="dom-if" if="[[stateObj.attributes.confirm_controls_show_lock]]">
                   <iron-icon id="lock" class$="[[controlElement]]" icon="mdi:lock-outline"></iron-icon>
                 </template>
@@ -886,8 +886,8 @@ var DynamicWithExtra = function (_ref) {
       return stateObj.attributes.confirm_controls || stateObj.attributes.confirm_controls_show_lock;
     }
   }, {
-    key: 'tapHandler',
-    value: function tapHandler(e) {
+    key: 'clickHandler',
+    value: function clickHandler(e) {
       var _this3 = this;
 
       this.$$('#overlay').style.pointerEvents = 'none';
@@ -1157,7 +1157,7 @@ customElements.define(HaThemedSlider.is, HaThemedSlider);</script>
       </div>
       <template is="dom-if" if="[[showSlider]]" restamp="">
         <div class="horizontal layout flex-auto end-justified second-line">
-          <ha-themed-slider id="slider" max="[[max]]" min="[[min]]" theme="[[stateObj.attributes.slider_theme]]" is-on="[[isOn(stateObj, nameOn)]]" value="{{sliderValue}}" disable-off-when-min="{{disableOffWhenMin}}" on-change="sliderChanged" on-tap="stopPropagation">
+          <ha-themed-slider id="slider" max="[[max]]" min="[[min]]" theme="[[stateObj.attributes.slider_theme]]" is-on="[[isOn(stateObj, nameOn)]]" value="{{sliderValue}}" disable-off-when-min="{{disableOffWhenMin}}" on-change="sliderChanged" on-click="stopPropagation">
           </ha-themed-slider>
           <template is="dom-if" if="[[!breakSlider]]">
             <dynamic-with-extra hass="[[hass]]" state-obj="[[stateObj]]" control-element="[[controlElement]]" in-dialog="[[inDialog]]"></dynamic-with-extra>

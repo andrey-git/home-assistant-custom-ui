@@ -24,5 +24,6 @@ Please ask questions and post feature requests in the [forum](https://community.
 *   Prevent template from being applied twice. Fixes #110
 *   Use new system to display version info.
 *   Fix customui config panel. Fixes #122
+*   Prevent more-info from comming up when touching slider or lock.
 
 [Full Changelog](CHANGELOG.md)
