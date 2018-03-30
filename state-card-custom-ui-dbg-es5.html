@@ -104,7 +104,7 @@ window.customUI = window.customUI || {
       if (template.match(/\b(entities|hass)\b/)) {
         hasGlobal = true;
       }
-      var value = window.customUI.computeTemplate(template, hass, states, stateObj, attributes, attributes[key], stateObj.state);
+      var value = window.customUI.computeTemplate(template, hass, states, stateObj, attributes, stateObj.untemplated_attributes && stateObj.untemplated_attributes[key] || attributes[key], stateObj.untemplated_state || stateObj.state);
       // In case of null don't set the value.
       if (value === null) return;
       newAttributes[key] = value;
@@ -130,10 +130,12 @@ window.customUI = window.customUI || {
       if (Object.prototype.hasOwnProperty.call(newAttributes, 'state')) {
         if (newAttributes.state !== null) {
           result.state = String(newAttributes.state);
+          result.untemplated_state = stateObj.state;
         }
       }
       if (Object.prototype.hasOwnProperty.call(newAttributes, '_stateDisplay')) {
         result._stateDisplay = newAttributes._stateDisplay;
+        result.untemplated_stateDisplay = stateObj._stateDisplay;
       }
       window.customUI._setKeep(result, !hasGlobal);
       return result;
@@ -168,6 +170,7 @@ window.customUI = window.customUI || {
       entity_id: stateObj.entity_id,
       state: stateObj.state,
       attributes: Object.assign({}, stateObj.attributes, attributes),
+      untemplated_attributes: stateObj.attributes,
       last_changed: stateObj.last_changed
     };
   },
@@ -211,6 +214,10 @@ window.customUI = window.customUI || {
     if (devInfo === null) {
       // DOM not ready. Wait 1 second.
       window.setTimeout(window.customUI.showVersion, 1000);
+      return;
+    }
+    if (devInfo.hass && devInfo.hass.config && devInfo.hass.config.core && devInfo.hass.config.core.version && devInfo.hass.config.core.version.split('.')[1] > 65) {
+      // 0.66 introduced proper display if customui versions.
       return;
     }
     var about = window.customUI.lightOrShadow(devInfo, '.about');
@@ -294,34 +301,65 @@ window.customUI = window.customUI || {
     if (!window.location.pathname.startsWith('/config')) return;
     var haPanelConfig = window.customUI.getElementHierarchy(document, ['home-assistant', 'home-assistant-main', 'partial-panel-resolver', 'ha-panel-config']);
     if (!haPanelConfig) {
-      // DOM not ready. Wait 1 second.
-      window.setTimeout(window.customUI.updateConfigPanel, 1000);
+      // DOM not ready. Wait 100ms.
+      window.setTimeout(window.customUI.updateConfigPanel, 100);
       return;
     }
-    var ironPages = window.customUI.lightOrShadow(haPanelConfig, 'iron-pages');
-    if (!ironPages) return;
     var haConfigNavigation = window.customUI.getElementHierarchy(haPanelConfig, ['ha-config-dashboard', 'ha-config-navigation']);
-    if (!haConfigNavigation) return;
-    if (ironPages.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
-      var haConfigCustomUi = document.createElement('ha-config-custom-ui');
-      haConfigCustomUi.isWide = window.customUI.domHost(ironPages).isWide;
-      haConfigCustomUi.setAttribute('page-name', 'customui');
-      ironPages.appendChild(haConfigCustomUi);
-      ironPages.addEventListener('iron-items-changed', function () {
-        if (window.location.pathname.startsWith('/config/customui')) {
-          ironPages.select('customui');
-        }
-      });
+    if (haConfigNavigation) {
+      // HaConfigNavigation started using localize on 21.01.2018
+      if (haConfigNavigation.localize && !haConfigNavigation.cuiPatch) {
+        haConfigNavigation.cuiPatch = true;
+        haConfigNavigation._originalComputeLoaded = haConfigNavigation._computeLoaded;
+        haConfigNavigation._originalComputeCaption = haConfigNavigation._computeCaption;
+        haConfigNavigation._originalComputeDescription = haConfigNavigation._computeDescription;
+        haConfigNavigation._computeLoaded = function (hass, page) {
+          return page === 'customui' || haConfigNavigation._originalComputeLoaded(hass, page);
+        };
+        haConfigNavigation._computeCaption = function (page, localize) {
+          return page === 'customui' ? 'Custom UI' : haConfigNavigation._originalComputeCaption(page, localize);
+        };
+        haConfigNavigation._computeDescription = function (page, localize) {
+          return page === 'customui' ? 'SetUI tweaks' : haConfigNavigation._originalComputeDescription(page, localize);
+        };
+      }
+      if (!haConfigNavigation.pages.some(function (conf) {
+        return conf === 'customui' || conf.domain === 'customui';
+      })) {
+        haConfigNavigation.push('pages', haConfigNavigation.localize ? 'customui' : {
+          domain: 'customui',
+          caption: 'Custom UI',
+          description: 'Set UI tweaks.',
+          loaded: true
+        });
+      }
     }
-    if (!haConfigNavigation.pages.some(function (conf) {
-      return conf.domain === 'customui';
-    })) {
-      haConfigNavigation.push('pages', {
-        domain: 'customui',
-        caption: 'Custom UI',
-        description: 'Set UI tweaks.',
-        loaded: true
-      });
+    var getHaConfigCustomUi = function getHaConfigCustomUi() {
+      var haConfigCustomUi = document.createElement('ha-config-custom-ui');
+      haConfigCustomUi.isWide = haPanelConfig.isWide;
+      haConfigCustomUi.setAttribute('page-name', 'customui');
+      return haConfigCustomUi;
+    };
+
+    var ironPages = window.customUI.lightOrShadow(haPanelConfig, 'iron-pages');
+    if (ironPages) {
+      if (ironPages.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
+        var haConfigCustomUi = getHaConfigCustomUi();
+        ironPages.appendChild(haConfigCustomUi);
+        ironPages.addEventListener('iron-items-changed', function () {
+          if (window.location.pathname.startsWith('/config/customui')) {
+            ironPages.select('customui');
+          }
+        });
+      }
+    } else {
+      var root = haPanelConfig.shadowRoot || haPanelConfig;
+      if (root.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
+        var _haConfigCustomUi = getHaConfigCustomUi();
+        root.appendChild(_haConfigCustomUi);
+      }
+      var visible = window.location.pathname.startsWith('/config/customui');
+      root.lastElementChild.style.display = visible ? '' : 'none';
     }
   },
   installStatesHook: function installStatesHook() {
@@ -424,6 +462,14 @@ window.customUI = window.customUI || {
     /* eslint-disable no-console */
     console.log('Loaded CustomUI ' + window.customUI.VERSION);
     /* eslint-enable no-console */
+    if (!window.CUSTOM_UI_LIST) {
+      window.CUSTOM_UI_LIST = [];
+    }
+    window.CUSTOM_UI_LIST.push({
+      name: 'CustomUI',
+      version: window.customUI.VERSION,
+      url: 'https://github.com/andrey-git/home-assistant-custom-ui'
+    });
   },
   runHooks: function runHooks() {
     window.customUI.fixGroupTitles();
@@ -456,7 +502,7 @@ window.customUI = window.customUI || {
   }
 };</script>
 <script>
-window.customUI.VERSION = '20180216';</script>
+window.customUI.VERSION = '20180330';</script>
 <script>
 window.customUI.init();</script>
 <dom-module id="ha-config-custom-ui">
@@ -492,8 +538,8 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-var HaConfigCustomUi = function (_Polymer$Element) {
-  _inherits(HaConfigCustomUi, _Polymer$Element);
+var HaConfigCustomUi = function (_window$hassMixins$Ev) {
+  _inherits(HaConfigCustomUi, _window$hassMixins$Ev);
 
   function HaConfigCustomUi() {
     _classCallCheck(this, HaConfigCustomUi);
@@ -516,6 +562,7 @@ var HaConfigCustomUi = function (_Polymer$Element) {
     key: '_backTapped',
     value: function _backTapped() {
       window.history.back();
+      this.fire('location-changed');
     }
   }], [{
     key: 'is',
@@ -537,7 +584,7 @@ var HaConfigCustomUi = function (_Polymer$Element) {
   }]);
 
   return HaConfigCustomUi;
-}(Polymer.Element);
+}(window.hassMixins.EventsMixin(Polymer.Element));
 
 customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);</script>
 <script>var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
