@@ -8,7 +8,7 @@
         <app-toolbar>
           <paper-icon-button
             icon='mdi:arrow-left'
-            on-tap='_backTapped'
+            on-click='_backHandler'
           ></paper-icon-button>
           <div main-title>Custom UI settings</div>
         </app-toolbar>
@@ -53,7 +53,7 @@ class HaConfigCustomUi extends window.hassMixins.EventsMixin(Polymer.Element) {
     window.customUI.setName(name);
   }
 
-  _backTapped() {
+  _backHandler() {
     window.history.back();
     this.fire('location-changed');
   }

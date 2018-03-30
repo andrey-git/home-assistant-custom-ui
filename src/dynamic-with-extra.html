@@ -62,7 +62,7 @@
           <div class="control-wrapper">
             <dynamic-element class='flex' state-obj="[[stateObj]]" hass='[[hass]]' element-name='[[controlElement]]'></dynamic-element>
             <template is='dom-if' if='[[isConfirmControls(stateObj)]]'>
-              <div id="overlay" on-tap='tapHandler'>
+              <div id="overlay" on-click='clickHandler'>
                 <template is='dom-if' if='[[stateObj.attributes.confirm_controls_show_lock]]'>
                   <iron-icon id="lock" class$="[[controlElement]]" icon="mdi:lock-outline"></iron-icon>
                 </template>
@@ -176,7 +176,7 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
         stateObj.attributes.confirm_controls_show_lock;
   }
 
-  tapHandler(e) {
+  clickHandler(e) {
     this.$$('#overlay').style.pointerEvents = 'none';
     const lock = this.$$('#lock');
     if (lock) {

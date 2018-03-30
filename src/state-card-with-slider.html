@@ -69,7 +69,7 @@
             value='{{sliderValue}}'
             disable-off-when-min='{{disableOffWhenMin}}'
             on-change='sliderChanged'
-            on-tap='stopPropagation'>
+            on-click='stopPropagation'>
           </ha-themed-slider>
           <template is='dom-if' if='[[!breakSlider]]'>
             <dynamic-with-extra hass='[[hass]]' state-obj='[[stateObj]]' control-element='[[controlElement]]' in-dialog='[[inDialog]]'></dynamic-with-extra>
