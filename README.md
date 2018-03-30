@@ -15,6 +15,9 @@ See [activating](docs/activating.md)
 ## Features
 See [features](docs/features.md)
 
+## Support
+Please ask questions and post feature requests in the [forum](https://community.home-assistant.io/t/customui-discussion-thread/48694). Post bugreports here on github in [issues](https://github.com/andrey-git/home-assistant-custom-ui/issues/)
+
 ## Changelog
 
 #### 2018-03-30
