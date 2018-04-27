@@ -20,6 +20,9 @@ Please ask questions and post feature requests in the [forum](https://community.
 
 ## Changelog
 
+#### 2018-04-27
+*   Add support for `icon_color` attribute to force-set icon color of any entity.
+
 #### 2018-03-30
 *   Prevent template from being applied twice. Fixes #110
 *   Use new system to display version info.

@@ -2,13 +2,15 @@
 
 *   [Customizer component](#customizer-component)
 *   [CustomUI panel](#customui-panel)
+*   [Global Features](#global-features)
+    +   [Hiding entities from default view tab (HA 0.62+)](#hiding-entities-from-default-view-tab)
+    +   [Template attributes [New in 20170927]](#template-attributes)
+    +   [Icon Color](#icon-color)
 *   [Features available for all domains](#features-available-for-all-domains)
     +   [Context-aware attributes](#context-aware-attributes)
-    +   [Template attributes [New in 20170927]](#template-attributes)
     +   [Badges in state cards](#badges-in-state-cards)
     +   [Per entity theming (Requires HA 0.50+)](#per-entity-theming)
     +   [Secondary custom UI](#secondary-customui)
-    +   [Hiding entities from default view tab (HA 0.62+)](#hiding-entities-from-default-view-tab)
 *   [Features available for almost all domains](#features-available-for-almost-all-domains)
     +   [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
 *   [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
@@ -39,13 +41,17 @@ Provides the following features:
 Use it to set device name.
 
 In HA 0.53+ is added automatically to configuration panel.
-## Features available for all domains
 
-### Context-aware attributes
-![context_aware](https://cloud.githubusercontent.com/assets/5478779/26284053/45fbc000-3e3b-11e7-8d4a-56ef0d5e6c60.png)
+## Global Features
+Those features do not require setting `custom_ui_state_card: state-card-custom-ui`
+on any entity. Just [loading](activating.md) is enough.
 
-You can use context-aware attributes to give different names/attributes for the same entity in different groups, views, or devices.
-See [context-aware.md](context-aware.md)
+### Hiding entities from default view tab
+Requires HA 0.62+
+
+If you don't have a `default_view` view defined you still hide some entities from the Home tab by setting `hide_in_default_view: true` attribute.
+
+If applied to a View (a group with `view: true`) `hide_in_default_view` will hide everything under that view (not just the view group itself).
 
 ### Template attributes
 You can set entity's attributes or state using JavaScript templates. See [Templates](templates.md) for more info.
@@ -59,6 +65,30 @@ homeassistant:
         state: if (state === 'on') return 'Active'; else return state;
 ```
 This is very powerful feature that can do a lot of cool things, but it could also have performance implications.
+
+### Icon Color
+Starting from version 2018-04-27 you can set an icon color by specifying `icon_color`
+attribute which was removed from core in HA 0.66
+
+For example:
+```yaml
+homeassistant:
+  customize:
+    light.bed_light:
+      icon_color: green
+```
+
+The color could take any CSS color value.
+
+Note that the color will be applied as-is and it won't be affected by the `brightness` attribute.
+
+## Features available for all domains
+
+### Context-aware attributes
+![context_aware](https://cloud.githubusercontent.com/assets/5478779/26284053/45fbc000-3e3b-11e7-8d4a-56ef0d5e6c60.png)
+
+You can use context-aware attributes to give different names/attributes for the same entity in different groups, views, or devices.
+See [context-aware.md](context-aware.md)
 
 ### Badges in state cards
 ![badges](https://cloud.githubusercontent.com/assets/5478779/26284132/b4a2dbe6-3e3c-11e7-9bb5-0441d30342bf.png)
@@ -183,6 +213,9 @@ light.yard:
   theme: green_example
 ```
 
+Starting from version 2018-01-26 per-entity theming can also affect top-of-the-page
+badges.
+
 ### Secondary customUI
 ![secondary_custom_ui](https://user-images.githubusercontent.com/5478779/30005196-a8d8bd2a-90e5-11e7-9f4c-a787a1227076.png)
 
@@ -195,13 +228,6 @@ homeassistant:
     alarm_control_panel.alarm:
       state_card_custom_ui_secondary: state-card-custom_alarm
 ```
-
-### Hiding entities from default view tab
-Requires HA 0.62+
-
-If you don't have a `default_view` view defined you still hide some entities from the Home tab by setting `hide_in_default_view: true` attribute.
-
-If applied to a View (a group with `view: true`) `hide_in_default_view` will hide everything under that view (not just the view group itself).
 
 ## Features available for almost all domains.
 

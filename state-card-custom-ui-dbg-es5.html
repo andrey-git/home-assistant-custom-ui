@@ -416,6 +416,9 @@ window.customUI = window.customUI || {
       return !excludes[entityId];
     };
   },
+
+
+  // Allows theming "regular" top badges.
   installHaStateLabelBadge: function installHaStateLabelBadge() {
     var haStateLabelBadge = customElements.get('ha-state-label-badge');
     if (!haStateLabelBadge || !haStateLabelBadge.prototype.stateChanged) return;
@@ -432,8 +435,26 @@ window.customUI = window.customUI || {
       }
       this.updateStyles();
       if (this.startInterval) {
-        // Added on 19.1.18
+        // Added on 19.1.2018
         this.startInterval(stateObj);
+      }
+    };
+  },
+  installStateBadge: function installStateBadge() {
+    var stateBadge = customElements.get('state-badge');
+    if (!stateBadge || !stateBadge.prototype.updateIconAppearance) return;
+    var originalUpdateIconAppearance = stateBadge.prototype.updateIconAppearance;
+    // Use named function to preserve 'this'.
+    stateBadge.prototype.updateIconAppearance = function customUpdateIconAppearance(stateObj) {
+      if (stateObj.attributes.icon_color && !stateObj.attributes.entity_picture) {
+        this.style.backgroundImage = '';
+        Object.assign(this.$.icon.style, {
+          display: 'inline',
+          color: stateObj.attributes.icon_color,
+          filter: ''
+        });
+      } else {
+        originalUpdateIconAppearance.call(this, stateObj);
       }
     };
   },
@@ -443,6 +464,7 @@ window.customUI = window.customUI || {
     window.customUI.installPartialCards();
     window.customUI.installStatesHook();
     window.customUI.installHaStateLabelBadge();
+    window.customUI.installStateBadge();
   },
   init: function init() {
     if (window.customUI.initDone) return;
@@ -502,7 +524,7 @@ window.customUI = window.customUI || {
   }
 };</script>
 <script>
-window.customUI.VERSION = '20180330';</script>
+window.customUI.VERSION = '20180427';</script>
 <script>
 window.customUI.init();</script>
 <dom-module id="ha-config-custom-ui">
