@@ -78,9 +78,9 @@ homeassistant:
       icon_color: green
 ```
 
-The color could take any CSS color value.
+The color could take any CSS color value. For example: `#FFACAC`, `red`, `rgba(10, 20, 30, 0.5)` etc.
 
-Note that the color will be applied as-is and it won't be affected by the `brightness` attribute.
+Note that the color will be applied as-is and it won't be affected by the `brightness` attribute.h
 
 ## Features available for all domains
 
