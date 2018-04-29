@@ -1,5 +1,9 @@
 ## Changelog
 
+#### 2018-04-29
+*   Add support for `action_name` attribute that can be used to change the displayed action on scene and script cards.
+*   Make confirmable controls protect slider on 2nd line
+
 #### 2018-04-27
 *   Add support for `icon_color` attribute to force-set icon color of any entity.
 

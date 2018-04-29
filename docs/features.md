@@ -6,6 +6,7 @@
     +   [Hiding entities from default view tab (HA 0.62+)](#hiding-entities-from-default-view-tab)
     +   [Template attributes [New in 20170927]](#template-attributes)
     +   [Icon Color](#icon-color)
+    +   [Action name](#action-name)
 *   [Features available for all domains](#features-available-for-all-domains)
     +   [Context-aware attributes](#context-aware-attributes)
     +   [Badges in state cards](#badges-in-state-cards)
@@ -81,6 +82,19 @@ homeassistant:
 The color could take any CSS color value. For example: `#FFACAC`, `red`, `rgba(10, 20, 30, 0.5)` etc.
 
 Note that the color will be applied as-is and it won't be affected by the `brightness` attribute.h
+
+### Action name
+Starting from version 2018-04-29 you change the displayed action name by specifying `action_name` attribute.
+
+Action name is the button used to activate scenes and to execute non-interruptible scripts.
+
+For example:
+```yaml
+homeassistant:
+  customize:
+    scene.dark:
+      action_name: Darken
+```
 
 ## Features available for all domains
 

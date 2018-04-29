@@ -418,6 +418,25 @@ window.customUI = window.customUI || {
   },
 
 
+  // Allows changing the 'Execute' / 'Activate' text on script/scene cards.
+  installActionName: function installActionName(elementName) {
+    var klass = customElements.get(elementName);
+    if (!klass || !klass.prototype) return;
+    Object.defineProperty(klass.prototype, 'localize', {
+      get: function get() {
+        function customLocalize(v) {
+          if (this.stateObj && this.stateObj.attributes && this.stateObj.attributes.action_name) {
+            return this.stateObj.attributes.action_name;
+          }
+          return this.__data.localize(v);
+        }
+        return customLocalize;
+      },
+      set: function set() {}
+    });
+  },
+
+
   // Allows theming "regular" top badges.
   installHaStateLabelBadge: function installHaStateLabelBadge() {
     var haStateLabelBadge = customElements.get('ha-state-label-badge');
@@ -465,6 +484,8 @@ window.customUI = window.customUI || {
     window.customUI.installStatesHook();
     window.customUI.installHaStateLabelBadge();
     window.customUI.installStateBadge();
+    window.customUI.installActionName('state-card-scene');
+    window.customUI.installActionName('state-card-script');
   },
   init: function init() {
     if (window.customUI.initDone) return;
@@ -524,7 +545,7 @@ window.customUI = window.customUI || {
   }
 };</script>
 <script>
-window.customUI.VERSION = '20180427';</script>
+window.customUI.VERSION = '20180429';</script>
 <script>
 window.customUI.init();</script>
 <dom-module id="ha-config-custom-ui">
@@ -754,6 +775,7 @@ customElements.define(DynamicElement.is, DynamicElement);</script>
         top: 0;
         bottom: 0;
         text-align: right;
+        z-index: 1;  
       }
       #lock {
         margin-top: 8px;
