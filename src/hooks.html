@@ -465,6 +465,25 @@ window.customUI = window.customUI || {
     };
   },
 
+  // Allows changing the 'Execute' / 'Activate' text on script/scene cards.
+  installActionName(elementName) {
+    const klass = customElements.get(elementName);
+    if (!klass || !klass.prototype) return;
+    Object.defineProperty(klass.prototype, 'localize', {
+      get() {
+        function customLocalize(v) {
+          if (this.stateObj && this.stateObj.attributes &&
+              this.stateObj.attributes.action_name) {
+            return this.stateObj.attributes.action_name;
+          }
+          return this.__data.localize(v);
+        }
+        return customLocalize;
+      },
+      set() {},
+    });
+  },
+
   // Allows theming "regular" top badges.
   installHaStateLabelBadge() {
     const haStateLabelBadge = customElements.get('ha-state-label-badge');
@@ -517,6 +536,8 @@ window.customUI = window.customUI || {
     window.customUI.installStatesHook();
     window.customUI.installHaStateLabelBadge();
     window.customUI.installStateBadge();
+    window.customUI.installActionName('state-card-scene');
+    window.customUI.installActionName('state-card-script');
   },
 
   init() {
