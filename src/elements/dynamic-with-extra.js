@@ -1,8 +1,15 @@
-<!-- dynamic-element should be loaded syncronously so correct size can be measured on startup. -->
-<link rel="import" href="dynamic-element.html">
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import applyThemesOnElement from '../../home-assistant-polymer/src/common/dom/apply_themes_on_element.js';
 
-<dom-module id="dynamic-with-extra">
-  <template>
+import './dynamic-element.js';
+import '../utils/hooks.js';
+
+/**
+ * @extends HTMLElement
+ */
+class DynamicWithExtra extends customElements.get('state-card-display') {
+  static get template() {
+    return html`
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
     <style>
       :host {
@@ -26,7 +33,7 @@
         top: 0;
         bottom: 0;
         text-align: right;
-        z-index: 1;  
+        z-index: 1;
       }
       #lock {
         margin-top: 8px;
@@ -43,7 +50,7 @@
         --ha-label-badge-font-size: 1.2em;
       }
       .state {
-        @apply(--paper-font-body1);
+        @apply --paper-font-body1;
         color: var(--primary-text-color);
         margin-left: 16px;
         text-align: right;
@@ -61,7 +68,12 @@
       <template is='dom-if' if='[[_showControl(inDialog, stateObj)]]'>
         <template is='dom-if' if='[[controlElement]]'>
           <div class="control-wrapper">
-            <dynamic-element class='flex' state-obj="[[stateObj]]" hass='[[hass]]' element-name='[[controlElement]]'></dynamic-element>
+            <dynamic-element
+                class='flex'
+                state-obj="[[stateObj]]"
+                hass='[[hass]]'
+                element-name='[[controlElement]]'>
+            </dynamic-element>
             <template is='dom-if' if='[[isConfirmControls(stateObj)]]'>
               <div id="overlay" on-click='clickHandler'>
                 <template is='dom-if' if='[[stateObj.attributes.confirm_controls_show_lock]]'>
@@ -76,12 +88,8 @@
         </template>
       </template>
     </div>
-  </template>
-</dom-module>
-
-<script>
-class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
-  static get is() { return 'dynamic-with-extra'; }
+    `;
+  }
 
   static get properties() {
     return {
@@ -165,9 +173,6 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
   }
 
   computeStateDisplay(stateObj) {
-    if (window.hassUtil.computeStateState) {
-      return window.hassUtil.computeStateState(stateObj);
-    }
     // haLocalize removed in 0.61
     return super.computeStateDisplay(this.haLocalize || this.localize, stateObj);
   }
@@ -178,14 +183,14 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
   }
 
   clickHandler(e) {
-    this.$$('#overlay').style.pointerEvents = 'none';
-    const lock = this.$$('#lock');
+    this.root.querySelector('#overlay').style.pointerEvents = 'none';
+    const lock = this.root.querySelector('#lock');
     if (lock) {
       lock.icon = 'mdi:lock-open-outline';
       lock.style.opacity = '0.1';
     }
     window.setTimeout(() => {
-      this.$$('#overlay').style.pointerEvents = '';
+      this.root.querySelector('#overlay').style.pointerEvents = '';
       if (lock) {
         lock.icon = 'mdi:lock-outline';
         lock.style.opacity = '';
@@ -196,7 +201,7 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
 
   applyThemes(hass, element, stateObj) {
     const themeName = stateObj.attributes.theme || 'default';
-    window.hassUtil.applyThemesOnElement(
+    applyThemesOnElement(
       element, hass.themes || { default_theme: 'default', themes: {} }, themeName);
   }
 
@@ -207,5 +212,4 @@ class DynamicWithExtra extends (StateCardDisplay || Polymer.Element) {
       });
   }
 }
-customElements.define(DynamicWithExtra.is, DynamicWithExtra);
-</script>
+customElements.define('dynamic-with-extra', DynamicWithExtra);

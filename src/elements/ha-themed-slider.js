@@ -1,5 +1,11 @@
-<dom-module id='ha-themed-slider'>
-  <template>
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+
+/**
+ * @extends HTMLElement
+ */
+class HaThemedSlider extends Polymer.Element {
+  static get template() {
+    return html`
     <style>
       :host {
         margin: var(--ha-themed-slider-margin, initial);
@@ -27,12 +33,8 @@
          class$='[[computeClass(theme, isOn, _themedMin)]]' value='[[value]]'
          on-change='valueChanged'>
     </paper-slider>
-  </template>
-</dom-module>
-
-<script>
-class HaThemedSlider extends Polymer.Element {
-  static get is() { return 'ha-themed-slider'; }
+    `;
+  }
 
   ready() {
     super.ready();
@@ -120,5 +122,4 @@ class HaThemedSlider extends Polymer.Element {
     this.value = ev.target.value;
   }
 }
-customElements.define(HaThemedSlider.is, HaThemedSlider);
-</script>
+customElements.define('ha-themed-slider', HaThemedSlider);

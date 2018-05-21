@@ -1,7 +1,9 @@
-<script>
-class DynamicElement extends Polymer.Element {
-  static get is() { return 'dynamic-element'; }
+import dynamicContentUpdater from '../../home-assistant-polymer/src/common/dom/dynamic_content_updater.js';
 
+/**
+ * @extends HTMLElement
+ */
+class DynamicElement extends Polymer.Element {
   static get properties() {
     return {
       hass: Object,
@@ -22,10 +24,10 @@ class DynamicElement extends Polymer.Element {
   }
 
   observerFunc(hass, stateObj, elementName, inDialog) {
-    window.hassUtil.dynamicContentUpdater(
-      this, elementName ? elementName.toUpperCase() : 'DIV',
+    dynamicContentUpdater(
+      this,
+      elementName ? elementName.toUpperCase() : 'DIV',
       { hass, stateObj, inDialog });
   }
 }
-customElements.define(DynamicElement.is, DynamicElement);
-</script>
+customElements.define('dynamic-element', DynamicElement);

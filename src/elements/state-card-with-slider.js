@@ -1,10 +1,14 @@
-<link rel="import" href="cui-base-element.html">
-<link rel="import" href="dynamic-with-extra.html">
-<link rel="import" href="ha-themed-slider.html">
-<link rel="import" href="hooks.html">
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import CuiBaseElement from './cui-base-element.js';
+import './dynamic-with-extra.js';
+import './ha-themed-slider.js';
 
-<dom-module id="state-card-with-slider">
-  <template>
+/**
+ * @extends HTMLElement
+ */
+class StateCardWithSlider extends CuiBaseElement {
+  static get template() {
+    return html`
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors"></style>
     <style>
       #container {
@@ -77,13 +81,8 @@
         </div>
       </template>
     </div>
-  </template>
-</dom-module>
-
-<script>
-class StateCardWithSlider extends Polymer.mixinBehaviors(
-  [Polymer.IronResizableBehavior], CuiBaseElement) {
-  static get is() { return 'state-card-with-slider'; }
+    `;
+  }
 
   static get properties() {
     return {
@@ -134,12 +133,14 @@ class StateCardWithSlider extends Polymer.mixinBehaviors(
 
   connectedCallback() {
     super.connectedCallback();
-    this.addEventListener('iron-resize', this._onIronResize);
+    this._isConnected = true;
+    window.addEventListener('resize', this._onIronResize);
     this._waitForLayout();
   }
 
   disconnectedCallback() {
-    this.removeEventListener('iron-resize', this._onIronResize);
+    window.removeEventListener('resize', this._onIronResize);
+    this._isConnected = false;
     super.disconnectedCallback();
   }
 
@@ -150,6 +151,7 @@ class StateCardWithSlider extends Polymer.mixinBehaviors(
   }
 
   _waitForLayout() {
+    if (!this._isConnected) return;
     this._setMode();
     if (this._frameId) return;
     this.readyToCompute = false;
@@ -203,7 +205,7 @@ class StateCardWithSlider extends Polymer.mixinBehaviors(
         return;
       }
       const containerHeight = container.clientHeight;
-      const stateHeight = this.$$('.state-info').clientHeight;
+      const stateHeight = this.root.querySelector('.state-info').clientHeight;
       this.lineTooLong = containerHeight > stateHeight * 1.5;
       if (this.lineTooLong) {
         this.minLineBreak = containerWidth;
@@ -238,7 +240,7 @@ class StateCardWithSlider extends Polymer.mixinBehaviors(
     const value = parseInt(ev.target.value, 10);
     const param = { entity_id: this.stateObj.entity_id };
     if (Number.isNaN(value)) return;
-    let target = this.$$('#slider');
+    let target = this.root.querySelector('#slider');
     if (ev.target !== target) {
       // No Shadow DOM - we have access to original target.
       ({ target } = ev);
@@ -284,5 +286,4 @@ class StateCardWithSlider extends Polymer.mixinBehaviors(
     ev.stopPropagation();
   }
 }
-customElements.define(StateCardWithSlider.is, StateCardWithSlider);
-</script>
+customElements.define('state-card-with-slider', StateCardWithSlider);

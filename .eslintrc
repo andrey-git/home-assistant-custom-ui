@@ -4,8 +4,6 @@
     "__DEV__": false,
     "__DEMO__": false,
     "Polymer": true,
-    "StateCardDisplay": true,
-    "CuiBaseElement": true,
   },
   "env": {
     "browser": true
@@ -17,9 +15,10 @@
     "no-bitwise": 0,
     "no-param-reassign": ["error", { "props": false }],
     "function-paren-newline": 0,
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": ["gulp/**", "webpack.config.js"]}],
+    "import/extensions": ["error", "always"]
   },
   "plugins": [
-    "html",
     "import"
   ],
 }

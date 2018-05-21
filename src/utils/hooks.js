@@ -1,4 +1,10 @@
-<script>
+import applyThemesOnElement from '../../home-assistant-polymer/src/common/dom/apply_themes_on_element.js';
+import computeStateDomain from '../../home-assistant-polymer/src/common/entity/compute_state_domain.js';
+import getViewEntities from '../../home-assistant-polymer/src/common/entity/get_view_entities.js';
+
+import '../elements/ha-config-custom-ui.js';
+import VERSION from './version.js';
+
 window.customUI = window.customUI || {
   SUPPORTED_SLIDER_MODES: [
     'single-line', 'break-slider', 'break-slider-toggle', 'hide-slider', 'no-slider',
@@ -36,7 +42,7 @@ window.customUI = window.customUI || {
             if (element.groupEntity) {
               elem._context.push(element.groupEntity.entity_id);
             } else if (element.groupEntity === false && element.states && element.states.length) {
-              elem._context.push(`group.${window.hassUtil.computeDomain(element.states[0])}`);
+              elem._context.push(`group.${computeStateDomain(element.states[0])}`);
             }
             break;
           case 'MORE-INFO-GROUP':
@@ -237,31 +243,6 @@ window.customUI = window.customUI || {
     });
   },
 
-  showVersion() {
-    if (window.location.pathname !== '/dev-info') return;
-    const devInfo = window.customUI.getElementHierarchy(document, [
-      'home-assistant',
-      'home-assistant-main',
-      'partial-panel-resolver',
-      'ha-panel-dev-info']);
-    if (devInfo === null) {
-      // DOM not ready. Wait 1 second.
-      window.setTimeout(window.customUI.showVersion, 1000);
-      return;
-    }
-    if (devInfo.hass && devInfo.hass.config && devInfo.hass.config.core &&
-        devInfo.hass.config.core.version &&
-        devInfo.hass.config.core.version.split('.')[1] > 65) {
-      // 0.66 introduced proper display if customui versions.
-      return;
-    }
-    const about = window.customUI.lightOrShadow(devInfo, '.about');
-    const secondP = about.querySelectorAll('p')[1];
-    const version = document.createElement('p');
-    version.textContent = `Custom UI ${window.customUI.VERSION}`;
-    about.insertBefore(version, secondP);
-  },
-
   controlColumns(columns) {
     const partialCards = window.customUI.getElementHierarchy(document, [
       'home-assistant',
@@ -292,13 +273,9 @@ window.customUI = window.customUI || {
     if (customizer.attributes.columns) {
       window.customUI.controlColumns(customizer.attributes.columns);
     }
-
     if (customizer.attributes.hide_attributes) {
-      if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
-        Array.prototype.push.apply(
-          window.hassUtil.LOGIC_STATE_ATTRIBUTES, customizer.attributes.hide_attributes);
-      }
-      if (window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
+      // TODO: Won't working starting from HA 0.71
+      if (window.hassAttributeUtil && window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
         customizer.attributes.hide_attributes.forEach((attr) => {
           if (!Object.prototype.hasOwnProperty.call(
             window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES, attr)) {
@@ -310,6 +287,12 @@ window.customUI = window.customUI || {
   },
 
   updateAttributes() {
+    if (!window.hassAttributeUtil) {
+      // App.js wasn't parsed yet.
+      window.setTimeout(window.customUI.updateAttributes, 1000);
+      return;
+    }
+
     const customUiAttributes = {
       group: undefined,
       device: undefined,
@@ -335,10 +318,6 @@ window.customUI = window.customUI || {
       confirm_controls_show_lock: { type: 'boolean' },
       hide_in_default_view: { type: 'boolean' },
     };
-    if (window.hassUtil.LOGIC_STATE_ATTRIBUTES) {
-      Array.prototype.push.apply(
-        window.hassUtil.LOGIC_STATE_ATTRIBUTES, Object.keys(customUiAttributes));
-    }
     if (window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
       Object.assign(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES, customUiAttributes);
     }
@@ -457,7 +436,7 @@ window.customUI = window.customUI || {
           excludes[excludeEntityId] = entity;
           if (entity.attributes.view) {
             Object.assign(
-              excludes, window.HAWS.getViewEntities(hass.states, entity));
+              excludes, getViewEntities(hass.states, entity));
           }
         }
       });
@@ -496,7 +475,7 @@ window.customUI = window.customUI || {
           this.hass._themeWaiters = this.hass._themeWaiters || [];
           this.hass._themeWaiters.push(this);
         } else {
-          window.hassUtil.applyThemesOnElement(
+          applyThemesOnElement(
             this,
             this.hass.themes || { default_theme: 'default', themes: {} },
             stateObj.attributes.theme || 'default');
@@ -538,6 +517,8 @@ window.customUI = window.customUI || {
     window.customUI.installStateBadge();
     window.customUI.installActionName('state-card-scene');
     window.customUI.installActionName('state-card-script');
+    // TODO: Fix, not working since HA 0.71
+    window.customUI.updateAttributes();
   },
 
   init() {
@@ -556,22 +537,20 @@ window.customUI = window.customUI || {
     window.customUI.runHooks();
     window.addEventListener('location-changed', window.setTimeout.bind(null, window.customUI.runHooks, 100));
     /* eslint-disable no-console */
-    console.log(`Loaded CustomUI ${window.customUI.VERSION}`);
+    console.log(`Loaded CustomUI ${VERSION}`);
     /* eslint-enable no-console */
     if (!window.CUSTOM_UI_LIST) {
       window.CUSTOM_UI_LIST = [];
     }
     window.CUSTOM_UI_LIST.push({
       name: 'CustomUI',
-      version: window.customUI.VERSION,
+      version: VERSION,
       url: 'https://github.com/andrey-git/home-assistant-custom-ui',
     });
   },
 
   runHooks() {
     window.customUI.fixGroupTitles();
-    window.customUI.showVersion();
-    window.customUI.updateAttributes();
     window.customUI.updateConfigPanel();
   },
 
@@ -602,8 +581,4 @@ window.customUI = window.customUI || {
     }
   },
 };
-</script>
-<link rel="import" href="version.html">
-<script>
 window.customUI.init();
-</script>

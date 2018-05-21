@@ -1,7 +1,8 @@
-<link rel="import" href="hooks.html">
+import '../utils/hooks.js';
 
-<script>
-/* eslint no-unused-vars: 0 */
+/**
+ * @extends HTMLElement
+ */
 class CuiBaseElement extends Polymer.Element {
   static get properties() {
     return {
@@ -48,4 +49,4 @@ class CuiBaseElement extends Polymer.Element {
     return extra.length > 0;
   }
 }
-</script>
+export default CuiBaseElement;

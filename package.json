@@ -4,36 +4,26 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@polymer/polymer": "^3.0.2",
     "babel-core": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "bower": "^1.8.2",
     "del": "^3.0.0",
     "eslint": "^4.13.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-html": "^3.2.2",
-    "eslint-plugin-import": "^2.8.0",
     "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.0",
-    "gulp-filter": "^5.0.1",
-    "gulp-htmlmin": "^3.0.0",
-    "gulp-if": "^2.0.2",
     "gulp-rename": "^1.2.2",
-    "gulp-uglify": "^3.0.0",
     "gulp-zopfli": "^1.0.0",
-    "merge-stream": "^1.0.1",
-    "polymer-build": "^2.1.0",
-    "polymer-bundler": "^3.1.0",
     "require-dir": "^0.3.2",
-    "uglify-es": "^3.2.1"
+    "webpack": "^4.8.3"
   },
   "scripts": {
-    "init": "yarn install && bower install",
-    "test": "eslint src/* gulp --ext html,js",
+    "init": "yarn install",
+    "test": "eslint src gulp webpack.config.js && polymer lint",
+    "webpack": "webpack",
     "gulp": "gulp",
     "gzip": "yarn run gulp compress",
-    "build": "yarn run gulp && cp build/src/state-card-custom-ui*.html . && yarn run gzip",
-    "deploy": "yarn run test && yarn run build && cp state-card-custom-ui*.html* ~/.homeassistant/www/custom_ui/",
-    "deploy_dev": "yarn run test && rm -f ~/.homeassistant/www/custom_ui/* && cp src/* ~/.homeassistant/www/custom_ui/",
+    "build": "yarn run webpack && yarn run gulp && cp build/*.{html,map,LICENSE} . && yarn run gzip",
+    "deploy": "yarn run test && yarn run build && cp *.{html,map,LICENSE,gz} ~/.homeassistant/www/custom_ui/",
+    "deploy_dev": "yarn run test && rm -rf ~/.homeassistant/www/custom_ui/* && cp -r src/* ~/.homeassistant/www/custom_ui/",
     "fix_date": "script/fix_date.sh",
     "release": "yarn run test && yarn run fix_date && yarn run deploy"
   },
@@ -46,5 +36,16 @@
   "bugs": {
     "url": "https://github.com/andrey-git/home-assistant-custom-ui/issues"
   },
-  "homepage": "https://github.com/andrey-git/home-assistant-custom-ui#readme"
+  "homepage": "https://github.com/andrey-git/home-assistant-custom-ui#readme",
+  "devDependencies": {
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "eslint-plugin-import": "^2.12.0",
+    "gulp-batch-replace": "^0.0.0",
+    "gulp-inline-source": "^3.1.0",
+    "polymer-cli": "^1.7.2",
+    "uglifyjs-webpack-plugin": "^1.2.5",
+    "webpack-cli": "^2.1.3"
+  }
 }

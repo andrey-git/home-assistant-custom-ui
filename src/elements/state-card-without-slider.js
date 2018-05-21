@@ -1,9 +1,13 @@
-<link rel="import" href="dynamic-with-extra.html">
-<link rel="import" href="cui-base-element.html">
-<link rel="import" href="hooks.html">
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import CuiBaseElement from './cui-base-element.js';
+import './dynamic-with-extra.js';
 
-<dom-module id="state-card-without-slider">
-  <template>
+/**
+ * @extends HTMLElement
+ */
+class StateCardWithoutSlider extends CuiBaseElement {
+  static get template() {
+    return html`
     <style is="custom-style" include="iron-flex iron-flex-alignment"></style>
     <style>
       #container {
@@ -28,12 +32,7 @@
           in-dialog='[[inDialog]]'>
       </dynamic-with-extra>
     </div>
-  </template>
-</dom-module>
-
-<script>
-class StateCardWithoutSlider extends CuiBaseElement {
-  static get is() { return 'state-card-without-slider'; }
+    `;
+  }
 }
-customElements.define(StateCardWithoutSlider.is, StateCardWithoutSlider);
-</script>
+customElements.define('state-card-without-slider', StateCardWithoutSlider);

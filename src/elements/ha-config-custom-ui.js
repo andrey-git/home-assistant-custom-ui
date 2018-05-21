@@ -1,7 +1,13 @@
-<link rel="import" href="hooks.html">
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import EventsMixin from '../mixins/events-mixin.js';
+import '../utils/hooks.js';
 
-<dom-module id="ha-config-custom-ui">
-  <template>
+/**
+ * @extends HTMLElement
+ */
+class HaConfigCustomUi extends EventsMixin(Polymer.Element) {
+  static get template() {
+    return html`
     <style include="ha-style"></style>
     <app-header-layout has-scrolling-region>
       <app-header slot="header" fixed>
@@ -26,12 +32,8 @@
         </paper-card>
       </ha-config-section>
     </app-header-layout>
-  </template>
-</dom-module>
-
-<script>
-class HaConfigCustomUi extends window.hassMixins.EventsMixin(Polymer.Element) {
-  static get is() { return 'ha-config-custom-ui'; }
+    `;
+  }
 
   static get properties() {
     return {
@@ -58,5 +60,4 @@ class HaConfigCustomUi extends window.hassMixins.EventsMixin(Polymer.Element) {
     this.fire('location-changed');
   }
 }
-customElements.define(HaConfigCustomUi.is, HaConfigCustomUi);
-</script>
+customElements.define('ha-config-custom-ui', HaConfigCustomUi);

@@ -1,8 +1,10 @@
 {
-  "entrypoint": "bower_components/polymer/polymer-element.html",
-  "shell": "bower_components/polymer/polymer-element.html",
-  "fragments": [ "src/state-card-custom-ui.html"],
+  "entrypoint": "src/state-card-custom-ui.html",
+  "shell": "src/entrypoints/scripts.js",
   "sources": [
     "src/**/*"
-  ]
+  ],
+  "lint": {
+    "rules": ["polymer-3"]
+  }
 }
