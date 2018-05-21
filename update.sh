@@ -71,7 +71,7 @@ fi
 get_file $0 https://github.com/andrey-git/home-assistant-custom-ui/blob/master/update.sh ./
 
 
-check_dir "www/custom_ui"#### 2018-05-21
+check_dir "www/custom_ui"
 *   Hotfix release for HA 0.70+
 
 
