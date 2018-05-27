@@ -180,20 +180,24 @@ class StateCardCustomUi extends Polymer.Element {
 
     if (!inDialog && modifiedObj.attributes.state_card_mode === 'badges') {
       this.badgeMode(hass, modifiedObj, domain);
-      return;
+    } else {
+      this.regularMode_(hass, inDialog, modifiedObj, domain);
     }
+  }
+
+  regularMode_(hass, inDialog, stateObj, domain) {
     this.cleanBadgeStyle();
 
     const params = {
       hass,
-      stateObj: modifiedObj,
+      stateObj,
       inDialog,
     };
     const originalStateCardType = stateCardType(hass, stateObj);
     let customStateCardType;
-    const secondaryStateCardType = modifiedObj.attributes.state_card_custom_ui_secondary;
+    const secondaryStateCardType = stateObj.attributes.state_card_custom_ui_secondary;
 
-    if (domain === 'light' && this.sliderEligible_(domain, modifiedObj, inDialog)) {
+    if (domain === 'light' && this.sliderEligible_(domain, stateObj, inDialog)) {
       Object.assign(params, {
         controlElement: 'ha-entity-toggle',
         serviceMin: 'turn_off',
@@ -202,7 +206,7 @@ class StateCardCustomUi extends Polymer.Element {
         domain,
       });
       customStateCardType = 'state-card-with-slider';
-    } else if (domain === 'cover' && this.sliderEligible_(domain, modifiedObj, inDialog)) {
+    } else if (domain === 'cover' && this.sliderEligible_(domain, stateObj, inDialog)) {
       Object.assign(params, {
         controlElement: 'ha-cover-controls',
         max: 100,
@@ -214,11 +218,11 @@ class StateCardCustomUi extends Polymer.Element {
         domain,
       });
       customStateCardType = 'state-card-with-slider';
-    } else if (domain === 'climate' && this.sliderEligible_(domain, modifiedObj, inDialog)) {
+    } else if (domain === 'climate' && this.sliderEligible_(domain, stateObj, inDialog)) {
       Object.assign(params, {
         controlElement: 'ha-climate-state',
-        min: modifiedObj.attributes.min_temp || -100,
-        max: modifiedObj.attributes.max_temp || 200,
+        min: stateObj.attributes.min_temp || -100,
+        max: stateObj.attributes.max_temp || 200,
         serviceMin: 'set_temperature',
         serviceMax: 'set_temperature',
         valueName: 'temperature',
@@ -229,11 +233,11 @@ class StateCardCustomUi extends Polymer.Element {
     } else if (TYPE_TO_CONTROL[originalStateCardType] !== undefined) {
       params.controlElement = TYPE_TO_CONTROL[originalStateCardType];
       customStateCardType = 'state-card-without-slider';
-    } else if (modifiedObj.attributes.show_last_changed &&
+    } else if (stateObj.attributes.show_last_changed &&
                !SHOW_LAST_CHANGED_BLACKLISTED_CARDS.includes(originalStateCardType)) {
       params.inDialog = true;
     }
-    if (modifiedObj.state === 'unavailable') {
+    if (stateObj.state === 'unavailable') {
       params.controlElement = '';
     }
 
