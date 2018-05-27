@@ -5,11 +5,14 @@ const replace = require('gulp-batch-replace');
 
 function build(minify, transpile) {
   const toReplace = [
-    ['./entrypoints/scripts.js', `../build/scripts${minify ? '' : '-dbg'}${transpile ? '-es5' : ''}.js`],
+    ['./entrypoints/scripts.js', minify ? `../build/scripts${transpile ? '-es5' : ''}.js` : `scripts-dbg${transpile ? '-es5' : ''}.js`],
   ];
-  return gulp.src('src/state-card-custom-ui.html')
-    .pipe(replace(toReplace))
-    .pipe(inlinesource({ compress: false }))
+  let stream = gulp.src('src/state-card-custom-ui.html')
+    .pipe(replace(toReplace));
+  if (minify) {
+    stream = stream.pipe(inlinesource({ compress: false }));
+  }
+  return stream
     .pipe(rename({ basename: `state-card-custom-ui${minify ? '' : '-dbg'}${transpile ? '-es5' : ''}` }))
     .pipe(gulp.dest('build/'));
 }

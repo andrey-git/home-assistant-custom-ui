@@ -21,9 +21,9 @@
     "webpack": "webpack",
     "gulp": "gulp",
     "gzip": "yarn run gulp compress",
-    "build": "yarn run webpack && yarn run gulp && cp build/*.{html,map,LICENSE} . && yarn run gzip",
-    "deploy": "yarn run test && yarn run build && cp *.{html,map,LICENSE,gz} ~/.homeassistant/www/custom_ui/",
-    "deploy_dev": "yarn run test && rm -rf ~/.homeassistant/www/custom_ui/* && cp -r src/* ~/.homeassistant/www/custom_ui/",
+    "build": "yarn run webpack && yarn run gulp && cp build/*.{html,map,LICENSE} . && cp build/*dbg*.js . && yarn run gzip",
+    "deploy": "yarn run test && yarn run build && cp *.{js,html,map,LICENSE,gz} ~/.homeassistant/www/custom_ui/",
+    "deploy_dev": "rm -rf ~/.homeassistant/www/custom_ui/* && yarn run deploy && mv ~/.homeassistant/www/custom_ui/state-card-custom-ui-dbg-es5.html.gz ~/.homeassistant/www/custom_ui/state-card-custom-ui-es5.html.gz && mv ~/.homeassistant/www/custom_ui/state-card-custom-ui-dbg.html.gz ~/.homeassistant/www/custom_ui/state-card-custom-ui.html.gz",
     "fix_date": "script/fix_date.sh",
     "release": "yarn run test && yarn run fix_date && yarn run deploy"
   },
