@@ -1,6 +1,10 @@
 ## Changelog
 
 #### 2018-05-21
+*   New feature: [`control_element`](docs/features.md#custom-controls)
+*   Fix theming on Firefix/Edge.
+
+#### 2018-05-21
 *   Hotfix release for HA 0.70+
 
 #### 2018-04-29

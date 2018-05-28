@@ -14,11 +14,12 @@
     +   [Secondary custom UI](#secondary-customui)
 *   [Features available for almost all domains](#features-available-for-almost-all-domains)
     +   [You can always show the last-changed text](#you-can-always-show-the-last-changed-text)
-*   [Features available for light, cover, "plain", and "toggle" cards](#features-available-for-light-cover-plain-and-toggle-cards)
+*   [Features available for light, cover, climate, "plain", and "toggle" cards](#features-available-for-light-cover-climate-plain-and-toggle-cards)
     -   [You can hide the control altogether](#you-can-hide-the-control-altogether)
     -   [You can add extra data below the entity name](#you-can-add-extra-data-below-the-entity-name)
     -   [Add badge to the state card](#add-badge-to-the-state-card)
     -   [Confirmable controls](#confirmable-controls)
+    -   [Custom controls](#custom-controls)
 *   [Features available for light and cover domains only](#features-available-for-light-and-cover-domains-only)
     -   [If there is not enough horizontal space the mode is set by `state_card_mode` parameter](#if-there-is-not-enough-horizontal-space-the-mode-is-set-by-state_card_mode-parameter)
     -   [If the slider got moved to a new line it will be 200 px wide.](#if-the-slider-got-moved-to-a-new-line-it-will-be-200-px-wide)
@@ -254,11 +255,12 @@ Use `show_last_changed: true`
 
 Note that if you use the [extra_data_template](#you-can-add-extra-data-below-the-entity-name-requires-ha-043) below it will take precedence over `show_last_changed`
 
-## Features available for light, cover, "plain", and "toggle" cards.
+## Features available for light, cover, climate, "plain", and "toggle" cards.
 
 The next features are available for 4 types of cards:
 *   Light
-*   Cover,
+*   Cover
+*   Climate
 *   "Plain" i.e. card with icon, name, and state.
 *   "Toggle" i.e. card with icon, name, and toggle.
 
@@ -323,6 +325,18 @@ extra_badge:
 Sometimes you don't want to flip a switch by mistake.
 
 Use `confirm_controls_show_lock` to block the control and show a transparent lock icon over it. Tapping on the lock will open it for 5 seconds allowing to use the control. If you would like to prevent accidental flip without the visual lock hint, use `confirm_controls` instead.
+
+#### Custom controls
+
+You can replace the default control with another control by using `control_element` attribute.
+
+For example:
+```yaml
+switch.my:
+  control_element: my-custom-switch-element
+```
+
+You can also use `control_element: ''` to show the state, like the "plain" card does.
 
 ## Features available for light and cover domains only
 
