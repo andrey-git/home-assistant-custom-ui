@@ -240,6 +240,9 @@ class StateCardCustomUi extends Polymer.Element {
     if (stateObj.state === 'unavailable') {
       params.controlElement = '';
     }
+    if (stateObj.attributes.control_element !== undefined) {
+      params.controlElement = stateObj.attributes.control_element;
+    }
 
     dynamicContentUpdater(
       this,
