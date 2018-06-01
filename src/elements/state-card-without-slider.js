@@ -17,6 +17,7 @@ class StateCardWithoutSlider extends CuiBaseElement {
 
     <div id='container' class='horizontal layout justified'>
       <state-info
+          hass='[[hass]]'
           class='state-info'
           state-obj='[[stateObj]]'
           in-dialog='[[showLastChanged(stateObj, inDialog, extra)]]'

@@ -53,7 +53,13 @@ class StateCardWithSlider extends CuiBaseElement {
 
     <div id='container' class$='horizontal layout flex top-wrapper [[_computeWrapClass(mode, stretchSlider, lineTooLong, inDialog)]]'>
       <div class='horizontal layout justified flex-auto state-and-toggle'>
-        <state-info class='state-info' state-obj='[[stateObj]]' in-dialog='[[showLastChanged(stateObj, inDialog, extra)]]' secondary-line$='[[hasExtra(extra)]]' class='flex-auto'>
+        <state-info
+            class='state-info flex-auto'
+            hass='[[hass]]'
+            state-obj='[[stateObj]]'
+            in-dialog='[[showLastChanged(stateObj, inDialog, extra)]]'
+            secondary-line$='[[hasExtra(extra)]]'
+        >
           <template is='dom-repeat' items='[[extra]]'>
             <div>[[item]]</div>
           </template>
