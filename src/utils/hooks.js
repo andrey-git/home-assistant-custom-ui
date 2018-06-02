@@ -4,6 +4,7 @@ import getViewEntities from '../../home-assistant-polymer/src/common/entity/get_
 
 import '../elements/ha-config-custom-ui.js';
 import VERSION from './version.js';
+import './hass-attribute-util.js';
 
 window.customUI = window.customUI || {
   SUPPORTED_SLIDER_MODES: [
@@ -274,7 +275,6 @@ window.customUI = window.customUI || {
       window.customUI.controlColumns(customizer.attributes.columns);
     }
     if (customizer.attributes.hide_attributes) {
-      // TODO: Won't working starting from HA 0.71
       if (window.hassAttributeUtil && window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
         customizer.attributes.hide_attributes.forEach((attr) => {
           if (!Object.prototype.hasOwnProperty.call(
@@ -283,43 +283,6 @@ window.customUI = window.customUI || {
           }
         });
       }
-    }
-  },
-
-  updateAttributes() {
-    if (!window.hassAttributeUtil) {
-      // App.js wasn't parsed yet.
-      window.setTimeout(window.customUI.updateAttributes, 1000);
-      return;
-    }
-
-    const customUiAttributes = {
-      group: undefined,
-      device: undefined,
-      templates: undefined,
-      state_card_mode: {
-        type: 'array',
-        options: {
-          light: window.customUI.SUPPORTED_SLIDER_MODES.concat('badges'),
-          cover: window.customUI.SUPPORTED_SLIDER_MODES.concat('badges'),
-          '*': ['badges'],
-        },
-      },
-      state_card_custom_ui_secondary: { type: 'string' },
-      badges_list: { type: 'json' },
-      show_last_changed: { type: 'boolean' },
-      hide_control: { type: 'boolean' },
-      extra_data_template: { type: 'string' },
-      extra_badge: { type: 'json' },
-      stretch_slider: { type: 'boolean' },
-      slider_theme: { type: 'json' },
-      theme: { type: 'string' },
-      confirm_controls: { type: 'boolean' },
-      confirm_controls_show_lock: { type: 'boolean' },
-      hide_in_default_view: { type: 'boolean' },
-    };
-    if (window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES) {
-      Object.assign(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES, customUiAttributes);
     }
   },
 
@@ -508,6 +471,58 @@ window.customUI = window.customUI || {
     };
   },
 
+  installHaAttributes() {
+    const haAttributes = customElements.get('ha-attributes');
+    if (!haAttributes || !haAttributes.prototype.computeFiltersArray ||
+       !window.hassAttributeUtil) return;
+    // Use named function to preserve 'this'.
+    haAttributes.prototype.computeFiltersArray = function customComputeFiltersArray(extraFilters) {
+      return Object.keys(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES).concat(extraFilters ? extraFilters.split(',') : []);
+    };
+  },
+
+  installHaFormCustomize() {
+    if (!window.location.pathname.startsWith('/config')) return;
+    const haFormCustomize = customElements.get('ha-form-customize');
+    if (!haFormCustomize) {
+      // DOM not ready. Wait 100ms.
+      window.setTimeout(window.customUI.installHaFormCustomize, 100);
+      return;
+    }
+    if (window.customUI.haFormCustomizeInitDone) return;
+    window.customUI.haFormCustomizeInitDone = true;
+
+    if (!window.hassAttributeUtil) return;
+    if (haFormCustomize.prototype._computeSingleAttribute) {
+      // Use named function to preserve 'this'.
+      haFormCustomize.prototype._computeSingleAttribute =
+        function customComputeSingleAttribute(key, value, secondary) {
+          const config = window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES[key]
+              || { type: window.hassAttributeUtil.UNKNOWN_TYPE };
+          return this._initOpenObject(key, config.type === 'json' ? JSON.stringify(value) : value, secondary, config);
+        };
+    }
+    if (haFormCustomize.prototype.getNewAttributesOptions) {
+      // Use named function to preserve 'this'.
+      haFormCustomize.prototype.getNewAttributesOptions =
+        function customgetNewAttributesOptions(
+          localAttributes, globalAttributes, existingAttributes, newAttributes) {
+          const knownKeys =
+              Object.keys(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES)
+                .filter((key) => {
+                  const conf = window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES[key];
+                  return conf && (!conf.domains || !this.entity ||
+                                    conf.domains.includes(computeStateDomain(this.entity)));
+                })
+                .filter(this.filterFromAttributes(localAttributes))
+                .filter(this.filterFromAttributes(globalAttributes))
+                .filter(this.filterFromAttributes(existingAttributes))
+                .filter(this.filterFromAttributes(newAttributes));
+          return knownKeys.sort().concat('Other');
+        };
+    }
+  },
+
   installClassHooks() {
     if (window.customUI.classInitDone) return;
     window.customUI.classInitDone = true;
@@ -515,10 +530,9 @@ window.customUI = window.customUI || {
     window.customUI.installStatesHook();
     window.customUI.installHaStateLabelBadge();
     window.customUI.installStateBadge();
+    window.customUI.installHaAttributes();
     window.customUI.installActionName('state-card-scene');
     window.customUI.installActionName('state-card-script');
-    // TODO: Fix, not working since HA 0.71
-    window.customUI.updateAttributes();
   },
 
   init() {
@@ -552,6 +566,7 @@ window.customUI = window.customUI || {
   runHooks() {
     window.customUI.fixGroupTitles();
     window.customUI.updateConfigPanel();
+    window.customUI.installHaFormCustomize();
   },
 
   getName() {
