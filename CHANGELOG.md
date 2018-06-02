@@ -1,6 +1,10 @@
 ## Changelog
 
-#### 2018-05-21
+#### 2018-06-02
+*   Hotfix for HA 0.71+
+*   Restore handling custom attributes in form and more-info.
+
+#### 2018-05-28
 *   New feature: [`control_element`](docs/features.md#custom-controls)
 *   Fix theming on Firefix/Edge.
 

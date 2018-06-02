@@ -4,7 +4,8 @@ TODO: Add screenshots
 
 ## Notes
 
-**CustomUI 2018-05-21 required for HA 0.70+**
+**CustomUI 2018-06-02 required for HA 0.71+**
+**CustomUI 2018-05-21 required for HA 0.70**
 
 Please fill the [usage poll](https://docs.google.com/forms/d/e/1FAIpQLSdjgb4iu5aDyvFB6ch9KJpRn25I0wLL7NLyTIhcWCzU3KM1-w/viewform?usp=send_form)
 
@@ -22,7 +23,11 @@ Please ask questions and post feature requests in the [forum](https://community.
 
 ## Changelog
 
-#### 2018-05-21
+#### 2018-06-02
+*   Hotfix for HA 0.71+
+*   Restore handling custom attributes in form and more-info.
+
+#### 2018-05-28
 *   New feature: [`control_element`](docs/features.md#custom-controls)
 *   Fix theming on Firefix/Edge.
 
