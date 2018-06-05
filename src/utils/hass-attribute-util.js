@@ -31,6 +31,7 @@ const customUiAttributes = {
   confirm_controls: { type: 'boolean' },
   confirm_controls_show_lock: { type: 'boolean' },
   hide_in_default_view: { type: 'boolean' },
+  icon_color: { type: 'string' },
 };
 window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES = hassAttributesUtil.LOGIC_STATE_ATTRIBUTES;
 window.hassAttributeUtil.UNKNOWN_TYPE = hassAttributesUtil.UNKNOWN_TYPE;
