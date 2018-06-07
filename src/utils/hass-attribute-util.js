@@ -9,6 +9,8 @@ const customUiAttributes = {
   group: undefined,
   device: undefined,
   templates: undefined,
+  state: undefined,
+  _stateDisplay: undefined,
   control_element: { type: 'string' },
   state_card_mode: {
     type: 'array',
