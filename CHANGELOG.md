@@ -1,5 +1,10 @@
 ## Changelog
 
+#### 2018-06-25
+*   Entities with `hide_in_default_view: false` will no longer be hidden from
+    default view even if they are part of another view with
+    `hide_in_default_view: true` 
+
 #### 2018-06-02
 *   Hotfix for HA 0.71+
 *   Restore handling custom attributes in form and more-info.

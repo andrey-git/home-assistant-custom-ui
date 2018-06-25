@@ -55,6 +55,9 @@ If you don't have a `default_view` view defined you still hide some entities fro
 
 If applied to a View (a group with `view: true`) `hide_in_default_view` will hide everything under that view (not just the view group itself).
 
+Apply `hide_in_default_view: false` to prevent a specific entity from being hidden even if it is part of another view with `hide_in_default_view: true`
+
+
 ### Template attributes
 You can set entity's attributes or state using JavaScript templates. See [Templates](templates.md) for more info.
 
