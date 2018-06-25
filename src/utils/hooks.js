@@ -398,8 +398,13 @@ window.customUI = window.customUI || {
           if (excludes[excludeEntityId]) return;
           excludes[excludeEntityId] = entity;
           if (entity.attributes.view) {
-            Object.assign(
-              excludes, getViewEntities(hass.states, entity));
+            const viewEntities = getViewEntities(hass.states, entity);
+            Object.keys(viewEntities)
+              .filter(
+                id => viewEntities[id].attributes.hide_in_default_view !== false)
+              .forEach((id) => {
+                excludes[id] = viewEntities[id];
+              });
           }
         }
       });
