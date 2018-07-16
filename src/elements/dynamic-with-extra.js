@@ -138,8 +138,7 @@ class DynamicWithExtra extends customElements.get('state-card-display') {
                  stateObj.attributes[extraBadge.attribute] !== undefined) {
         result = {
           state: String(stateObj.attributes[extraBadge.attribute]),
-          _domain: 'none',
-          entity_id: null,
+          entity_id: 'none.none',
           attributes: { unit_of_measurement: extraBadge.unit },
         };
       }
