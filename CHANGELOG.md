@@ -1,9 +1,13 @@
 ## Changelog
 
+#### 2018-07-13
+*   Hotfix for HA 0.73+
+
 #### 2018-06-25
 *   Entities with `hide_in_default_view: false` will no longer be hidden from
     default view even if they are part of another view with
-    `hide_in_default_view: true` 
+    `hide_in_default_view: true`.
+*   Add `icon_color`, `state`, and `_stateDisplay` to the list of hidden attributes.
 
 #### 2018-06-02
 *   Hotfix for HA 0.71+
