@@ -256,15 +256,17 @@ window.customUI = window.customUI || {
         1000);
       return;
     }
+    // Function renamed from handleWindowChange to _updateColumns on 3.7.18
+    const f = partialCards.handleWindowChange || partialCards._updateColumns;
     partialCards.mqls.forEach((mql) => {
-      mql.removeListener(partialCards.handleWindowChange);
+      mql.removeListener(f);
     });
     partialCards.mqls = columns.map((width) => {
       const mql = window.matchMedia(`(min-width: ${width}px)`);
-      mql.addListener(partialCards.handleWindowChange);
+      mql.addListener(f);
       return mql;
     });
-    partialCards.handleWindowChange();
+    f();
   },
 
   useCustomizer() {
