@@ -356,178 +356,194 @@ window.customUI = window.customUI || {
   },
 
   installStatesHook() {
-    const homeAssistant = customElements.get('home-assistant');
-    if (!homeAssistant || !homeAssistant.prototype._updateHass) return;
-    const originalUpdate = homeAssistant.prototype._updateHass;
-    homeAssistant.prototype._updateHass = function update(obj) {
-      // Use named function to preserve 'this'.
-      const { hass } = this;
-      if (obj.states) {
-        Object.keys(obj.states).forEach((key) => {
-          const entity = obj.states[key];
-          if (entity._cui_keep) return;
-          const newEntity = window.customUI.maybeApplyTemplates(hass, obj.states, entity);
-          if (hass.states && entity !== hass.states[key]) {
-            // New state arrived. Put modified state in.
-            obj.states[key] = newEntity;
-          } else if (entity !== newEntity) {
-            // It's the same state but contents changed due to other state changes.
-            obj.states[key] = newEntity;
-          }
-        });
+    customElements.whenDefined('home-assistant').then(() => {
+      const homeAssistant = customElements.get('home-assistant');
+      if (!homeAssistant || !homeAssistant.prototype._updateHass) return;
+      const originalUpdate = homeAssistant.prototype._updateHass;
+      homeAssistant.prototype._updateHass = function update(obj) {
+        // Use named function to preserve 'this'.
+        const { hass } = this;
+        if (obj.states) {
+          Object.keys(obj.states).forEach((key) => {
+            const entity = obj.states[key];
+            if (entity._cui_keep) return;
+            const newEntity = window.customUI.maybeApplyTemplates(hass, obj.states, entity);
+            if (hass.states && entity !== hass.states[key]) {
+              // New state arrived. Put modified state in.
+              obj.states[key] = newEntity;
+            } else if (entity !== newEntity) {
+              // It's the same state but contents changed due to other state changes.
+              obj.states[key] = newEntity;
+            }
+          });
+        }
+        originalUpdate.call(this, obj);
+        if (obj.themes && hass._themeWaiters) {
+          hass._themeWaiters.forEach(waiter => waiter.stateChanged(waiter.state));
+          hass._themeWaiters = undefined;
+        }
+      };
+      const main = window.customUI.lightOrShadow(document, 'home-assistant');
+      if (main.hass && main.hass.states) {
+        main._updateHass({ states: main.hass.states });
       }
-      originalUpdate.call(this, obj);
-      if (obj.themes && hass._themeWaiters) {
-        hass._themeWaiters.forEach(waiter => waiter.stateChanged(waiter.state));
-        hass._themeWaiters = undefined;
-      }
-    };
-    const main = window.customUI.lightOrShadow(document, 'home-assistant');
-    if (main.hass && main.hass.states) {
-      main._updateHass({ states: main.hass.states });
-    }
+    });
   },
 
   installPartialCards() {
-    const partialCards = customElements.get('partial-cards');
-    if (!partialCards || !partialCards.prototype._defaultViewFilter) return;
-    partialCards.prototype._defaultViewFilter = (hass, entityId) => {
-      if (hass.states[entityId].attributes.hidden) return false;
-      const excludes = {};
-      Object.values(hass.states).forEach((entity) => {
-        if (entity.attributes && entity.attributes.hide_in_default_view) {
-          const excludeEntityId = entity.entity_id;
-          if (excludes[excludeEntityId]) return;
-          excludes[excludeEntityId] = entity;
-          if (entity.attributes.view) {
-            const viewEntities = getViewEntities(hass.states, entity);
-            Object.keys(viewEntities)
-              .filter(
-                id => viewEntities[id].attributes.hide_in_default_view !== false)
-              .forEach((id) => {
-                excludes[id] = viewEntities[id];
-              });
+    customElements.whenDefined('partial-cards').then(() => {
+      const partialCards = customElements.get('partial-cards');
+      if (!partialCards || !partialCards.prototype._defaultViewFilter) return;
+      partialCards.prototype._defaultViewFilter = (hass, entityId) => {
+        if (hass.states[entityId].attributes.hidden) return false;
+        const excludes = {};
+        Object.values(hass.states).forEach((entity) => {
+          if (entity.attributes && entity.attributes.hide_in_default_view) {
+            const excludeEntityId = entity.entity_id;
+            if (excludes[excludeEntityId]) return;
+            excludes[excludeEntityId] = entity;
+            if (entity.attributes.view) {
+              const viewEntities = getViewEntities(hass.states, entity);
+              Object.keys(viewEntities)
+                .filter(
+                  id => viewEntities[id].attributes.hide_in_default_view !== false)
+                .forEach((id) => {
+                  excludes[id] = viewEntities[id];
+                });
+            }
           }
-        }
-      });
-      return !excludes[entityId];
-    };
+        });
+        return !excludes[entityId];
+      };
+    });
   },
 
   // Allows changing the 'Execute' / 'Activate' text on script/scene cards.
   installActionName(elementName) {
-    const klass = customElements.get(elementName);
-    if (!klass || !klass.prototype) return;
-    Object.defineProperty(klass.prototype, 'localize', {
-      get() {
-        function customLocalize(v) {
-          if (this.stateObj && this.stateObj.attributes &&
-              this.stateObj.attributes.action_name) {
-            return this.stateObj.attributes.action_name;
+    customElements.whenDefined(elementName).then(() => {
+      const klass = customElements.get(elementName);
+      if (!klass || !klass.prototype) return;
+      Object.defineProperty(klass.prototype, 'localize', {
+        get() {
+          function customLocalize(v) {
+            if (this.stateObj && this.stateObj.attributes &&
+                this.stateObj.attributes.action_name) {
+              return this.stateObj.attributes.action_name;
+            }
+            return this.__data.localize(v);
           }
-          return this.__data.localize(v);
-        }
-        return customLocalize;
-      },
-      set() {},
+          return customLocalize;
+        },
+        set() {},
+      });
     });
   },
 
   // Allows theming "regular" top badges.
   installHaStateLabelBadge() {
-    const haStateLabelBadge = customElements.get('ha-state-label-badge');
-    if (!haStateLabelBadge || !haStateLabelBadge.prototype.stateChanged) return;
-    // Use named function to preserve 'this'.
-    haStateLabelBadge.prototype.stateChanged = function update(stateObj) {
-      // TODO: Call window.customUI.maybeChangeObject
-      if (stateObj.attributes.theme) {
-        if (this.hass.themes === null) {
-          this.hass._themeWaiters = this.hass._themeWaiters || [];
-          this.hass._themeWaiters.push(this);
-        } else {
-          applyThemesOnElement(
-            this,
-            this.hass.themes || { default_theme: 'default', themes: {} },
-            stateObj.attributes.theme || 'default');
+    customElements.whenDefined('ha-state-label-badge').then(() => {
+      const haStateLabelBadge = customElements.get('ha-state-label-badge');
+      if (!haStateLabelBadge || !haStateLabelBadge.prototype.stateChanged) return;
+      // Use named function to preserve 'this'.
+      haStateLabelBadge.prototype.stateChanged = function update(stateObj) {
+        // TODO: Call window.customUI.maybeChangeObject
+        if (stateObj.attributes.theme) {
+          if (this.hass.themes === null) {
+            this.hass._themeWaiters = this.hass._themeWaiters || [];
+            this.hass._themeWaiters.push(this);
+          } else {
+            applyThemesOnElement(
+              this,
+              this.hass.themes || { default_theme: 'default', themes: {} },
+              stateObj.attributes.theme || 'default');
+          }
         }
-      }
-      this.updateStyles();
-      if (this.startInterval) {
-        // Added on 19.1.2018
-        this.startInterval(stateObj);
-      }
-    };
+        this.updateStyles();
+        if (this.startInterval) {
+          // Added on 19.1.2018
+          this.startInterval(stateObj);
+        }
+      };
+    });
   },
 
   installStateBadge() {
-    const stateBadge = customElements.get('state-badge');
-    if (!stateBadge || !stateBadge.prototype.updateIconAppearance) return;
-    const originalUpdateIconAppearance = stateBadge.prototype.updateIconAppearance;
-    // Use named function to preserve 'this'.
-    stateBadge.prototype.updateIconAppearance = function customUpdateIconAppearance(stateObj) {
-      if (stateObj.attributes.icon_color && !stateObj.attributes.entity_picture) {
-        this.style.backgroundImage = '';
-        Object.assign(this.$.icon.style, {
-          display: 'inline',
-          color: stateObj.attributes.icon_color,
-          filter: '',
-        });
-      } else {
-        originalUpdateIconAppearance.call(this, stateObj);
-      }
-    };
+    customElements.whenDefined('state-badge').then(() => {
+      const stateBadge = customElements.get('state-badge');
+      if (!stateBadge || !stateBadge.prototype.updateIconAppearance) return;
+      const originalUpdateIconAppearance = stateBadge.prototype.updateIconAppearance;
+      // Use named function to preserve 'this'.
+      stateBadge.prototype.updateIconAppearance = function customUpdateIconAppearance(stateObj) {
+        if (stateObj.attributes.icon_color && !stateObj.attributes.entity_picture) {
+          this.style.backgroundImage = '';
+          Object.assign(this.$.icon.style, {
+            display: 'inline',
+            color: stateObj.attributes.icon_color,
+            filter: '',
+          });
+        } else {
+          originalUpdateIconAppearance.call(this, stateObj);
+        }
+      };
+    });
   },
 
   installHaAttributes() {
-    const haAttributes = customElements.get('ha-attributes');
-    if (!haAttributes || !haAttributes.prototype.computeFiltersArray ||
-       !window.hassAttributeUtil) return;
-    // Use named function to preserve 'this'.
-    haAttributes.prototype.computeFiltersArray = function customComputeFiltersArray(extraFilters) {
-      return Object.keys(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES).concat(extraFilters ? extraFilters.split(',') : []);
-    };
+    customElements.whenDefined('ha-attributes').then(() => {
+      const haAttributes = customElements.get('ha-attributes');
+      if (!haAttributes || !haAttributes.prototype.computeFiltersArray ||
+         !window.hassAttributeUtil) return;
+      // Use named function to preserve 'this'.
+      haAttributes.prototype.computeFiltersArray =
+        function customComputeFiltersArray(extraFilters) {
+          return Object.keys(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES).concat(
+            extraFilters ? extraFilters.split(',') : []);
+        };
+    });
   },
 
   installHaFormCustomize() {
     if (!window.location.pathname.startsWith('/config')) return;
-    const haFormCustomize = customElements.get('ha-form-customize');
-    if (!haFormCustomize) {
-      // DOM not ready. Wait 100ms.
-      window.setTimeout(window.customUI.installHaFormCustomize, 100);
-      return;
-    }
-    if (window.customUI.haFormCustomizeInitDone) return;
-    window.customUI.haFormCustomizeInitDone = true;
+    customElements.whenDefined('ha-form-customize').then(() => {
+      const haFormCustomize = customElements.get('ha-form-customize');
+      if (!haFormCustomize) {
+        // DOM not ready. Wait 100ms.
+        window.setTimeout(window.customUI.installHaFormCustomize, 100);
+        return;
+      }
+      if (window.customUI.haFormCustomizeInitDone) return;
+      window.customUI.haFormCustomizeInitDone = true;
 
-    if (!window.hassAttributeUtil) return;
-    if (haFormCustomize.prototype._computeSingleAttribute) {
-      // Use named function to preserve 'this'.
-      haFormCustomize.prototype._computeSingleAttribute =
-        function customComputeSingleAttribute(key, value, secondary) {
-          const config = window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES[key]
-              || { type: window.hassAttributeUtil.UNKNOWN_TYPE };
-          return this._initOpenObject(key, config.type === 'json' ? JSON.stringify(value) : value, secondary, config);
-        };
-    }
-    if (haFormCustomize.prototype.getNewAttributesOptions) {
-      // Use named function to preserve 'this'.
-      haFormCustomize.prototype.getNewAttributesOptions =
-        function customgetNewAttributesOptions(
-          localAttributes, globalAttributes, existingAttributes, newAttributes) {
-          const knownKeys =
-              Object.keys(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES)
-                .filter((key) => {
-                  const conf = window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES[key];
-                  return conf && (!conf.domains || !this.entity ||
-                                    conf.domains.includes(computeStateDomain(this.entity)));
-                })
-                .filter(this.filterFromAttributes(localAttributes))
-                .filter(this.filterFromAttributes(globalAttributes))
-                .filter(this.filterFromAttributes(existingAttributes))
-                .filter(this.filterFromAttributes(newAttributes));
-          return knownKeys.sort().concat('Other');
-        };
-    }
+      if (!window.hassAttributeUtil) return;
+      if (haFormCustomize.prototype._computeSingleAttribute) {
+        // Use named function to preserve 'this'.
+        haFormCustomize.prototype._computeSingleAttribute =
+          function customComputeSingleAttribute(key, value, secondary) {
+            const config = window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES[key]
+                || { type: window.hassAttributeUtil.UNKNOWN_TYPE };
+            return this._initOpenObject(key, config.type === 'json' ? JSON.stringify(value) : value, secondary, config);
+          };
+      }
+      if (haFormCustomize.prototype.getNewAttributesOptions) {
+        // Use named function to preserve 'this'.
+        haFormCustomize.prototype.getNewAttributesOptions =
+          function customgetNewAttributesOptions(
+            localAttributes, globalAttributes, existingAttributes, newAttributes) {
+            const knownKeys =
+                Object.keys(window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES)
+                  .filter((key) => {
+                    const conf = window.hassAttributeUtil.LOGIC_STATE_ATTRIBUTES[key];
+                    return conf && (!conf.domains || !this.entity ||
+                                      conf.domains.includes(computeStateDomain(this.entity)));
+                  })
+                  .filter(this.filterFromAttributes(localAttributes))
+                  .filter(this.filterFromAttributes(globalAttributes))
+                  .filter(this.filterFromAttributes(existingAttributes))
+                  .filter(this.filterFromAttributes(newAttributes));
+            return knownKeys.sort().concat('Other');
+          };
+      }
+    });
   },
 
   installClassHooks() {
