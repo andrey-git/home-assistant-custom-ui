@@ -22,14 +22,10 @@ Please ask questions and post feature requests in the [forum](https://community.
 
 ## Changelog
 
+#### 2018-08-06
+*   Fix CustomUI attributes not being hidden in more-info.
+
 #### 2018-07-13
 *   Hotfix for HA 0.73+
-
-
-#### 2018-06-25
-*   Entities with `hide_in_default_view: false` will no longer be hidden from
-    default view even if they are part of another view with
-    `hide_in_default_view: true`
-*   Add `icon_color`, `state`, and `_stateDisplay` to the list of hidden attributes.
 
 [Full Changelog](CHANGELOG.md)

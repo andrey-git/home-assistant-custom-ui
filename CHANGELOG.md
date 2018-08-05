@@ -1,5 +1,8 @@
 ## Changelog
 
+#### 2018-08-06
+*   Fix CustomUI attributes not being hidden in more-info
+
 #### 2018-07-13
 *   Hotfix for HA 0.73+
 
