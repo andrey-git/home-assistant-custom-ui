@@ -3,7 +3,7 @@
 ## For Home Assistant 0.53+
 
 #### 1. Tell Home Assistant to load relevant files.
-(One of 1.1 - 1.8)
+(**Only one** of 1.1 - 1.8)
 
 1.1 Using [customizer](https://github.com/andrey-git/home-assistant-customizer/) for [local install](installing.md#local-install)
 ```yaml
