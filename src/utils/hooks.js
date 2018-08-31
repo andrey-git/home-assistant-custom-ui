@@ -470,14 +470,13 @@ window.customUI = window.customUI || {
   installStateBadge() {
     customElements.whenDefined('state-badge').then(() => {
       const stateBadge = customElements.get('state-badge');
-      if (!stateBadge || !stateBadge.prototype.updateIconAppearance) return;
-      const originalUpdateIconAppearance = stateBadge.prototype.updateIconAppearance;
+      if (!stateBadge || !stateBadge.prototype._updateIconAppearance) return;
+      const originalUpdateIconAppearance = stateBadge.prototype._updateIconAppearance;
       // Use named function to preserve 'this'.
-      stateBadge.prototype.updateIconAppearance = function customUpdateIconAppearance(stateObj) {
+      stateBadge.prototype._updateIconAppearance = function customUpdateIconAppearance(stateObj) {
         if (stateObj.attributes.icon_color && !stateObj.attributes.entity_picture) {
           this.style.backgroundImage = '';
           Object.assign(this.$.icon.style, {
-            display: 'inline',
             color: stateObj.attributes.icon_color,
             filter: '',
           });
