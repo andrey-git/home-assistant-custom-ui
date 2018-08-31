@@ -4,7 +4,9 @@ TODO: Add screenshots
 
 ## Notes
 
-**CustomUI 2018-07-13 required for HA 0.73+**
+**CustomUI 2018-08-31 required for HA 0.77+**
+
+**CustomUI 2018-08-06 is the last version to work on HA 0.76 and earlier**
 
 Please fill the [usage poll](https://docs.google.com/forms/d/e/1FAIpQLSdjgb4iu5aDyvFB6ch9KJpRn25I0wLL7NLyTIhcWCzU3KM1-w/viewform?usp=send_form)
 
@@ -22,10 +24,11 @@ Please ask questions and post feature requests in the [forum](https://community.
 
 ## Changelog
 
+#### 2018-08-31
+*   Fix for icon_color not being applied on HA >0.77 (by Jérôme)
+*   This version requires HA 0.77+
+
 #### 2018-08-06
 *   Fix CustomUI attributes not being hidden in more-info.
-
-#### 2018-07-13
-*   Hotfix for HA 0.73+
 
 [Full Changelog](CHANGELOG.md)

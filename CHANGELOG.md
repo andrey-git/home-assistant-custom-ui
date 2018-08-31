@@ -1,5 +1,9 @@
 ## Changelog
 
+#### 2018-08-31
+*   Fix for icon_color not being applied on HA >0.77 (by Jérôme)
+*   This version requires HA 0.77+
+
 #### 2018-08-06
 *   Fix CustomUI attributes not being hidden in more-info
 
