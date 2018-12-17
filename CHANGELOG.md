@@ -1,5 +1,8 @@
 ## Changelog
 
+#### 2018-12-17
+*   Hotfix for HA 0.84.1+
+
 #### 2018-08-31
 *   Fix for icon_color not being applied on HA >0.77 (by Jérôme)
 *   This version requires HA 0.77+

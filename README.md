@@ -4,7 +4,7 @@ TODO: Add screenshots
 
 ## Notes
 
-**CustomUI 2018-08-31 required for HA 0.77+**
+**CustomUI 2018-12-17 required for HA 0.84.1+**
 
 **CustomUI 2018-08-06 is the last version to work on HA 0.76 and earlier**
 
@@ -23,6 +23,9 @@ See [features](docs/features.md)
 Please ask questions and post feature requests in the [forum](https://community.home-assistant.io/t/customui-discussion-thread/48694). Post bugreports here on github in [issues](https://github.com/andrey-git/home-assistant-custom-ui/issues/)
 
 ## Changelog
+
+#### 2018-12-17
+*   Hotfix for HA 0.84.1+
 
 #### 2018-08-31
 *   Fix for icon_color not being applied on HA >0.77 (by Jérôme)
