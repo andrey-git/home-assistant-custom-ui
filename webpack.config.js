@@ -11,19 +11,13 @@ function createConfig(es5, prod) {
   const babelOptions = {};
 
   babelOptions.presets =
-  es5 ? [
-    ['es2015', { modules: false }],
-  ] : [
-    ['env', {
-      targets: {
-        chrome: 55,
-        firefox: 47,
-        edge: 14,
-        safari: 10,
-      },
-      modules: false,
-    }],
-  ];
+  [
+    es5 && [
+      require('@babel/preset-env').default,
+      { modules: false },
+    ],
+    require('@babel/preset-typescript').default,
+  ].filter(Boolean);
 
   const plugins = prod ?
     [new UglifyJsPlugin({
@@ -43,7 +37,7 @@ function createConfig(es5, prod) {
     module: {
       rules: [
         {
-          test: /\.js$/,
+          test: /\.js$|\.ts$/,
           use: {
             loader: 'babel-loader',
             options: babelOptions,
@@ -52,6 +46,9 @@ function createConfig(es5, prod) {
       ],
     },
     plugins,
+    resolve: {
+      extensions: ['.ts', '.js', '.json'],
+    },
     output: {
       filename: `[name]${prod ? '' : '-dbg'}${es5 ? '-es5' : ''}.js`,
       path: path.resolve(__dirname, buildPath),

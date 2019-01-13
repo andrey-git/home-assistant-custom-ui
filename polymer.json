@@ -5,6 +5,7 @@
     "src/**/*"
   ],
   "lint": {
+    "ignoreWarnings": ["could-not-resolve-reference", "could-not-load"],
     "rules": ["polymer-3"]
   }
 }
