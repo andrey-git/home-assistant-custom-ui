@@ -154,6 +154,7 @@ customElements.whenDefined('state-card-display').then(() => {
           }
         }
         result._entityDisplay = '';
+        result.attributes = Object.assign({}, { friendly_name: '' });
         return result;
       }).filter(extraBadge => extraBadge != null);
     }

@@ -1,7 +1,7 @@
 import applyThemesOnElement from '../../home-assistant-polymer/src/common/dom/apply_themes_on_element.js';
-import computeStateDomain from '../../home-assistant-polymer/src/common/entity/compute_state_domain.js';
+import computeStateDomain from '../../home-assistant-polymer/src/common/entity/compute_state_domain.ts';
 import dynamicContentUpdater from '../../home-assistant-polymer/src/common/dom/dynamic_content_updater.js';
-import stateCardType from '../../home-assistant-polymer/src/common/entity/state_card_type.js';
+import stateCardType from '../../home-assistant-polymer/src/common/entity/state_card_type.ts';
 
 import '../utils/hooks.js';
 import './state-card-with-slider.js';

@@ -1,5 +1,8 @@
 ## Changelog
 
+#### 2019-01-13
+*   Hotfix for `extra_badge` for HA 0.85+
+
 #### 2018-12-17
 *   Hotfix for HA 0.84.1+
 

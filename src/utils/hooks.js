@@ -1,6 +1,6 @@
 import applyThemesOnElement from '../../home-assistant-polymer/src/common/dom/apply_themes_on_element.js';
-import computeStateDomain from '../../home-assistant-polymer/src/common/entity/compute_state_domain.js';
-import getViewEntities from '../../home-assistant-polymer/src/common/entity/get_view_entities.js';
+import computeStateDomain from '../../home-assistant-polymer/src/common/entity/compute_state_domain.ts';
+import getViewEntities from '../../home-assistant-polymer/src/common/entity/get_view_entities.ts';
 
 import '../elements/ha-config-custom-ui.js';
 import VERSION from './version.js';
