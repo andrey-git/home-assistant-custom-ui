@@ -470,20 +470,38 @@ window.customUI = window.customUI || {
   installStateBadge() {
     customElements.whenDefined('state-badge').then(() => {
       const stateBadge = customElements.get('state-badge');
-      if (!stateBadge || !stateBadge.prototype._updateIconAppearance) return;
-      const originalUpdateIconAppearance = stateBadge.prototype._updateIconAppearance;
-      // Use named function to preserve 'this'.
-      stateBadge.prototype._updateIconAppearance = function customUpdateIconAppearance(stateObj) {
-        if (stateObj.attributes.icon_color && !stateObj.attributes.entity_picture) {
-          this.style.backgroundImage = '';
-          Object.assign(this.$.icon.style, {
-            color: stateObj.attributes.icon_color,
-            filter: '',
-          });
-        } else {
-          originalUpdateIconAppearance.call(this, stateObj);
-        }
-      };
+      if (!stateBadge) return;
+      if (stateBadge.prototype._updateIconAppearance) {
+        const originalUpdateIconAppearance = stateBadge.prototype._updateIconAppearance;
+        // Use named function to preserve 'this'.
+        stateBadge.prototype._updateIconAppearance = function customUpdateIconAppearance(stateObj) {
+          if (stateObj.attributes.icon_color && !stateObj.attributes.entity_picture) {
+            this.style.backgroundImage = '';
+            Object.assign(this.$.icon.style, {
+              color: stateObj.attributes.icon_color,
+              filter: '',
+            });
+          } else {
+            originalUpdateIconAppearance.call(this, stateObj);
+          }
+        };
+      } else if (stateBadge.prototype.updated) {
+        const originalUpdated = stateBadge.prototype.updated;
+        // Use named function to preserve 'this'.
+        stateBadge.prototype.updated = function customUpdated(changedProps) {
+          if (!changedProps.has('stateObj')) return;
+          const { stateObj } = this;
+          if (stateObj.attributes.icon_color && !stateObj.attributes.entity_picture) {
+            this.style.backgroundImage = '';
+            Object.assign(this._icon.style, {
+              color: stateObj.attributes.icon_color,
+              filter: '',
+            });
+          } else {
+            originalUpdated.call(this, changedProps);
+          }
+        };
+      }
     });
   },
 
