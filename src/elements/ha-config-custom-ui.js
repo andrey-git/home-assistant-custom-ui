@@ -13,7 +13,7 @@ class HaConfigCustomUi extends EventsMixin(Polymer.Element) {
       <app-header slot="header" fixed>
         <app-toolbar>
           <paper-icon-button
-            icon='mdi:arrow-left'
+            icon='hass:arrow-left'
             on-click='_backHandler'
           ></paper-icon-button>
           <div main-title>Custom UI settings</div>

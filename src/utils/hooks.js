@@ -344,7 +344,7 @@ window.customUI = window.customUI || {
           }
         });
       }
-    } else {
+    } else if (haPanelConfig.shadowRoot) {
       const root = haPanelConfig.shadowRoot || haPanelConfig;
       if (root.lastElementChild.tagName !== 'HA-CONFIG-CUSTOM-UI') {
         const haConfigCustomUi = getHaConfigCustomUi();
@@ -352,6 +352,17 @@ window.customUI = window.customUI || {
       }
       const visible = window.location.pathname.startsWith('/config/customui');
       root.lastElementChild.style.display = visible ? '' : 'none';
+    } else if (haPanelConfig.routerOptions && haPanelConfig.routerOptions.routes) {
+      if (!haPanelConfig.routerOptions.routes.customui) {
+        haPanelConfig.routerOptions.routes.customui = {
+          tag: 'ha-config-custom-ui',
+          load: () => Promise.resolve(),
+        };
+        // CustomUI panel is the entrypoint, so we need to reload the page.
+        if (window.location.pathname.startsWith('/config/customui')) {
+          haPanelConfig.update(new Map([['route', undefined]]));
+        }
+      }
     }
   },
 
