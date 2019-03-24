@@ -24,6 +24,13 @@ Please ask questions and post feature requests in the [forum](https://community.
 
 ## Changelog
 
+#### 2019-03-24
+*   Fix for `icon-color` for HA 0.88+
+*   Fox config panel for HA 0.90+
+
+#### 2019-01-13
+*   Hotfix for `extra_badge` for HA 0.85+
+
 #### 2018-12-17
 *   Hotfix for HA 0.84.1+
 
