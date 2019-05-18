@@ -3,7 +3,7 @@
 TODO: Add screenshots
 
 ## Notes
-**CustomUI 2019-05-17 required for HA 0.94+**
+**CustomUI 2019-05-18 required for HA 0.94+**
 
 **CustomUI 2018-12-17 required for HA 0.84.1+**
 
