@@ -3,6 +3,7 @@
 TODO: Add screenshots
 
 ## Notes
+**CustomUI 2019-05-17 required for HA 0.94+**
 
 **CustomUI 2018-12-17 required for HA 0.84.1+**
 
@@ -24,6 +25,9 @@ Please ask questions and post feature requests in the [forum](https://community.
 
 ## Changelog
 
+#### 2019-05-18
+*   Hotfix for HA 0.94+
+
 #### 2019-03-24
 *   Fix for `icon-color` for HA 0.88+
 *   Fox config panel for HA 0.90+
@@ -31,14 +35,5 @@ Please ask questions and post feature requests in the [forum](https://community.
 #### 2019-01-13
 *   Hotfix for `extra_badge` for HA 0.85+
 
-#### 2018-12-17
-*   Hotfix for HA 0.84.1+
-
-#### 2018-08-31
-*   Fix for icon_color not being applied on HA >0.77 (by Jérôme)
-*   This version requires HA 0.77+
-
-#### 2018-08-06
-*   Fix CustomUI attributes not being hidden in more-info.
 
 [Full Changelog](CHANGELOG.md)

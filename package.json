@@ -9,9 +9,10 @@
     "del": "^3.0.0",
     "eslint": "^4.13.0",
     "eslint-config-airbnb-base": "^12.1.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4",
     "gulp-rename": "^1.2.2",
-    "gulp-zopfli": "^1.0.0",
+    "gulp-zopfli-green": "^3.0.0",
+    "lit-element": "^2.1.0",
     "require-dir": "^0.3.2",
     "typescript": "^3.2.2",
     "webpack": "^4.8.3"

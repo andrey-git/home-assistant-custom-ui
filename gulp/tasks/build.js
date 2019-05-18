@@ -17,9 +17,9 @@ function build(minify, transpile) {
     .pipe(gulp.dest('build/'));
 }
 
-gulp.task('build', ['build-minify', 'build-dbg', 'build-minify-es5', 'build-dbg-es5']);
 
-gulp.task('build-minify', [], build.bind(null, true, false));
-gulp.task('build-dbg', [], build.bind(null, false, false));
-gulp.task('build-minify-es5', [], build.bind(null, true, true));
-gulp.task('build-dbg-es5', [], build.bind(null, false, true));
+gulp.task('build-minify', build.bind(null, true, false));
+gulp.task('build-dbg', build.bind(null, false, false));
+gulp.task('build-minify-es5', build.bind(null, true, true));
+gulp.task('build-dbg-es5', build.bind(null, false, true));
+gulp.task('build', gulp.series('build-minify', 'build-dbg', 'build-minify-es5', 'build-dbg-es5'));

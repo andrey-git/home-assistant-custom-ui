@@ -1,5 +1,5 @@
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import applyThemesOnElement from '../../home-assistant-polymer/src/common/dom/apply_themes_on_element.js';
+import applyThemesOnElement from '../../home-assistant-polymer/src/common/dom/apply_themes_on_element.ts';
 
 import './dynamic-element.js';
 import '../utils/hooks.js';

@@ -1,4 +1,4 @@
-import applyThemesOnElement from '../../home-assistant-polymer/src/common/dom/apply_themes_on_element.js';
+import applyThemesOnElement from '../../home-assistant-polymer/src/common/dom/apply_themes_on_element.ts';
 import computeStateDomain from '../../home-assistant-polymer/src/common/entity/compute_state_domain.ts';
 import getViewEntities from '../../home-assistant-polymer/src/common/entity/get_view_entities.ts';
 

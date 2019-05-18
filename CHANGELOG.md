@@ -1,5 +1,8 @@
 ## Changelog
 
+#### 2019-05-18
+*   Hotfix for HA 0.94+
+
 #### 2019-03-24
 *   Fix for `icon-color` for HA 0.88+
 *   Fox config panel for HA 0.90+

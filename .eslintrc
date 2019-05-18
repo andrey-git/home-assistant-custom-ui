@@ -17,7 +17,7 @@
     "no-param-reassign": ["error", { "props": false }],
     "function-paren-newline": 0,
     "import/no-extraneous-dependencies": ["error", {"devDependencies": ["gulp/**", "webpack.config.js"]}],
-    "import/extensions": ["error", "always"]
+    "import/extensions": ["error", "ignorePackages"]
   },
   "plugins": [
     "import"
