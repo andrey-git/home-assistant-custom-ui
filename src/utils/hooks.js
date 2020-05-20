@@ -504,10 +504,8 @@ window.customUI = window.customUI || {
           const { stateObj } = this;
           if (stateObj.attributes.icon_color && !stateObj.attributes.entity_picture) {
             this.style.backgroundImage = '';
-            Object.assign(this._icon.style, {
-              color: stateObj.attributes.icon_color,
-              filter: '',
-            });
+            this._showIcon = true;
+            this._iconStyle = {color: stateObj.attributes.icon_color;}
           } else {
             originalUpdated.call(this, changedProps);
           }
